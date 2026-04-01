@@ -1,0 +1,75 @@
+
+{
+  "heroTitle": "Un soutien en santé mentale simplifié",
+  "heroSubtitle": "Connectez-vous avec des thérapeutes certifiés, suivez votre humeur et accédez à des ressources personnalisées au même endroit.",
+  "getStarted": "Commencer",
+  "features": {
+    "personalizedSupport": {
+      "title": "Soutien personnalisé",
+      "description": "Ressources adaptées à vos besoins."
+    },
+    "expertTherapists": {
+      "title": "Thérapeutes experts",
+      "description": "Connectez-vous avec des professionnels certifiés."
+    },
+    "moodTracking": {
+      "title": "Suivi de l'humeur",
+      "description": "Surveillez votre bien-être émotionnel."
+    },
+    "security": {
+      "title": "Sûr et sécurisé",
+      "description": "Vos données sont toujours protégées."
+    }
+  },
+  "testimonials": {
+    "title": "Ce que disent nos utilisateurs",
+    "subtitle": "Des histoires réelles de personnes qui ont trouvé soutien et croissance grâce à notre plateforme.",
+    "items": [
+      {
+        "text": "Cette plateforme a changé ma vie pour ma santé mentale. Je me sens plus connecté et soutenu que jamais.",
+        "author": "Alice Johnson"
+      },
+      {
+        "text": "Les ressources disponibles sont incroyables. J'ai beaucoup appris sur la gestion de mon anxiété et l'amélioration de mon bien-être général.",
+        "author": "Bob Williams"
+      },
+      {
+        "text": "J'apprécie la possibilité de me connecter avec des thérapeutes depuis le confort de ma maison. Cela a rendu la recherche d'aide beaucoup plus facile.",
+        "author": "Charlie Brown"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Plans tarifaires flexibles",
+    "subtitle": "Choisissez un plan qui correspond à vos besoins et à votre budget. Commencez votre voyage vers une meilleure santé mentale dès aujourd'hui.",
+    "plans": {
+      "basic": {
+        "title": "Basique",
+        "price": "19€/mois",
+        "features": [
+          "Accès aux ressources",
+          "Suivi de l'humeur",
+          "Accès limité aux thérapeutes"
+        ]
+      },
+      "standard": {
+        "title": "Standard",
+        "price": "49€/mois",
+        "features": [
+          "Accès à toutes les ressources",
+          "Suivi avancé de l'humeur",
+          "Accès illimité aux thérapeutes"
+        ]
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "99€/mois",
+        "features": [
+          "Tout ce qui est inclus dans Standard",
+          "Support prioritaire",
+          "Plan de soins personnalisé"
+        ]
+      }
+    }
+  }
+}

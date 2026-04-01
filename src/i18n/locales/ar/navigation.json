@@ -1,0 +1,24 @@
+
+{
+  "admin": {
+    "title": "المسؤول",
+    "dashboard": "لوحة التحكم",
+    "users": "إدارة المستخدمين",
+    "analytics": "التحليلات",
+    "content": "إدارة المحتوى",
+    "settings": "إعدادات النظام",
+    "systemStatus": "حالة النظام",
+    "cpuUsage": "استخدام المعالج",
+    "memory": "الذاكرة",
+    "storage": "التخزين",
+    "user": "المستخدم المسؤول",
+    "role": "مدير النظام",
+    "status": "الحالة",
+    "systemParameters": "معلمات النظام",
+    "maintenance": "وضع الصيانة",
+    "debug": "وضع التصحيح",
+    "notifications": "الإشعارات",
+    "security": "الأمان",
+    "advanced": "متقدم"
+  }
+}

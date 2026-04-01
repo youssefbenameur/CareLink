@@ -1,0 +1,27 @@
+
+{
+  "title": "Medical Records",
+  "patientRecords": "Manage patient medical records",
+  "addRecord": "Add Record",
+  "editRecord": "Edit Record",
+  "deleteRecord": "Delete Record",
+  "selectPatient": "Select Patient",
+  "diagnosis": "Diagnosis",
+  "treatment": "Treatment",
+  "prescription": "Prescription",
+  "labResults": "Lab Results",
+  "allergies": "Allergies",
+  "medications": "Medications",
+  "recordTitle": "Record Title",
+  "recordType": "Record Type",
+  "recordDate": "Date",
+  "recordDescription": "Description",
+  "recordDetails": "Record Details",
+  "recordAttachments": "Attachments",
+  "uploadFile": "Upload a file",
+  "noRecords": "No records found",
+  "addedBy": "Added by {{doctor}}",
+  "saveRecord": "Save Record",
+  "updateRecord": "Update Record",
+  "confirmDelete": "Are you sure you want to delete this record?"
+}

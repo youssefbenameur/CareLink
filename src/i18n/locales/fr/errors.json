@@ -1,0 +1,16 @@
+
+{
+  "generic": "Erreur",
+  "dataNotFound": "Impossible de charger les données",
+  "tryAgain": "Veuillez réessayer plus tard",
+  "validationError": "Erreur de validation",
+  "fillRequired": "Veuillez remplir tous les champs obligatoires",
+  "invalidCredentials": "Identifiants invalides",
+  "notFound": "Non trouvé",
+  "badRequest": "Requête incorrecte",
+  "unauthorized": "Non autorisé",
+  "forbidden": "Interdit",
+  "serverError": "Erreur serveur",
+  "networkError": "Erreur réseau",
+  "timeoutError": "Erreur de délai dépassé"
+}

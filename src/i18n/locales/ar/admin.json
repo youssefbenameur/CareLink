@@ -1,0 +1,85 @@
+
+{
+  "dashboard": {
+    "title": "لوحة تحكم المسؤول",
+    "welcome": "مرحبًا بعودتك، المسؤول. إليك نظرة عامة على المنصة.",
+    "settings": "إعدادات النظام",
+    "manageUsers": "إدارة المستخدمين",
+    "overview": "نظرة عامة",
+    "analytics": "التحليلات",
+    "system": "حالة النظام",
+    "stats": {
+      "totalUsers": "إجمالي المستخدمين",
+      "activeDoctors": "الأطباء النشطون",
+      "activePatients": "المرضى النشطون",
+      "systemHealth": "صحة النظام",
+      "change": "من الشهر الماضي",
+      "stable": "مستقر"
+    },
+    "cards": {
+      "userActivity": "نشاط المستخدم",
+      "userActivityDesc": "تسجيلات وعمليات تسجيل الدخول الحديثة",
+      "supportRequests": "طلبات الدعم",
+      "supportRequestsDesc": "تذاكر دعم المستخدم الحديثة",
+      "aiPerformance": "أداء نظام الذكاء الاصطناعي",
+      "aiPerformanceDesc": "مقاييس أداء روبوت المحادثة",
+      "tuneAi": "ضبط نموذج الذكاء الاصطناعي",
+      "detailedAnalytics": "تحليلات مفصلة",
+      "detailedAnalyticsDesc": "مقاييس استخدام المنصة والأداء",
+      "fullAnalytics": "تحليلات كاملة",
+      "systemHealth": "صحة وإعدادات النظام",
+      "systemHealthDesc": "مراقبة وإدارة البنية التحتية للمنصة",
+      "advancedSettings": "إعدادات متقدمة"
+    }
+  },
+  "manageUsers": {
+    "title": "إدارة المستخدمين",
+    "subtitle": "إدارة حسابات وأدوار وصلاحيات المستخدمين",
+    "addUser": "إضافة مستخدم جديد",
+    "addUserDesc": "إنشاء حساب مستخدم جديد مع الأدوار والصلاحيات المناسبة",
+    "userAccounts": "حسابات المستخدمين",
+    "userAccountsDesc": "إدارة جميع المستخدمين المسجلين في النظام",
+    "search": "بحث عن المستخدمين...",
+    "filters": {
+      "allRoles": "جميع الأدوار",
+      "allStatuses": "جميع الحالات",
+      "admin": "مسؤول",
+      "doctor": "طبيب",
+      "patient": "مريض",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "suspended": "معلق"
+    },
+    "table": {
+      "name": "الاسم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "status": "الحالة",
+      "joined": "تاريخ الانضمام",
+      "lastLogin": "آخر تسجيل دخول",
+      "actions": "إجراءات"
+    },
+    "editUser": "تعديل المستخدم",
+    "editUserDesc": "تحديث معلومات وصلاحيات المستخدم",
+    "deleteUser": "تأكيد الحذف",
+    "deleteUserDesc": "هل أنت متأكد من رغبتك في حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء.",
+    "deleteUserWarning": "سيتم حذف جميع البيانات المرتبطة بهذا المستخدم نهائياً.",
+    "cancel": "إلغاء",
+    "saveChanges": "حفظ التغييرات",
+    "delete": "حذف المستخدم",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "status": "الحالة",
+    "password": "كلمة المرور الأولية",
+    "noUsers": "لم يتم العثور على مستخدمين",
+    "noUsersDesc": "حاول تعديل معايير البحث أو التصفية",
+    "showing": "عرض {{filtered}} من إجمالي {{total}} مستخدم",
+    "previous": "السابق",
+    "next": "التالي"
+  },
+  "charts": {
+    "placeholder": "ستظهر هنا بيانات الرسم البياني"
+  }
+}

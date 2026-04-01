@@ -1,0 +1,17 @@
+
+{
+  "title": "Trouver un médecin",
+  "description": "Découvrez des professionnels de la santé spécialisés en santé mentale",
+  "searchPlaceholder": "Rechercher par nom ou spécialité...",
+  "noDoctors": "Aucun médecin trouvé",
+  "tryDifferent": "Essayez différents critères de recherche",
+  "yearsExperience": "ans d'expérience",
+  "consultationFee": "Frais de consultation",
+  "contactEmail": "Contacter par email",
+  "bookAppointment": "Prendre rendez-vous",
+  "specialty": "Spécialité",
+  "experience": "Expérience",
+  "languages": "Langues",
+  "location": "Emplacement",
+  "about": "À propos"
+}

@@ -1,0 +1,185 @@
+{
+  "title": "Settings",
+  "description": "Manage your account settings and preferences",
+  "tabs": {
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "preferences": "Preferences"
+  },
+  "profile": {
+    "title": "Profile Settings",
+    "description": "Update your personal information",
+    "name": "Full Name",
+    "namePlaceholder": "Enter your full name",
+    "email": "Email Address",
+    "emailPlaceholder": "email@example.com",
+    "phone": "Phone Number",
+    "bio": "Biography",
+    "bioPlaceholder": "Tell us about yourself...",
+    "editProfile": "Edit Profile",
+    "cancelEditing": "Cancel Editing",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "save": "Save Changes",
+    "emailDescription": "Your email address is used for notifications and login",
+    "firstName": "First Name",
+    "lastName": "Last Name"
+  },
+  "notifications": {
+    "title": "Notification Settings",
+    "description": "Manage how you receive notifications",
+    "email": "Email Notifications",
+    "emailDescription": "Receive updates and reminders via email",
+    "push": "Push Notifications",
+    "pushDescription": "Receive notifications on your device",
+    "reminderTime": "Reminder Time",
+    "reminder24h": "24 hours before",
+    "reminder12h": "12 hours before",
+    "reminder6h": "6 hours before",
+    "reminder1h": "1 hour before",
+    "sms": "SMS Notifications",
+    "smsDescription": "Receive updates and reminders via SMS"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "description": "Customize your experience",
+    "theme": {
+      "title": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "language": {
+      "title": "Language",
+      "english": "English",
+      "french": "French",
+      "spanish": "Spanish",
+      "arabic": "Arabic"
+    },
+    "timezone": {
+      "title": "Time Zone",
+      "auto": "Auto detect",
+      "et": "Eastern Time (ET)",
+      "ct": "Central Time (CT)",
+      "mt": "Mountain Time (MT)",
+      "pt": "Pacific Time (PT)"
+    },
+    "dateFormat": {
+      "title": "Date Format",
+      "mdy": "MM/DD/YYYY",
+      "dmy": "DD/MM/YYYY",
+      "ymd": "YYYY/MM/DD"
+    }
+  },
+  "security": {
+    "title": "Security",
+    "description": "Manage your account security settings",
+    "password": {
+      "title": "Password",
+      "description": "Change your account password",
+      "action": "Change Password"
+    },
+    "2fa": {
+      "title": "Two-Factor Authentication",
+      "description": "Add an extra layer of security to your account",
+      "action": "Setup 2FA"
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "description": "Manage your active login sessions",
+      "action": "Manage Sessions"
+    },
+    "currentPassword": "Current Password",
+    "currentPasswordPlaceholder": "Enter your current password",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your new password"
+  },
+  "regionalSettings": {
+    "title": "Regional Settings",
+    "description": "Customize your timezone and date format preferences",
+    "timezone": {
+      "title": "Time Zone",
+      "auto": "Auto-detect timezone"
+    },
+    "dateFormat": {
+      "title": "Date Format",
+      "mdy": "MM/DD/YYYY"
+    }
+  },
+  "doctor": {
+    "professional": {
+      "title": "Professional Information",
+      "description": "Your qualification and experience details",
+      "specialization": "Specialization",
+      "education": "Education & Certification",
+      "educationPlaceholder": "List your degrees and certifications...",
+      "experience": "Experience",
+      "experiencePlaceholder": "Describe your professional experience...",
+      "languages": "Languages Spoken",
+      "languagesPlaceholder": "e.g., English, Spanish, French",
+      "sessionDuration": "Default Session Duration (minutes)",
+      "consultationFee": "Consultation Fee ($)",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "bio": "Professional Bio",
+      "editProfile": "Edit Profile"
+    },
+    "availability": {
+      "title": "Availability Status",
+      "available": "Available for new patients",
+      "unavailable": "Not accepting new patients"
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "User Management",
+      "description": "Manage user accounts, roles and permissions",
+      "add": {
+        "title": "Add New User",
+        "description": "Create a new user account with appropriate role and permissions",
+        "firstName": "First Name",
+        "lastName": "Last Name",
+        "email": "Email",
+        "role": "Role",
+        "status": "Status"
+      }
+    }
+  },
+  "success": {
+    "profile": {
+      "title": "Profile Updated",
+      "message": "Your profile has been successfully updated"
+    },
+    "notifications": {
+      "title": "Notifications Updated",
+      "message": "Your notification settings have been updated"
+    },
+    "preferences": {
+      "title": "Preferences Updated",
+      "message": "Your preferences have been saved"
+    }
+  },
+  "error": {
+    "profile": {
+      "title": "Update Failed",
+      "message": "Failed to update profile. Please try again."
+    },
+    "notifications": {
+      "title": "Update Failed",
+      "message": "Failed to update notification settings. Please try again."
+    },
+    "preferences": {
+      "title": "Update Failed",
+      "message": "Failed to save preferences. Please try again."
+    }
+  },
+  "privacy": {
+    "title": "Privacy Settings",
+    "profileVisibility": "Profile Visibility",
+    "profileVisibilityDescription": "Control who can view your profile information"
+  }
+}

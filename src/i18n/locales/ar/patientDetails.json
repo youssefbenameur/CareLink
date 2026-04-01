@@ -1,0 +1,40 @@
+
+{
+  "title": "تفاصيل المريض",
+  "patientNotFound": "لم يتم العثور على المريض",
+  "backToPatientList": "العودة إلى قائمة المرضى",
+  "chatWithPatient": "الدردشة مع المريض",
+  "notes": "ملاحظات",
+  "activity": "النشاط",
+  "moodHistory": "سجل المزاج",
+  "medicalRecords": "السجلات الطبية",
+  "personalInfo": {
+    "title": "المعلومات الشخصية",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "dateOfBirth": "تاريخ الميلاد",
+    "age": "العمر",
+    "gender": "الجنس",
+    "address": "العنوان"
+  },
+  "medicalInfo": {
+    "title": "المعلومات الطبية",
+    "conditions": "الحالات الموجودة",
+    "allergies": "الحساسية",
+    "medications": "الأدوية الحالية",
+    "bloodType": "فصيلة الدم",
+    "emergencyContact": "جهة اتصال للطوارئ"
+  },
+  "notesSection": {
+    "title": "ملاحظات المريض",
+    "addNote": "إضافة ملاحظة",
+    "writeNote": "كتابة ملاحظة حول هذا المريض",
+    "save": "حفظ الملاحظة",
+    "date": "التاريخ",
+    "content": "المحتوى",
+    "actions": "الإجراءات",
+    "noNotes": "لا توجد ملاحظات لهذا المريض حتى الآن",
+    "addFirstNote": "أضف أول ملاحظة"
+  }
+}

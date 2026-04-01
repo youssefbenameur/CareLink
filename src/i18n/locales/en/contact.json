@@ -1,0 +1,28 @@
+
+{
+  "title": "Contact Us",
+  "subtitle": "Have questions? We're here to help you on your mental health journey.",
+  "contactInfo": "Contact Information",
+  "email": "Email",
+  "phone": "Phone",
+  "office": "Office",
+  "supportHours": "Support Hours",
+  "mondayFriday": "Monday - Friday",
+  "saturday": "Saturday",
+  "sunday": "Sunday",
+  "closed": "Closed",
+  "timezonePlaceholder": "* All times are in Pacific Standard Time (PST)",
+  "sendMessage": "Send us a message",
+  "yourName": "Your Name",
+  "namePlaceholder": "John Doe",
+  "emailAddress": "Email Address",
+  "emailPlaceholder": "john@example.com",
+  "subject": "Subject",
+  "subjectPlaceholder": "How can we help you?",
+  "message": "Your Message",
+  "messagePlaceholder": "Please share the details of your inquiry...",
+  "sendingMessage": "Sending message...",
+  "sendMessageButton": "Send Message",
+  "messageSent": "Message sent",
+  "messageSentDescription": "We'll get back to you as soon as possible."
+}

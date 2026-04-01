@@ -1,0 +1,39 @@
+
+{
+  "title": "لوحة تحكم المريض",
+  "welcome": "مرحباً، {{name}}",
+  "stats": {
+    "moodTrend": "اتجاه المزاج",
+    "nextSession": "الجلسة القادمة",
+    "resources": "الموارد",
+    "streak": "سلسلة تسجيل الدخول"
+  },
+  "cards": {
+    "todayMood": "مزاج اليوم",
+    "appointments": "المواعيد",
+    "careTeam": "فريق الرعاية الخاص بك"
+  },
+  "activity": {
+    "title": "النشاط الأخير",
+    "description": "أحدث إجراءاتك والتحديثات",
+    "empty": "لا يوجد نشاط حديث للعرض"
+  },
+  "assistant": {
+    "title": "المساعد الذكي",
+    "description": "احصل على المساعدة في الأسئلة الشائعة والدعم",
+    "continue": "متابعة المحادثة"
+  },
+  "moodTracker": {
+    "today": "كيف تشعر اليوم؟",
+    "track": "تسجيل المزاج",
+    "history": "عرض السجل"
+  },
+  "appointments": {
+    "with": "مع",
+    "schedule": "جدولة موعد",
+    "upcoming": "عرض جميع المواعيد"
+  },
+  "chat": {
+    "title": "محادثة"
+  }
+}

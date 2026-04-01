@@ -1,0 +1,18 @@
+
+{
+  "title": "Patient Dashboard",
+  "welcome": "Welcome, {{name}}",
+  "upcomingAppointments": "Upcoming Appointments",
+  "viewAll": "View All",
+  "noAppointments": "No upcoming appointments",
+  "bookNew": "Book New Appointment",
+  "quickActions": "Quick Actions",
+  "findDoctor": "Find a Doctor",
+  "trackMood": "Track Your Mood",
+  "viewMedicalRecords": "View Medical Records",
+  "recentActivity": "Recent Activity",
+  "noActivity": "No recent activity",
+  "seeMore": "See More",
+  "resources": "Mental Health Resources",
+  "viewResources": "View Resources"
+}

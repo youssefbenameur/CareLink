@@ -1,0 +1,16 @@
+
+{
+  "generic": "خطأ",
+  "dataNotFound": "فشل في تحميل البيانات",
+  "tryAgain": "يرجى المحاولة مرة أخرى لاحقًا",
+  "validationError": "خطأ في التحقق",
+  "fillRequired": "يرجى ملء جميع الحقول المطلوبة",
+  "invalidCredentials": "بيانات اعتماد غير صالحة",
+  "notFound": "غير موجود",
+  "badRequest": "طلب غير صحيح",
+  "unauthorized": "غير مصرح",
+  "forbidden": "ممنوع",
+  "serverError": "خطأ في الخادم",
+  "networkError": "خطأ في الشبكة",
+  "timeoutError": "خطأ في المهلة"
+}

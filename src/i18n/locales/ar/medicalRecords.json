@@ -1,0 +1,27 @@
+
+{
+  "title": "السجلات الطبية",
+  "patientRecords": "إدارة السجلات الطبية للمرضى",
+  "addRecord": "إضافة سجل",
+  "editRecord": "تعديل السجل",
+  "deleteRecord": "حذف السجل",
+  "selectPatient": "اختيار المريض",
+  "diagnosis": "التشخيص",
+  "treatment": "العلاج",
+  "prescription": "الوصفة الطبية",
+  "labResults": "نتائج المختبر",
+  "allergies": "الحساسية",
+  "medications": "الأدوية",
+  "recordTitle": "عنوان السجل",
+  "recordType": "نوع السجل",
+  "recordDate": "التاريخ",
+  "recordDescription": "الوصف",
+  "recordDetails": "تفاصيل السجل",
+  "recordAttachments": "المرفقات",
+  "uploadFile": "رفع ملف",
+  "noRecords": "لم يتم العثور على سجلات",
+  "addedBy": "أضيف بواسطة {{doctor}}",
+  "saveRecord": "حفظ السجل",
+  "updateRecord": "تحديث السجل",
+  "confirmDelete": "هل أنت متأكد من أنك تريد حذف هذا السجل؟"
+}

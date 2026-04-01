@@ -1,0 +1,39 @@
+
+{
+  "title": "Patient Dashboard",
+  "welcome": "Welcome, {{name}}",
+  "stats": {
+    "moodTrend": "Mood Trend",
+    "nextSession": "Next Session",
+    "resources": "Resources",
+    "streak": "Check-in Streak"
+  },
+  "cards": {
+    "todayMood": "Today's Mood",
+    "appointments": "Appointments",
+    "careTeam": "Your Care Team"
+  },
+  "activity": {
+    "title": "Recent Activity",
+    "description": "Your latest actions and updates",
+    "empty": "No recent activity to show"
+  },
+  "assistant": {
+    "title": "AI Assistant",
+    "description": "Get help with common questions and support",
+    "continue": "Continue conversation"
+  },
+  "moodTracker": {
+    "today": "How are you feeling today?",
+    "track": "Track Mood",
+    "history": "View History"
+  },
+  "appointments": {
+    "with": "with",
+    "schedule": "Schedule Appointment",
+    "upcoming": "View All Appointments"
+  },
+  "chat": {
+    "title": "Chat"
+  }
+}

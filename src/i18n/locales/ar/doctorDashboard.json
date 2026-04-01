@@ -1,0 +1,37 @@
+
+{
+  "title": "لوحة تحكم الطبيب",
+  "welcome": "مرحبًا بعودتك، {{name}}",
+  "viewCalendar": "عرض التقويم",
+  "patientMessages": "رسائل المرضى",
+  "tabs": {
+    "overview": "نظرة عامة",
+    "patients": "المرضى",
+    "appointments": "المواعيد"
+  },
+  "stats": {
+    "totalPatients": "إجمالي المرضى",
+    "newThisMonth": "جديد هذا الشهر",
+    "todayAppointments": "مواعيد اليوم",
+    "completed": "مكتمل",
+    "remaining": "متبقي",
+    "pendingMessages": "الرسائل المعلقة",
+    "from": "من {{count}} مرضى",
+    "attentionRequired": "يحتاج إلى اهتمام",
+    "needingFollowUp": "مرضى يحتاجون إلى متابعة"
+  },
+  "patients": {
+    "title": "المرضى",
+    "manage": "إدارة قائمة المرضى الخاصة بك",
+    "fullList": "عرض الكل",
+    "viewAll": "عرض جميع المرضى"
+  },
+  "appointments": {
+    "title": "المواعيد",
+    "manage": "إدارة جدول المواعيد الخاص بك",
+    "manageLink": "إدارة",
+    "viewAll": "عرض جميع المواعيد",
+    "forDate": "المواعيد ليوم {{date}}",
+    "noAppointments": "لا توجد مواعيد لهذا التاريخ"
+  }
+}

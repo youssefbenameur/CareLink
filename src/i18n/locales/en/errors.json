@@ -1,0 +1,16 @@
+
+{
+  "generic": "Error",
+  "dataNotFound": "Failed to load data",
+  "tryAgain": "Please try again later",
+  "validationError": "Validation Error",
+  "fillRequired": "Please fill all required fields",
+  "invalidCredentials": "Invalid credentials",
+  "notFound": "Not found",
+  "badRequest": "Bad request",
+  "unauthorized": "Unauthorized",
+  "forbidden": "Forbidden",
+  "serverError": "Server error",
+  "networkError": "Network error",
+  "timeoutError": "Timeout error"
+}

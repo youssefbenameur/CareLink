@@ -1,0 +1,40 @@
+
+{
+  "title": "Détails du Patient",
+  "patientNotFound": "Patient non trouvé",
+  "backToPatientList": "Retour à la liste des patients",
+  "chatWithPatient": "Discuter avec le patient",
+  "notes": "Notes",
+  "activity": "Activité",
+  "moodHistory": "Historique d'humeur",
+  "medicalRecords": "Dossiers médicaux",
+  "personalInfo": {
+    "title": "Informations personnelles",
+    "name": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "dateOfBirth": "Date de naissance",
+    "age": "Âge",
+    "gender": "Genre",
+    "address": "Adresse"
+  },
+  "medicalInfo": {
+    "title": "Informations médicales",
+    "conditions": "Conditions existantes",
+    "allergies": "Allergies",
+    "medications": "Médicaments actuels",
+    "bloodType": "Groupe sanguin",
+    "emergencyContact": "Contact d'urgence"
+  },
+  "notesSection": {
+    "title": "Notes du patient",
+    "addNote": "Ajouter une note",
+    "writeNote": "Écrire une note sur ce patient",
+    "save": "Enregistrer la note",
+    "date": "Date",
+    "content": "Contenu",
+    "actions": "Actions",
+    "noNotes": "Pas encore de notes pour ce patient",
+    "addFirstNote": "Ajoutez votre première note"
+  }
+}

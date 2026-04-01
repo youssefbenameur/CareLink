@@ -1,0 +1,17 @@
+
+{
+  "title": "البحث عن طبيب",
+  "description": "اكتشف المتخصصين في مجال الصحة النفسية",
+  "searchPlaceholder": "البحث بالاسم أو التخصص...",
+  "noDoctors": "لم يتم العثور على أطباء",
+  "tryDifferent": "جرب معايير بحث مختلفة",
+  "yearsExperience": "سنوات من الخبرة",
+  "consultationFee": "رسوم الاستشارة",
+  "contactEmail": "التواصل عبر البريد الإلكتروني",
+  "bookAppointment": "حجز موعد",
+  "specialty": "التخصص",
+  "experience": "الخبرة",
+  "languages": "اللغات",
+  "location": "الموقع",
+  "about": "نبذة"
+}

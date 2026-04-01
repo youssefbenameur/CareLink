@@ -1,0 +1,39 @@
+
+{
+  "title": "Tableau de bord du patient",
+  "welcome": "Bienvenue, {{name}}",
+  "stats": {
+    "moodTrend": "Tendance de l'humeur",
+    "nextSession": "Prochaine Session",
+    "resources": "Ressources",
+    "streak": "Série de connexion"
+  },
+  "cards": {
+    "todayMood": "Humeur du jour",
+    "appointments": "Rendez-vous",
+    "careTeam": "Votre équipe soignante"
+  },
+  "activity": {
+    "title": "Activité récente",
+    "description": "Vos dernières actions et mises à jour",
+    "empty": "Aucune activité récente à afficher"
+  },
+  "assistant": {
+    "title": "Assistant IA",
+    "description": "Obtenez de l'aide pour les questions courantes et du support",
+    "continue": "Poursuivre la conversation"
+  },
+  "moodTracker": {
+    "today": "Comment vous sentez-vous aujourd'hui?",
+    "track": "Enregistrer l'humeur",
+    "history": "Voir l'historique"
+  },
+  "appointments": {
+    "with": "avec",
+    "schedule": "Planifier un rendez-vous",
+    "upcoming": "Voir tous les rendez-vous"
+  },
+  "chat": {
+    "title": "Discussion"
+  }
+}

@@ -1,0 +1,18 @@
+
+{
+  "title": "Tableau de bord du patient",
+  "welcome": "Bienvenue, {{name}}",
+  "upcomingAppointments": "Rendez-vous à venir",
+  "viewAll": "Voir tout",
+  "noAppointments": "Pas de rendez-vous à venir",
+  "bookNew": "Prendre un nouveau rendez-vous",
+  "quickActions": "Actions rapides",
+  "findDoctor": "Trouver un médecin",
+  "trackMood": "Suivre votre humeur",
+  "viewMedicalRecords": "Voir les dossiers médicaux",
+  "recentActivity": "Activité récente",
+  "noActivity": "Pas d'activité récente",
+  "seeMore": "Voir plus",
+  "resources": "Ressources de santé mentale",
+  "viewResources": "Voir les ressources"
+}

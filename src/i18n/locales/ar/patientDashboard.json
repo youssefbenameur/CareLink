@@ -1,0 +1,18 @@
+
+{
+  "title": "لوحة تحكم المريض",
+  "welcome": "مرحباً، {{name}}",
+  "upcomingAppointments": "المواعيد القادمة",
+  "viewAll": "عرض الكل",
+  "noAppointments": "لا توجد مواعيد قادمة",
+  "bookNew": "حجز موعد جديد",
+  "quickActions": "إجراءات سريعة",
+  "findDoctor": "البحث عن طبيب",
+  "trackMood": "تتبع مزاجك",
+  "viewMedicalRecords": "عرض السجلات الطبية",
+  "recentActivity": "النشاط الحديث",
+  "noActivity": "لا يوجد نشاط حديث",
+  "seeMore": "رؤية المزيد",
+  "resources": "موارد الصحة النفسية",
+  "viewResources": "عرض الموارد"
+}

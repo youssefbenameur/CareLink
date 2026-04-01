@@ -1,0 +1,28 @@
+
+{
+  "title": "اتصل بنا",
+  "subtitle": "هل لديك أسئلة؟ نحن هنا لمساعدتك في رحلة الصحة النفسية.",
+  "contactInfo": "معلومات الاتصال",
+  "email": "البريد الإلكتروني",
+  "phone": "الهاتف",
+  "office": "المكتب",
+  "supportHours": "ساعات الدعم",
+  "mondayFriday": "الاثنين - الجمعة",
+  "saturday": "السبت",
+  "sunday": "الأحد",
+  "closed": "مغلق",
+  "timezonePlaceholder": "* جميع الأوقات بتوقيت المحيط الهادئ (PST)",
+  "sendMessage": "أرسل لنا رسالة",
+  "yourName": "اسمك",
+  "namePlaceholder": "محمد أحمد",
+  "emailAddress": "عنوان البريد الإلكتروني",
+  "emailPlaceholder": "mohammad@mithaal.com",
+  "subject": "الموضوع",
+  "subjectPlaceholder": "كيف يمكننا مساعدتك؟",
+  "message": "رسالتك",
+  "messagePlaceholder": "يرجى مشاركة تفاصيل استفسارك...",
+  "sendingMessage": "جاري إرسال الرسالة...",
+  "sendMessageButton": "إرسال الرسالة",
+  "messageSent": "تم إرسال الرسالة",
+  "messageSentDescription": "سنعود إليك في أقرب وقت ممكن."
+}

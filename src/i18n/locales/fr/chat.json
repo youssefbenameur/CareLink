@@ -1,0 +1,22 @@
+
+{
+  "title": "Conversation",
+  "withPatient": "Discuter avec vos patients",
+  "withDoctor": "Discuter avec votre médecin",
+  "yourPatients": "Vos Patients",
+  "noPatients": "Aucun patient trouvé",
+  "checkPatientList": "Consultez la liste des patients dans le tableau de bord",
+  "selectPatient": "Sélectionnez un Patient",
+  "selectPatientFromList": "Sélectionnez un patient dans la liste pour commencer à discuter",
+  "noPatientSelected": "Aucun Patient Sélectionné",
+  "selectPatientToChat": "Sélectionnez un patient pour commencer à discuter",
+  "patient": "Patient",
+  "noDoctorSelected": "Aucun Médecin Sélectionné",
+  "selectDoctorToChat": "Sélectionnez un médecin pour commencer à discuter",
+  "doctor": "Médecin",
+  "healthcareProvider": "Professionnel de la Santé",
+  "noMessagesYet": "Pas encore de messages",
+  "startConversation": "Commencez la conversation",
+  "typeMessage": "Écrivez un message...",
+  "send": "Envoyer"
+}

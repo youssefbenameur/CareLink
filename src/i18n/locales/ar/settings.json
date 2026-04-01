@@ -1,0 +1,187 @@
+{
+  "title": "الإعدادات",
+  "description": "إدارة إعدادات حسابك وتفضيلاتك",
+  "tabs": {
+    "profile": "الملف الشخصي",
+    "notifications": "الإشعارات",
+    "preferences": "التفضيلات",
+    "security": "الأمان",
+    "regionalSettings": "الإعدادات الإقليمية"
+  },
+  "profile": {
+    "title": "إعدادات الملف الشخصي",
+    "description": "تحديث معلوماتك الشخصية",
+    "name": "الاسم الكامل",
+    "namePlaceholder": "أدخل اسمك الكامل",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "example@gmail.com",
+    "phone": "رقم الهاتف",
+    "bio": "السيرة الذاتية",
+    "bioPlaceholder": "أخبرنا عن نفسك...",
+    "editProfile": "تعديل الملف الشخصي",
+    "cancelEditing": "إلغاء التعديل",
+    "saveChanges": "حفظ التغييرات",
+    "saving": "جاري الحفظ...",
+    "save": "حفظ التغييرات",
+    "emailDescription": "يُستخدم بريدك الإلكتروني للإشعارات وتسجيل الدخول",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة"
+  },
+  "notifications": {
+    "title": "إعدادات الإشعارات",
+    "description": "إدارة كيفية تلقي الإشعارات",
+    "email": "إشعارات البريد الإلكتروني",
+    "emailDescription": "تلقي التحديثات والتذكيرات عبر البريد الإلكتروني",
+    "push": "الإشعارات الفورية",
+    "pushDescription": "تلقي الإشعارات على جهازك",
+    "reminderTime": "وقت التذكير",
+    "reminder24h": "قبل 24 ساعة",
+    "reminder12h": "قبل 12 ساعة",
+    "reminder6h": "قبل 6 ساعات",
+    "reminder1h": "قبل ساعة واحدة",
+    "sms": "إشعارات الرسائل النصية",
+    "smsDescription": "تلقي التحديثات والتذكيرات عبر الرسائل النصية"
+  },
+  "preferences": {
+    "title": "التفضيلات",
+    "description": "تخصيص تجربتك",
+    "theme": {
+      "title": "المظهر",
+      "light": "فاتح",
+      "dark": "داكن",
+      "system": "النظام"
+    },
+    "language": {
+      "title": "اللغة",
+      "english": "الإنجليزية",
+      "french": "الفرنسية",
+      "spanish": "الإسبانية",
+      "arabic": "العربية"
+    },
+    "timezone": {
+      "title": "المنطقة الزمنية",
+      "auto": "كشف تلقائي",
+      "et": "التوقيت الشرقي (ET)",
+      "ct": "التوقيت المركزي (CT)",
+      "mt": "توقيت الجبال (MT)",
+      "pt": "توقيت المحيط الهادئ (PT)"
+    },
+    "dateFormat": {
+      "title": "تنسيق التاريخ",
+      "mdy": "شهر/يوم/سنة",
+      "dmy": "يوم/شهر/سنة",
+      "ymd": "سنة/شهر/يوم"
+    }
+  },
+  "security": {
+    "title": "الأمان",
+    "description": "إدارة إعدادات أمان حسابك",
+    "password": {
+      "title": "كلمة المرور",
+      "description": "تغيير كلمة مرور حسابك",
+      "action": "تغيير كلمة المرور"
+    },
+    "currentPassword": "كلمة المرور الحالية",
+    "currentPasswordPlaceholder": "أدخل كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "newPasswordPlaceholder": "أدخل كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "confirmPasswordPlaceholder": "أكد كلمة المرور الجديدة",
+    "2fa": {
+      "title": "المصادقة الثنائية",
+      "description": "إضافة طبقة أمان إضافية لحسابك",
+      "action": "إعداد المصادقة الثنائية"
+    },
+    "sessions": {
+      "title": "الجلسات النشطة",
+      "description": "إدارة جلسات تسجيل الدخول النشطة",
+      "action": "إدارة الجلسات"
+    }
+  },
+  "regionalSettings": {
+    "title": "الإعدادات الإقليمية",
+    "description": "تخصيص تفضيلات المنطقة الزمنية وتنسيق التاريخ",
+    "timezone": {
+      "title": "المنطقة الزمنية",
+      "auto": "كشف تلقائي للمنطقة الزمنية"
+    },
+    "dateFormat": {
+      "title": "تنسيق التاريخ",
+      "mdy": "شهر/يوم/سنة"
+    }
+  },
+  "success": {
+    "profile": {
+      "title": "تم تحديث الملف الشخصي",
+      "message": "تم تحديث ملفك الشخصي بنجاح"
+    },
+    "notifications": {
+      "title": "تم تحديث الإشعارات",
+      "message": "تم تحديث إعدادات الإشعارات الخاصة بك"
+    },
+    "preferences": {
+      "title": "تم تحديث التفضيلات",
+      "message": "تم حفظ تفضيلاتك"
+    }
+  },
+  "error": {
+    "profile": {
+      "title": "فشل التحديث",
+      "message": "فشل تحديث الملف الشخصي. يرجى المحاولة مرة أخرى."
+    },
+    "notifications": {
+      "title": "فشل التحديث",
+      "message": "فشل تحديث إعدادات الإشعارات. يرجى المحاولة مرة أخرى."
+    },
+    "preferences": {
+      "title": "فشل التحديث",
+      "message": "فشل حفظ التفضيلات. يرجى المحاولة مرة أخرى."
+    }
+  },
+  "doctor": {
+    "professional": {
+      "title": "المعلومات المهنية",
+      "description": "مؤهلاتك وتفاصيل خبرتك",
+      "specialization": "التخصص",
+      "education": "التعليم والشهادات",
+      "educationPlaceholder": "اذكر شهاداتك وتصديقاتك...",
+      "experience": "الخبرة",
+      "experiencePlaceholder": "صف خبرتك المهنية...",
+      "languages": "اللغات المتحدث بها",
+      "languagesPlaceholder": "مثال: العربية، الإنجليزية، الفرنسية",
+      "sessionDuration": "المدة الافتراضية للجلسة (دقائق)",
+      "consultationFee": "رسوم الاستشارة ($)",
+      "availability": {
+        "title": "حالة التوفر",
+        "available": "متاح لمرضى جدد",
+        "unavailable": "لا يقبل مرضى جدد"
+      },
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "email": "البريد الإلكتروني",
+      "phone": "رقم الهاتف", 
+      "bio": "السيرة المهنية",
+      "editProfile": "تعديل الملف الشخصي"
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "إدارة المستخدمين",
+      "description": "إدارة حسابات المستخدمين والأدوار والصلاحيات",
+      "add": {
+        "title": "إضافة مستخدم جديد",
+        "description": "إنشاء حساب مستخدم جديد مع الدور المناسب",
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "status": "الحالة"
+      }
+    }
+  },
+  "privacy": {
+    "title": "إعدادات الخصوصية",
+    "profileVisibility": "ظهور الملف الشخصي",
+    "profileVisibilityDescription": "التحكم في من يمكنه رؤية معلومات ملفك الشخصي"
+  }
+}

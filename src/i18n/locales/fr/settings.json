@@ -1,0 +1,186 @@
+{
+  "title": "Paramètres",
+  "description": "Gérez vos paramètres de compte et vos préférences",
+  "tabs": {
+    "profile": "Profil",
+    "notifications": "Notifications",
+    "preferences": "Préférences",
+    "security": "Sécurité"
+  },
+  "profile": {
+    "title": "Paramètres du profil",
+    "description": "Mettez à jour vos informations personnelles",
+    "name": "Nom complet",
+    "namePlaceholder": "Entrez votre nom complet",
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "example@gmail.com",
+    "phone": "Numéro de téléphone",
+    "bio": "Biographie",
+    "bioPlaceholder": "Parlez-nous de vous...",
+    "editProfile": "Modifier le profil",
+    "cancelEditing": "Annuler les modifications",
+    "saveChanges": "Enregistrer les modifications",
+    "saving": "Enregistrement...",
+    "save": "Enregistrer les modifications",
+    "emailDescription": "Votre adresse e-mail est utilisée pour les notifications et la connexion",
+    "firstName": "Prénom",
+    "lastName": "Nom de famille"
+  },
+  "notifications": {
+    "title": "Paramètres de notification",
+    "description": "Gérez la façon dont vous recevez les notifications",
+    "email": "Notifications par e-mail",
+    "emailDescription": "Recevez des mises à jour et des rappels par e-mail",
+    "push": "Notifications push",
+    "pushDescription": "Recevez des notifications sur votre appareil",
+    "reminderTime": "Heure de rappel",
+    "reminder24h": "24 heures avant",
+    "reminder12h": "12 heures avant",
+    "reminder6h": "6 heures avant",
+    "reminder1h": "1 heure avant",
+    "sms": "Notifications SMS",
+    "smsDescription": "Recevoir les mises à jour et rappels par SMS"
+  },
+  "preferences": {
+    "title": "Préférences",
+    "description": "Personnalisez votre expérience",
+    "theme": {
+      "title": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système"
+    },
+    "language": {
+      "title": "Langue",
+      "english": "Anglais",
+      "french": "Français",
+      "spanish": "Espagnol",
+      "arabic": "Arabe"
+    },
+    "timezone": {
+      "title": "Fuseau horaire",
+      "auto": "Détection automatique",
+      "et": "Heure de l'Est (ET)",
+      "ct": "Heure du Centre (CT)", 
+      "mt": "Heure des Montagnes (MT)",
+      "pt": "Heure du Pacifique (PT)"
+    },
+    "dateFormat": {
+      "title": "Format de date",
+      "mdy": "MM/JJ/AAAA",
+      "dmy": "JJ/MM/AAAA",
+      "ymd": "AAAA/MM/JJ"
+    }
+  },
+  "security": {
+    "title": "Sécurité",
+    "description": "Gérez les paramètres de sécurité de votre compte",
+    "password": {
+      "title": "Mot de passe",
+      "description": "Modifiez le mot de passe de votre compte",
+      "action": "Changer le mot de passe"
+    },
+    "currentPassword": "Mot de passe actuel",
+    "currentPasswordPlaceholder": "Entrez votre mot de passe actuel",
+    "newPassword": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "confirmPasswordPlaceholder": "Confirmez votre nouveau mot de passe",
+    "2fa": {
+      "title": "Authentification à deux facteurs",
+      "description": "Ajoutez une couche de sécurité supplémentaire à votre compte",
+      "action": "Configurer la 2FA"
+    },
+    "sessions": {
+      "title": "Sessions actives",
+      "description": "Gérez vos sessions de connexion actives",
+      "action": "Gérer les sessions"
+    }
+  },
+  "regionalSettings": {
+    "title": "Paramètres régionaux",
+    "description": "Personnalisez vos préférences de fuseau horaire et de format de date",
+    "timezone": {
+      "title": "Fuseau horaire",
+      "auto": "Détecter automatiquement"
+    },
+    "dateFormat": {
+      "title": "Format de date",
+      "mdy": "MM/JJ/AAAA"
+    }
+  },
+  "success": {
+    "profile": {
+      "title": "Profil mis à jour",
+      "message": "Votre profil a été mis à jour avec succès"
+    },
+    "notifications": {
+      "title": "Notifications mises à jour",
+      "message": "Vos paramètres de notification ont été mis à jour"
+    },
+    "preferences": {
+      "title": "Préférences mises à jour",
+      "message": "Vos préférences ont été enregistrées"
+    }
+  },
+  "error": {
+    "profile": {
+      "title": "Échec de la mise à jour",
+      "message": "Échec de la mise à jour du profil. Veuillez réessayer."
+    },
+    "notifications": {
+      "title": "Échec de la mise à jour",
+      "message": "Échec de la mise à jour des paramètres de notification. Veuillez réessayer."
+    },
+    "preferences": {
+      "title": "Échec de la mise à jour",
+      "message": "Échec de l'enregistrement des préférences. Veuillez réessayer."
+    }
+  },
+  "doctor": {
+    "professional": {
+      "title": "Informations Professionnelles",
+      "description": "Vos qualifications et détails d'expérience",
+      "specialization": "Spécialisation",
+      "education": "Formation & Certification",
+      "educationPlaceholder": "Listez vos diplômes et certifications...",
+      "experience": "Expérience",
+      "experiencePlaceholder": "Décrivez votre expérience professionnelle...",
+      "languages": "Langues Parlées",
+      "languagesPlaceholder": "ex: Français, Anglais, Espagnol",
+      "sessionDuration": "Durée de Session par Défaut (minutes)",
+      "consultationFee": "Frais de Consultation (€)",
+      "availability": {
+        "title": "Statut de Disponibilité",
+        "available": "Disponible pour nouveaux patients",
+        "unavailable": "N'accepte pas de nouveaux patients"
+      },
+      "firstName": "Prénom",
+      "lastName": "Nom de famille",
+      "email": "Adresse e-mail",
+      "phone": "Numéro de téléphone",
+      "bio": "Biographie professionnelle",
+      "editProfile": "Modifier le profil"
+    }
+  },
+  "admin": {
+    "users": {
+      "title": "Gestion des Utilisateurs",
+      "description": "Gérer les comptes, rôles et permissions des utilisateurs",
+      "add": {
+        "title": "Ajouter un Utilisateur",
+        "description": "Créer un nouveau compte utilisateur avec le rôle approprié",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "role": "Rôle",
+        "status": "Statut"
+      }
+    }
+  },
+  "privacy": {
+    "title": "Paramètres de confidentialité",
+    "profileVisibility": "Visibilité du profil",
+    "profileVisibilityDescription": "Contrôlez qui peut voir les informations de votre profil"
+  }
+}

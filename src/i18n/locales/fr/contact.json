@@ -1,0 +1,28 @@
+
+{
+  "title": "Contactez-nous",
+  "subtitle": "Vous avez des questions? Nous sommes là pour vous aider dans votre parcours de santé mentale.",
+  "contactInfo": "Informations de contact",
+  "email": "Email",
+  "phone": "Téléphone",
+  "office": "Bureau",
+  "supportHours": "Heures de support",
+  "mondayFriday": "Lundi - Vendredi",
+  "saturday": "Samedi",
+  "sunday": "Dimanche",
+  "closed": "Fermé",
+  "timezonePlaceholder": "* Tous les horaires sont en Pacific Standard Time (PST)",
+  "sendMessage": "Envoyez-nous un message",
+  "yourName": "Votre nom",
+  "namePlaceholder": "Jean Dupont",
+  "emailAddress": "Adresse e-mail",
+  "emailPlaceholder": "jean@exemple.com",
+  "subject": "Sujet",
+  "subjectPlaceholder": "Comment pouvons-nous vous aider?",
+  "message": "Votre message",
+  "messagePlaceholder": "Veuillez partager les détails de votre demande...",
+  "sendingMessage": "Envoi du message...",
+  "sendMessageButton": "Envoyer le message",
+  "messageSent": "Message envoyé",
+  "messageSentDescription": "Nous vous répondrons dès que possible."
+}

@@ -1,0 +1,17 @@
+
+{
+  "title": "Find a Doctor",
+  "description": "Discover healthcare professionals specialized in mental health",
+  "searchPlaceholder": "Search by name or specialty...",
+  "noDoctors": "No doctors found",
+  "tryDifferent": "Try different search criteria",
+  "yearsExperience": "years experience",
+  "consultationFee": "Consultation Fee",
+  "contactEmail": "Contact via Email",
+  "bookAppointment": "Book Appointment",
+  "specialty": "Specialty",
+  "experience": "Experience",
+  "languages": "Languages",
+  "location": "Location",
+  "about": "About"
+}

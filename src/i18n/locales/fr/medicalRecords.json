@@ -1,0 +1,27 @@
+
+{
+  "title": "Dossiers Médicaux",
+  "patientRecords": "Gérer les dossiers médicaux des patients",
+  "addRecord": "Ajouter un dossier",
+  "editRecord": "Modifier le dossier",
+  "deleteRecord": "Supprimer le dossier",
+  "selectPatient": "Sélectionner un patient",
+  "diagnosis": "Diagnostic",
+  "treatment": "Traitement",
+  "prescription": "Ordonnance",
+  "labResults": "Résultats de laboratoire",
+  "allergies": "Allergies",
+  "medications": "Médicaments",
+  "recordTitle": "Titre du dossier",
+  "recordType": "Type de dossier",
+  "recordDate": "Date",
+  "recordDescription": "Description",
+  "recordDetails": "Détails du dossier",
+  "recordAttachments": "Pièces jointes",
+  "uploadFile": "Télécharger un fichier",
+  "noRecords": "Aucun dossier trouvé",
+  "addedBy": "Ajouté par {{doctor}}",
+  "saveRecord": "Enregistrer le dossier",
+  "updateRecord": "Mettre à jour le dossier",
+  "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce dossier ?"
+}

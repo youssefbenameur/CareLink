@@ -1,0 +1,139 @@
+
+{
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "welcome": "Welcome back, Admin. Here's your platform overview.",
+    "settings": "System Settings",
+    "manageUsers": "Manage Users",
+    "overview": "Overview",
+    "analytics": "Analytics",
+    "system": "System Status",
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeDoctors": "Active Doctors",
+      "activePatients": "Active Patients",
+      "systemHealth": "System Health",
+      "change": "from last month",
+      "stable": "Stable"
+    },
+    "cards": {
+      "userActivity": "User Activity",
+      "userActivityDesc": "Recent user registrations and logins",
+      "supportRequests": "Support Requests",
+      "supportRequestsDesc": "Recent user support tickets",
+      "aiPerformance": "AI System Performance",
+      "aiPerformanceDesc": "Chatbot performance and usage metrics",
+      "tuneAi": "Tune AI Model",
+      "detailedAnalytics": "Detailed Analytics",
+      "detailedAnalyticsDesc": "Platform usage and performance metrics",
+      "fullAnalytics": "Full Analytics",
+      "systemHealth": "System Health & Settings",
+      "systemHealthDesc": "Monitor and manage platform infrastructure",
+      "advancedSettings": "Advanced Settings"
+    }
+  },
+  "manageUsers": {
+    "title": "User Management",
+    "subtitle": "Manage user accounts, roles and permissions",
+    "addUser": "Add New User",
+    "addUserDesc": "Create a new user account with appropriate role and permissions",
+    "userAccounts": "User Accounts",
+    "userAccountsDesc": "Manage all registered users in the system",
+    "search": "Search users...",
+    "filters": {
+      "allRoles": "All Roles",
+      "allStatuses": "All Statuses",
+      "admin": "Admin",
+      "doctor": "Doctor",
+      "patient": "Patient",
+      "active": "Active",
+      "inactive": "Inactive",
+      "suspended": "Suspended"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "lastLogin": "Last Login",
+      "actions": "Actions"
+    },
+    "editUser": "Edit User",
+    "editUserDesc": "Update user information and permissions",
+    "deleteUser": "Confirm Deletion",
+    "deleteUserDesc": "Are you sure you want to delete this user? This action cannot be undone.",
+    "deleteUserWarning": "All data associated with this user will be permanently removed.",
+    "cancel": "Cancel",
+    "saveChanges": "Save Changes",
+    "delete": "Delete User",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email",
+    "role": "Role",
+    "status": "Status",
+    "password": "Initial Password",
+    "noUsers": "No users found",
+    "noUsersDesc": "Try adjusting your search or filter criteria",
+    "showing": "Showing {{filtered}} of {{total}} users",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "charts": {
+    "placeholder": "Chart data would appear here"
+  },
+  "login": {
+    "title": "Admin Access",
+    "description": "Enter the administrator password to continue",
+    "password": "Admin Password",
+    "submit": "Access Admin Panel",
+    "processing": "Processing...",
+    "success": "Admin access granted",
+    "redirecting": "Redirecting to admin dashboard.",
+    "denied": "Access denied",
+    "incorrect": "Incorrect admin password",
+    "error": "Error",
+    "unexpectedError": "An unexpected error occurred. Please try again."
+  },
+  "analytics": {
+    "title": "Analytics Dashboard",
+    "description": "Platform usage metrics and performance indicators",
+    "timeRange": {
+      "title": "Select time range",
+      "day": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "quarter": "This Quarter",
+      "year": "This Year"
+    },
+    "export": "Export",
+    "stats": {
+      "totalUsers": "Total Users",
+      "activeSessions": "Active Sessions",
+      "appointments": "Appointments",
+      "chatbotInteractions": "Chatbot Interactions"
+    },
+    "charts": {
+      "userGrowth": "User Growth",
+      "userGrowthDesc": "New user registrations over time",
+      "sessionActivity": "Session Activity",
+      "sessionActivityDesc": "Daily active sessions across the platform",
+      "userDistribution": "User Distribution",
+      "userDistributionDesc": "Breakdown of user types on the platform",
+      "userRetention": "User Retention",
+      "userRetentionDesc": "Rate of returning users over time",
+      "featureUsage": "Feature Usage",
+      "featureUsageDesc": "Most used features on the platform",
+      "sessionDuration": "Session Duration",
+      "sessionDurationDesc": "Average time users spend on the platform",
+      "systemPerformance": "System Performance",
+      "systemPerformanceDesc": "Server response times and availability",
+      "errorRates": "Error Rates",
+      "errorRatesDesc": "System errors and exceptions over time"
+    },
+    "overview": "Overview",
+    "users": "Users",
+    "engagement": "Engagement",
+    "performance": "Performance"
+  }
+}

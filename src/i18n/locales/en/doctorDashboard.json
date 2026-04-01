@@ -1,0 +1,37 @@
+
+{
+  "title": "Doctor Dashboard",
+  "welcome": "Welcome back, {{name}}",
+  "viewCalendar": "View Calendar",
+  "patientMessages": "Patient Messages",
+  "tabs": {
+    "overview": "Overview",
+    "patients": "Patients",
+    "appointments": "Appointments"
+  },
+  "stats": {
+    "totalPatients": "Total Patients",
+    "newThisMonth": "new this month",
+    "todayAppointments": "Today's Appointments",
+    "completed": "completed",
+    "remaining": "remaining",
+    "pendingMessages": "Pending Messages",
+    "from": "from {{count}} patients",
+    "attentionRequired": "Needs Attention",
+    "needingFollowUp": "patients needing follow-up"
+  },
+  "patients": {
+    "title": "Patients",
+    "manage": "Manage your patient list",
+    "fullList": "View All",
+    "viewAll": "View All Patients"
+  },
+  "appointments": {
+    "title": "Appointments",
+    "manage": "Manage your appointment schedule",
+    "manageLink": "Manage",
+    "viewAll": "View All Appointments",
+    "forDate": "Appointments for {{date}}",
+    "noAppointments": "No appointments for this date"
+  }
+}

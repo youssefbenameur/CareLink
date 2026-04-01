@@ -1,0 +1,75 @@
+
+{
+  "heroTitle": "Mental Health Support Made Simple",
+  "heroSubtitle": "Connect with licensed therapists, track your mood, and access personalized resources all in one place.",
+  "getStarted": "Get Started",
+  "features": {
+    "personalizedSupport": {
+      "title": "Personalized Support",
+      "description": "Tailored resources for your needs."
+    },
+    "expertTherapists": {
+      "title": "Expert Therapists",
+      "description": "Connect with licensed professionals."
+    },
+    "moodTracking": {
+      "title": "Mood Tracking",
+      "description": "Monitor your emotional well-being."
+    },
+    "security": {
+      "title": "Safe & Secure",
+      "description": "Your data is always protected."
+    }
+  },
+  "testimonials": {
+    "title": "What Our Users Say",
+    "subtitle": "Real stories from people who have found support and growth through our platform.",
+    "items": [
+      {
+        "text": "This platform has been a game-changer for my mental health. I feel more connected and supported than ever before.",
+        "author": "Alice Johnson"
+      },
+      {
+        "text": "The resources available are incredible. I've learned so much about managing my anxiety and improving my overall well-being.",
+        "author": "Bob Williams"
+      },
+      {
+        "text": "I appreciate the ability to connect with therapists from the comfort of my own home. It's made seeking help so much easier.",
+        "author": "Charlie Brown"
+      }
+    ]
+  },
+  "pricing": {
+    "title": "Flexible Pricing Plans",
+    "subtitle": "Choose a plan that fits your needs and budget. Start your journey to better mental health today.",
+    "plans": {
+      "basic": {
+        "title": "Basic",
+        "price": "$19/month",
+        "features": [
+          "Access to resources",
+          "Mood tracking",
+          "Limited therapist access"
+        ]
+      },
+      "standard": {
+        "title": "Standard",
+        "price": "$49/month",
+        "features": [
+          "Access to all resources",
+          "Advanced mood tracking",
+          "Unlimited therapist access"
+        ]
+      },
+      "premium": {
+        "title": "Premium",
+        "price": "$99/month",
+        "features": [
+          "Everything in Standard",
+          "Priority support",
+          "Personalized care plan"
+        ]
+      }
+    }
+  }
+}

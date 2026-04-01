@@ -1,0 +1,22 @@
+
+{
+  "title": "المحادثة",
+  "withPatient": "التحدث مع المرضى",
+  "withDoctor": "التحدث مع طبيبك",
+  "yourPatients": "مرضاك",
+  "noPatients": "لم يتم العثور على مرضى",
+  "checkPatientList": "تحقق من قائمة المرضى في لوحة القيادة",
+  "selectPatient": "اختر مريضًا",
+  "selectPatientFromList": "اختر مريضًا من القائمة لبدء المحادثة",
+  "noPatientSelected": "لم يتم اختيار مريض",
+  "selectPatientToChat": "اختر مريضًا لبدء المحادثة",
+  "patient": "مريض",
+  "noDoctorSelected": "لم يتم اختيار طبيب",
+  "selectDoctorToChat": "اختر طبيبًا لبدء المحادثة",
+  "doctor": "طبيب",
+  "healthcareProvider": "مقدم رعاية صحية",
+  "noMessagesYet": "لا توجد رسائل حتى الآن",
+  "startConversation": "ابدأ المحادثة",
+  "typeMessage": "اكتب رسالة...",
+  "send": "إرسال"
+}

@@ -1,0 +1,37 @@
+
+{
+  "title": "Tableau de bord du médecin",
+  "welcome": "Bon retour, {{name}}",
+  "viewCalendar": "Voir le calendrier",
+  "patientMessages": "Messages des patients",
+  "tabs": {
+    "overview": "Aperçu",
+    "patients": "Patients",
+    "appointments": "Rendez-vous"
+  },
+  "stats": {
+    "totalPatients": "Nombre total de patients",
+    "newThisMonth": "nouveaux ce mois-ci",
+    "todayAppointments": "Rendez-vous d'aujourd'hui",
+    "completed": "terminés",
+    "remaining": "restants",
+    "pendingMessages": "Messages en attente",
+    "from": "de {{count}} patients",
+    "attentionRequired": "Nécessite attention",
+    "needingFollowUp": "patients nécessitant un suivi"
+  },
+  "patients": {
+    "title": "Patients",
+    "manage": "Gérer votre liste de patients",
+    "fullList": "Voir tout",
+    "viewAll": "Voir tous les patients"
+  },
+  "appointments": {
+    "title": "Rendez-vous",
+    "manage": "Gérer votre calendrier de rendez-vous",
+    "manageLink": "Gérer",
+    "viewAll": "Voir tous les rendez-vous",
+    "forDate": "Rendez-vous pour {{date}}",
+    "noAppointments": "Pas de rendez-vous pour cette date"
+  }
+}

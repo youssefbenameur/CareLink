@@ -1,0 +1,139 @@
+
+{
+  "dashboard": {
+    "title": "Tableau de Bord Admin",
+    "welcome": "Bienvenue, Admin. Voici un aperçu de la plateforme.",
+    "settings": "Paramètres Système",
+    "manageUsers": "Gérer les Utilisateurs",
+    "overview": "Vue d'ensemble",
+    "analytics": "Analyses",
+    "system": "État du Système",
+    "stats": {
+      "totalUsers": "Utilisateurs Totaux",
+      "activeDoctors": "Médecins Actifs",
+      "activePatients": "Patients Actifs",
+      "systemHealth": "Santé du Système",
+      "change": "par rapport au mois dernier",
+      "stable": "Stable"
+    },
+    "cards": {
+      "userActivity": "Activité des Utilisateurs",
+      "userActivityDesc": "Inscriptions et connexions récentes",
+      "supportRequests": "Demandes d'Assistance",
+      "supportRequestsDesc": "Tickets de support récents",
+      "aiPerformance": "Performance du Système IA",
+      "aiPerformanceDesc": "Métriques de performance du chatbot",
+      "tuneAi": "Optimiser le Modèle IA",
+      "detailedAnalytics": "Analyses Détaillées",
+      "detailedAnalyticsDesc": "Métriques d'utilisation de la plateforme",
+      "fullAnalytics": "Analyses Complètes",
+      "systemHealth": "Santé & Paramètres Système",
+      "systemHealthDesc": "Surveiller et gérer l'infrastructure",
+      "advancedSettings": "Paramètres Avancés"
+    }
+  },
+  "manageUsers": {
+    "title": "Gestion des Utilisateurs",
+    "subtitle": "Gérer les comptes, rôles et permissions",
+    "addUser": "Ajouter un Utilisateur",
+    "addUserDesc": "Créer un nouveau compte avec des rôles appropriés",
+    "userAccounts": "Comptes Utilisateurs",
+    "userAccountsDesc": "Gérer tous les utilisateurs enregistrés",
+    "search": "Rechercher des utilisateurs...",
+    "filters": {
+      "allRoles": "Tous les Rôles",
+      "allStatuses": "Tous les États",
+      "admin": "Admin",
+      "doctor": "Médecin",
+      "patient": "Patient",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "suspended": "Suspendu"
+    },
+    "table": {
+      "name": "Nom",
+      "email": "Email",
+      "role": "Rôle",
+      "status": "État",
+      "joined": "Inscrit le",
+      "lastLogin": "Dernière Connexion",
+      "actions": "Actions"
+    },
+    "editUser": "Modifier l'Utilisateur",
+    "editUserDesc": "Mettre à jour les informations et permissions",
+    "deleteUser": "Confirmer la Suppression",
+    "deleteUserDesc": "Êtes-vous sûr de vouloir supprimer cet utilisateur? Cette action est irréversible.",
+    "deleteUserWarning": "Toutes les données associées seront définitivement supprimées.",
+    "cancel": "Annuler",
+    "saveChanges": "Enregistrer",
+    "delete": "Supprimer",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "Email",
+    "role": "Rôle",
+    "status": "État",
+    "password": "Mot de passe initial",
+    "noUsers": "Aucun utilisateur trouvé",
+    "noUsersDesc": "Essayez d'ajuster vos critères de recherche",
+    "showing": "Affichage de {{filtered}} sur {{total}} utilisateurs",
+    "previous": "Précédent",
+    "next": "Suivant"
+  },
+  "charts": {
+    "placeholder": "Les données du graphique apparaîtraient ici"
+  },
+  "login": {
+    "title": "Accès Admin",
+    "description": "Entrez le mot de passe administrateur pour continuer",
+    "password": "Mot de passe Admin",
+    "submit": "Accéder au Panneau Admin",
+    "processing": "Traitement en cours...",
+    "success": "Accès admin accordé",
+    "redirecting": "Redirection vers le tableau de bord admin.",
+    "denied": "Accès refusé",
+    "incorrect": "Mot de passe administrateur incorrect",
+    "error": "Erreur",
+    "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer."
+  },
+  "analytics": {
+    "title": "Tableau de Bord des Analyses",
+    "description": "Métriques d'utilisation de la plateforme et indicateurs de performance",
+    "timeRange": {
+      "title": "Sélectionner la plage de temps",
+      "day": "Aujourd'hui",
+      "week": "Cette Semaine",
+      "month": "Ce Mois",
+      "quarter": "Ce Trimestre",
+      "year": "Cette Année"
+    },
+    "export": "Exporter",
+    "stats": {
+      "totalUsers": "Utilisateurs Totaux",
+      "activeSessions": "Sessions Actives",
+      "appointments": "Rendez-vous",
+      "chatbotInteractions": "Interactions Chatbot"
+    },
+    "charts": {
+      "userGrowth": "Croissance des Utilisateurs",
+      "userGrowthDesc": "Nouvelles inscriptions d'utilisateurs au fil du temps",
+      "sessionActivity": "Activité des Sessions",
+      "sessionActivityDesc": "Sessions actives quotidiennes sur la plateforme",
+      "userDistribution": "Répartition des Utilisateurs",
+      "userDistributionDesc": "Répartition des types d'utilisateurs sur la plateforme",
+      "userRetention": "Fidélisation des Utilisateurs",
+      "userRetentionDesc": "Taux d'utilisateurs récurrents au fil du temps",
+      "featureUsage": "Utilisation des Fonctionnalités",
+      "featureUsageDesc": "Fonctionnalités les plus utilisées sur la plateforme",
+      "sessionDuration": "Durée des Sessions",
+      "sessionDurationDesc": "Temps moyen passé par les utilisateurs sur la plateforme",
+      "systemPerformance": "Performance du Système",
+      "systemPerformanceDesc": "Temps de réponse du serveur et disponibilité",
+      "errorRates": "Taux d'Erreurs",
+      "errorRatesDesc": "Erreurs système et exceptions au fil du temps"
+    },
+    "overview": "Aperçu",
+    "users": "Utilisateurs",
+    "engagement": "Engagement",
+    "performance": "Performance"
+  }
+}

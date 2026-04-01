@@ -1,0 +1,22 @@
+
+{
+  "title": "Chat",
+  "withPatient": "Chat with your patients",
+  "withDoctor": "Chat with your doctor",
+  "yourPatients": "Your Patients",
+  "noPatients": "No patients found",
+  "checkPatientList": "Check the patient list in the dashboard",
+  "selectPatient": "Select a Patient",
+  "selectPatientFromList": "Select a patient from the list to start chatting",
+  "noPatientSelected": "No Patient Selected",
+  "selectPatientToChat": "Select a patient to start chatting",
+  "patient": "Patient",
+  "noDoctorSelected": "No Doctor Selected",
+  "selectDoctorToChat": "Select a doctor to start chatting",
+  "doctor": "Doctor",
+  "healthcareProvider": "Healthcare Provider",
+  "noMessagesYet": "No messages yet",
+  "startConversation": "Start the conversation",
+  "typeMessage": "Type a message...",
+  "send": "Send"
+}
