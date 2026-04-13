@@ -23,7 +23,7 @@ const AdminLogin = () => {
     
     try {
       // Simple static password check for admin access
-      if (password === 'koussay711') {
+      if (password === 'admin123') {
         // Store admin access in localStorage
         localStorage.setItem('adminAccess', 'true');
         

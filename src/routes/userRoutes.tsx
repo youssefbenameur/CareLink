@@ -1,10 +1,9 @@
-
-import { Routes, Route } from 'react-router-dom';
-import ProtectedRoute from '../components/auth/ProtectedRoute';
-import Dashboard from '../pages/Dashboard';
-import UserProfile from '../pages/UserProfile';
-import FindDoctor from '../pages/FindDoctor';
-import FindDoctorPage from '../pages/FindDoctor';
+import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
+import Dashboard from "../pages/Dashboard";
+import UserProfile from "../pages/UserProfile";
+import FindDoctor from "../pages/FindDoctor";
+import FindDoctorPage from "../pages/FindDoctor";
 
 const UserRoutes = () => {
   return (
@@ -25,13 +24,13 @@ const UserRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route 
-        path="/find-doctor" 
+      <Route
+        path="/find-doctor"
         element={
           <ProtectedRoute>
             <FindDoctorPage />
           </ProtectedRoute>
-        } 
+        }
       />
     </Routes>
   );
