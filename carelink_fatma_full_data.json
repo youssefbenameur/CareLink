@@ -1,0 +1,486 @@
+{
+  "users": {
+    "patient_1": {
+      "id": "patient_1",
+      "name": "Fatma Ben Ali",
+      "email": "fatma.benali@email.com",
+      "phone": "+216-50-123-456",
+      "dateOfBirth": "1990-05-15",
+      "address": "12 Rue de la Kasbah, Tunis",
+      "moodPattern": "anxious",
+      "role": "patient",
+      "createdAt": { "_seconds": 1712976000, "_nanoseconds": 0 },
+      "status": "active"
+    },
+    "patient_2": {
+      "id": "patient_2",
+      "name": "Ahmed Trabelsi",
+      "email": "ahmed.trabelsi@email.com",
+      "phone": "+216-20-987-654",
+      "dateOfBirth": "1985-08-22",
+      "address": "45 Avenue Habib Bourguiba, Sfax",
+      "moodPattern": "depressive",
+      "role": "patient",
+      "createdAt": { "_seconds": 1712976000, "_nanoseconds": 0 },
+      "status": "active"
+    },
+    "patient_3": {
+      "id": "patient_3",
+      "name": "Leila Mansouri",
+      "email": "leila.mansouri@email.com",
+      "phone": "+216-70-456-789",
+      "dateOfBirth": "1992-12-03",
+      "address": "78 Rue de France, Sousse",
+      "moodPattern": "improving",
+      "role": "patient",
+      "createdAt": { "_seconds": 1712976000, "_nanoseconds": 0 },
+      "status": "active"
+    },
+    "patient_4": {
+      "id": "patient_4",
+      "name": "Mohamed Chaabane",
+      "email": "mohamed.chaabane@email.com",
+      "phone": "+216-22-321-654",
+      "dateOfBirth": "1988-03-10",
+      "address": "15 Rue de Carthage, Bizerte",
+      "moodPattern": "stable",
+      "role": "patient",
+      "createdAt": { "_seconds": 1712976000, "_nanoseconds": 0 },
+      "status": "active"
+    },
+    "patient_5": {
+      "id": "patient_5",
+      "name": "Sonia Gharbi",
+      "email": "sonia.gharbi@email.com",
+      "phone": "+216-73-654-321",
+      "dateOfBirth": "1995-07-28",
+      "address": "32 Avenue de la République, Gabès",
+      "moodPattern": "stressful",
+      "role": "patient",
+      "createdAt": { "_seconds": 1712976000, "_nanoseconds": 0 },
+      "status": "active"
+    },
+    "doctor_1": {
+      "id": "doctor_1",
+      "name": "Dr. Salma Ben Amor",
+      "email": "dr.benamor@carelink.tn",
+      "phone": "+216-71-123-456",
+      "specialty": "Psychiatry",
+      "bio": "Psychiatrist specializing in anxiety, mood disorders, and patient-centered care.",
+      "education": "MD, University of Tunis El Manar",
+      "experience": "12 years",
+      "languages": ["العربية", "Français", "English"],
+      "consultationFee": 90,
+      "sessionDuration": 50,
+      "availability": "Mon-Thu 9AM-5PM",
+      "role": "doctor",
+      "createdAt": { "_seconds": 1712976000, "_nanoseconds": 0 },
+      "status": "active"
+    }
+  },
+  "moodEntries": {
+    "mood_1_01": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Feeling anxious about work responsibilities.",
+      "activities": ["Meditation", "Walking"],
+      "sleepHours": 6.2,
+      "anxietyLevel": 7,
+      "createdAt": { "_seconds": 1713062400, "_nanoseconds": 0 }
+    },
+    "mood_1_02": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Difficulty focusing today.",
+      "activities": ["Reading"],
+      "sleepHours": 5.8,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1713148800, "_nanoseconds": 0 }
+    },
+    "mood_1_03": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Slightly better after breathing exercises.",
+      "activities": ["Breathing", "Exercise"],
+      "sleepHours": 6.6,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1713235200, "_nanoseconds": 0 }
+    },
+    "mood_1_04": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Stress spikes in the afternoon.",
+      "activities": ["Work break", "Tea"],
+      "sleepHours": 5.9,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1713321600, "_nanoseconds": 0 }
+    },
+    "mood_1_05": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "Good day; managed worries with journaling.",
+      "activities": ["Journaling", "Walking"],
+      "sleepHours": 7.1,
+      "anxietyLevel": 5,
+      "createdAt": { "_seconds": 1713408000, "_nanoseconds": 0 }
+    },
+    "mood_1_06": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Some anxiety before sleep.",
+      "activities": ["Meditation"],
+      "sleepHours": 6.4,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1713494400, "_nanoseconds": 0 }
+    },
+    "mood_1_07": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Overthinking and fatigue.",
+      "activities": ["Rest"],
+      "sleepHours": 5.4,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1713580800, "_nanoseconds": 0 }
+    },
+    "mood_1_08": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Stable mood; short walk helped.",
+      "activities": ["Walking", "Music"],
+      "sleepHours": 6.7,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1713667200, "_nanoseconds": 0 }
+    },
+    "mood_1_09": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "More confident today.",
+      "activities": ["Exercise", "Social"],
+      "sleepHours": 7.0,
+      "anxietyLevel": 5,
+      "createdAt": { "_seconds": 1713753600, "_nanoseconds": 0 }
+    },
+    "mood_1_10": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Mild anxiety in meetings.",
+      "activities": ["Breathing", "Planning"],
+      "sleepHours": 6.3,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1713840000, "_nanoseconds": 0 }
+    },
+    "mood_1_11": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Woke up tired; intrusive worries.",
+      "activities": ["Rest", "Tea"],
+      "sleepHours": 5.6,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1713926400, "_nanoseconds": 0 }
+    },
+    "mood_1_12": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Better after therapy homework.",
+      "activities": ["CBT worksheet", "Walking"],
+      "sleepHours": 6.8,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1714012800, "_nanoseconds": 0 }
+    },
+    "mood_1_13": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "Calmer day; fewer physical symptoms.",
+      "activities": ["Exercise", "Cooking"],
+      "sleepHours": 7.2,
+      "anxietyLevel": 5,
+      "createdAt": { "_seconds": 1714099200, "_nanoseconds": 0 }
+    },
+    "mood_1_14": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Anxiety after bad news; used grounding.",
+      "activities": ["Grounding", "Music"],
+      "sleepHours": 6.1,
+      "anxietyLevel": 7,
+      "createdAt": { "_seconds": 1714185600, "_nanoseconds": 0 }
+    },
+    "mood_1_15": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "High stress; racing thoughts.",
+      "activities": ["Rest"],
+      "sleepHours": 5.2,
+      "anxietyLevel": 9,
+      "createdAt": { "_seconds": 1714272000, "_nanoseconds": 0 }
+    },
+    "mood_1_16": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Recovered a bit; did light exercise.",
+      "activities": ["Exercise", "Breathing"],
+      "sleepHours": 6.5,
+      "anxietyLevel": 7,
+      "createdAt": { "_seconds": 1714358400, "_nanoseconds": 0 }
+    },
+    "mood_1_17": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "Felt productive and present.",
+      "activities": ["Planning", "Walking"],
+      "sleepHours": 7.0,
+      "anxietyLevel": 5,
+      "createdAt": { "_seconds": 1714444800, "_nanoseconds": 0 }
+    },
+    "mood_1_18": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Mild tension; short meditation helped.",
+      "activities": ["Meditation"],
+      "sleepHours": 6.6,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1714531200, "_nanoseconds": 0 }
+    },
+    "mood_1_19": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Anxiety returned in evening.",
+      "activities": ["Breathing", "Rest"],
+      "sleepHours": 5.7,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1714617600, "_nanoseconds": 0 }
+    },
+    "mood_1_20": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "More stable after time outdoors.",
+      "activities": ["Walking", "Sunlight"],
+      "sleepHours": 6.9,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1714704000, "_nanoseconds": 0 }
+    },
+    "mood_1_21": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "Good energy today.",
+      "activities": ["Exercise", "Social"],
+      "sleepHours": 7.3,
+      "anxietyLevel": 4,
+      "createdAt": { "_seconds": 1714790400, "_nanoseconds": 0 }
+    },
+    "mood_1_22": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Some worries but manageable.",
+      "activities": ["Journaling"],
+      "sleepHours": 6.4,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1714876800, "_nanoseconds": 0 }
+    },
+    "mood_1_23": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Bad sleep; higher anxiety in morning.",
+      "activities": ["Tea", "Rest"],
+      "sleepHours": 5.3,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1714963200, "_nanoseconds": 0 }
+    },
+    "mood_1_24": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Improved after a structured routine.",
+      "activities": ["Planning", "Walking"],
+      "sleepHours": 6.8,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1715049600, "_nanoseconds": 0 }
+    },
+    "mood_1_25": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "Felt calm; practiced relaxation.",
+      "activities": ["Relaxation", "Music"],
+      "sleepHours": 7.4,
+      "anxietyLevel": 4,
+      "createdAt": { "_seconds": 1715136000, "_nanoseconds": 0 }
+    },
+    "mood_1_26": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Neutral day; slight worry about future.",
+      "activities": ["Reading", "Walking"],
+      "sleepHours": 6.6,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1715222400, "_nanoseconds": 0 }
+    },
+    "mood_1_27": {
+      "userId": "patient_1",
+      "mood": 2,
+      "notes": "Stressed; avoided social interaction.",
+      "activities": ["Rest"],
+      "sleepHours": 5.5,
+      "anxietyLevel": 8,
+      "createdAt": { "_seconds": 1715308800, "_nanoseconds": 0 }
+    },
+    "mood_1_28": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "Better after talking with family.",
+      "activities": ["Social", "Walking"],
+      "sleepHours": 6.9,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1715395200, "_nanoseconds": 0 }
+    },
+    "mood_1_29": {
+      "userId": "patient_1",
+      "mood": 4,
+      "notes": "Feeling hopeful; progress is visible.",
+      "activities": ["Journaling", "Exercise"],
+      "sleepHours": 7.2,
+      "anxietyLevel": 4,
+      "createdAt": { "_seconds": 1715481600, "_nanoseconds": 0 }
+    },
+    "mood_1_30": {
+      "userId": "patient_1",
+      "mood": 3,
+      "notes": "End of month reflection; still managing anxiety but improved coping.",
+      "activities": ["Reflection", "Meditation"],
+      "sleepHours": 6.7,
+      "anxietyLevel": 6,
+      "createdAt": { "_seconds": 1715568000, "_nanoseconds": 0 }
+    }
+  },
+  "appointments": {
+    "appt_fatma_01": {
+      "patientId": "patient_1",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1714012800, "_nanoseconds": 0 },
+      "startTime": "10:00",
+      "endTime": "10:50",
+      "status": "confirmed",
+      "type": "video",
+      "notes": "CBT follow-up: reviewing triggers and coping plan.",
+      "reason": "Anxiety follow-up"
+    },
+    "appt_fatma_02": {
+      "patientId": "patient_1",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1714617600, "_nanoseconds": 0 },
+      "startTime": "11:00",
+      "endTime": "11:50",
+      "status": "confirmed",
+      "type": "in-person",
+      "notes": "Progress review; sleep hygiene and breathing techniques.",
+      "reason": "Therapy session"
+    },
+    "appt_fatma_03": {
+      "patientId": "patient_1",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1715222400, "_nanoseconds": 0 },
+      "startTime": "09:30",
+      "endTime": "10:20",
+      "status": "confirmed",
+      "type": "video",
+      "notes": "Discussing anxiety spikes and cognitive reframing.",
+      "reason": "Anxiety management"
+    },
+    "appt_fatma_04": {
+      "patientId": "patient_1",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1715568000, "_nanoseconds": 0 },
+      "startTime": "15:00",
+      "endTime": "15:50",
+      "status": "pending",
+      "type": "chat",
+      "notes": "Short check-in; planning next month goals.",
+      "reason": "Monthly check-in"
+    },
+
+    "appt_benamor_p2_01": {
+      "patientId": "patient_2",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1714099200, "_nanoseconds": 0 },
+      "startTime": "13:00",
+      "endTime": "13:50",
+      "status": "confirmed",
+      "type": "video",
+      "notes": "Initial intake for mood concerns.",
+      "reason": "Mental health consultation"
+    },
+    "appt_benamor_p3_01": {
+      "patientId": "patient_3",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1714704000, "_nanoseconds": 0 },
+      "startTime": "16:00",
+      "endTime": "16:50",
+      "status": "confirmed",
+      "type": "in-person",
+      "notes": "Stress management strategies; routine building.",
+      "reason": "Follow-up"
+    },
+    "appt_benamor_p4_01": {
+      "patientId": "patient_4",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1715049600, "_nanoseconds": 0 },
+      "startTime": "12:00",
+      "endTime": "12:50",
+      "status": "confirmed",
+      "type": "video",
+      "notes": "Anxiety screening and brief intervention plan.",
+      "reason": "Consultation"
+    },
+    "appt_benamor_p5_01": {
+      "patientId": "patient_5",
+      "doctorId": "doctor_1",
+      "date": { "_seconds": 1715395200, "_nanoseconds": 0 },
+      "startTime": "10:30",
+      "endTime": "11:20",
+      "status": "pending",
+      "type": "chat",
+      "notes": "Short triage + schedule therapy plan.",
+      "reason": "Triage / scheduling"
+    }
+  },
+  "medicalRecords": {
+    "record_fatma_1": {
+      "patientId": "patient_1",
+      "patientName": "Fatma Ben Ali",
+      "type": "Progress Note",
+      "title": "Progress Note - Month Overview",
+      "description": "Monthly summary: anxiety symptoms fluctuate with work stress. Improved coping with breathing, journaling, and routine. Sleep varies; continue CBT plan and monitor triggers.",
+      "date": { "_seconds": 1715568000, "_nanoseconds": 0 },
+      "doctorId": "doctor_1",
+      "doctorName": "Dr. Salma Ben Amor"
+    }
+  },
+  "patientNotes": {
+    "note_fatma_1": {
+      "patientId": "patient_1",
+      "doctorId": "doctor_1",
+      "content": "Patient reports reduced panic-like symptoms and better ability to interrupt rumination. Continue CBT homework; reinforce sleep hygiene and grounding.",
+      "createdAt": { "_seconds": 1715222400, "_nanoseconds": 0 },
+      "updatedAt": { "_seconds": 1715222400, "_nanoseconds": 0 },
+      "important": false,
+      "category": "Progress"
+    }
+  },
+  "messages": {
+    "msg_fatma_1": {
+      "senderId": "patient_1",
+      "recipientId": "doctor_1",
+      "content": "دكتورة، هذا الأسبوع كان فيه قلق أقل لكن النوم مازال متقطع.",
+      "read": true,
+      "senderName": "Fatma Ben Ali",
+      "timestamp": { "_seconds": 1715222500, "_nanoseconds": 0 }
+    },
+    "msg_fatma_2": {
+      "senderId": "doctor_1",
+      "recipientId": "patient_1",
+      "content": "ممتاز. خلّينا نركّز على روتين النوم وتمارين التنفّس قبل النوم، وابعثيلي ملاحظاتك يوميًا.",
+      "read": true,
+      "senderName": "Dr. Salma Ben Amor",
+      "timestamp": { "_seconds": 1715222600, "_nanoseconds": 0 }
+    }
+  }
+}
+

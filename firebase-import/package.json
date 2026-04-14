@@ -7,6 +7,8 @@
     "firebase-admin": "^13.8.0"
   },
   "scripts": {
-    "import": "node import-data.mjs"
+    "import": "node import.js",
+    "create-auth": "node create-auth-users.mjs",
+    "reset-auth-passwords": "node create-auth-users.mjs --reset-password"
   }
 }

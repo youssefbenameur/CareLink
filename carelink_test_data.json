@@ -1,6 +1,4 @@
-cd c:\Users\FLASH\Desktop\000\pfe\CareLink\firebase-import
-npm init -y
-npm install firebase-admin{
+{
   "users": {
     "patient_1": {
       "id": "patient_1",
