@@ -7,7 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
-const dataFilePath = path.join(__dirname, '..', 'carelink_test_data.json');
+const inputArg = process.argv[2];
+const dataFilePath = inputArg
+  ? path.isAbsolute(inputArg)
+    ? inputArg
+    : path.join(process.cwd(), inputArg)
+  : path.join(__dirname, '..', 'carelink_test_data.json');
 
 if (!fs.existsSync(serviceAccountPath)) {
   console.error('Missing serviceAccountKey.json in firebase-import/.');
@@ -16,7 +21,8 @@ if (!fs.existsSync(serviceAccountPath)) {
 }
 
 if (!fs.existsSync(dataFilePath)) {
-  console.error('Missing carelink_test_data.json in project root.');
+  console.error(`Missing data file: ${dataFilePath}`);
+  console.error('Usage: node import.js [path-to-json]');
   process.exit(1);
 }
 

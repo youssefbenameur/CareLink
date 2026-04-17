@@ -24,8 +24,11 @@ import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import SystemSettings from "@/pages/admin/SystemSettings";
+import DoctorApprovals from "@/pages/admin/DoctorApprovals";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
+import PendingApproval from "@/pages/doctor/PendingApproval";
+import RejectedApplication from "@/pages/doctor/RejectedApplication";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -46,6 +49,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (currentUser) {
     if (userData?.role === "doctor") {
+      const status = userData?.doctorVerificationStatus;
+      if (status === "pending") return <Navigate to="/doctor/pending" replace />;
+      if (status === "rejected") return <Navigate to="/doctor/rejected" replace />;
       return <Navigate to="/doctor/dashboard" replace />;
     }
     if (userData?.role === "patient") {
@@ -112,6 +118,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <ManageUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/doctor-approvals"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <DoctorApprovals />
               </ProtectedRoute>
             }
           />
@@ -215,6 +229,8 @@ function App() {
           />
 
           {/* Doctor routes */}
+          <Route path="/doctor/pending" element={<PendingApproval />} />
+          <Route path="/doctor/rejected" element={<RejectedApplication />} />
           <Route
             path="/doctor/dashboard"
             element={

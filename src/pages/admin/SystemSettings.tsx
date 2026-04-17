@@ -74,7 +74,6 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import SystemMetricChart from "@/components/admin/SystemMetricChart";
 
 const formatDateForChart = (date: Date) => {
   return format(date, "HH:mm");
@@ -276,29 +275,6 @@ const SystemSettings = () => {
           <p className="text-muted-foreground">
             Configure platform settings and system parameters
           </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-          <SystemMetricChart
-            title={t("navigation:admin.cpuUsage")}
-            category="cpu"
-            color="#8884d8"
-            valueLabel="CPU %"
-          />
-
-          <SystemMetricChart
-            title={t("navigation:admin.memory")}
-            category="memory"
-            color="#82ca9d"
-            valueLabel="Memory (GB)"
-          />
-
-          <SystemMetricChart
-            title={t("navigation:admin.storage")}
-            category="storage"
-            color="#ffa726"
-            valueLabel="Storage %"
-          />
         </div>
 
         <Tabs

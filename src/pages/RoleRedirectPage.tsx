@@ -20,10 +20,20 @@ export const RoleRedirectPage = () => {
           setRedirectInfo('admin dashboard');
           setTimeout(() => navigate('/admin/dashboard'), 1500);
           break;
-        case 'doctor':
-          setRedirectInfo('doctor dashboard');
-          setTimeout(() => navigate('/doctor/dashboard'), 1500);
+        case 'doctor': {
+          const verificationStatus = userData.doctorVerificationStatus;
+          if (verificationStatus === 'pending') {
+            setRedirectInfo('verification pending page');
+            setTimeout(() => navigate('/doctor/pending'), 1500);
+          } else if (verificationStatus === 'rejected') {
+            setRedirectInfo('application status page');
+            setTimeout(() => navigate('/doctor/rejected'), 1500);
+          } else {
+            setRedirectInfo('doctor dashboard');
+            setTimeout(() => navigate('/doctor/dashboard'), 1500);
+          }
           break;
+        }
         case 'patient':
           setRedirectInfo('patient dashboard');
           setTimeout(() => navigate('/dashboard'), 1500);

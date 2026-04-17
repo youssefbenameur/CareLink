@@ -1,13 +1,13 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
   Settings,
-  Database,
   LogOut,
   Menu,
   X,
+  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -16,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import Footer from "./Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-import metricService, { SystemStatusData } from "@/services/metricService";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -26,33 +25,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const { logout } = useAuth();
   const { t } = useTranslation(["admin", "common", "navigation"]);
-  const [systemStatus, setSystemStatus] = useState<SystemStatusData | null>(
-    null,
-  );
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSystemStatus = async () => {
-      try {
-        setLoading(true);
-        const status = await metricService.getSystemStatus();
-        setSystemStatus(status);
-      } catch (error) {
-        console.error("Error fetching system status:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSystemStatus();
-
-    // Refresh status every minute
-    const interval = setInterval(fetchSystemStatus, 60000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
 
   const isActive = (path: string) => {
     return (
@@ -68,6 +40,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       icon: LayoutDashboard,
     },
     { name: t("navigation:admin.users"), href: "/admin/users", icon: Users },
+    {
+      name: "Doctor Approvals",
+      href: "/admin/doctor-approvals",
+      icon: ClipboardCheck,
+    },
     {
       name: t("navigation:admin.settings"),
       href: "/admin/settings",
@@ -115,41 +92,6 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="flex-1 flex flex-col justify-between p-4">
           <div className="space-y-6">
             <NavLinks />
-
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <h4 className="text-sm font-medium text-amber-800 flex items-center">
-                <Database className="h-4 w-4 mr-1" />
-                {t("navigation:admin.systemStatus")}
-              </h4>
-              <div className="mt-2 text-xs text-amber-700">
-                {loading ? (
-                  <div className="flex justify-center py-2">
-                    <span className="animate-pulse">Loading status...</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between mb-1">
-                      <span>{t("navigation:admin.cpuUsage")}:</span>
-                      <span className="font-medium">
-                        {systemStatus?.cpu || 0}%
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span>{t("navigation:admin.memory")}:</span>
-                      <span className="font-medium">
-                        {(systemStatus?.memory || 0).toFixed(1)} GB
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>{t("navigation:admin.storage")}:</span>
-                      <span className="font-medium">
-                        {systemStatus?.storage || 0}%
-                      </span>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
 
           <div className="mt-auto space-y-4">

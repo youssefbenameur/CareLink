@@ -5,12 +5,9 @@ import {
   addDoc, 
   query, 
   where, 
-  orderBy, 
   getDocs, 
   serverTimestamp, 
-  doc, 
   updateDoc,
-  Timestamp,
   onSnapshot 
 } from 'firebase/firestore';
 
@@ -59,15 +56,13 @@ export const chatService = {
       const q1 = query(
         collection(db, 'messages'),
         where('senderId', '==', userId1),
-        where('recipientId', '==', userId2),
-        orderBy('timestamp', 'asc')
+        where('recipientId', '==', userId2)
       );
       
       const q2 = query(
         collection(db, 'messages'),
         where('senderId', '==', userId2),
-        where('recipientId', '==', userId1),
-        orderBy('timestamp', 'asc')
+        where('recipientId', '==', userId1)
       );
       
       const [snapshot1, snapshot2] = await Promise.all([
@@ -97,13 +92,16 @@ export const chatService = {
       
       // Sort by timestamp
       const sortedMessages = messages.sort((a, b) => {
-        // Handle cases where timestamp might be null (new unsaved messages)
-        if (!a.timestamp) return -1;
-        if (!b.timestamp) return 1;
-        
-        const timestampA = a.timestamp ? (typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate().getTime() : a.timestamp instanceof Date ? a.timestamp.getTime() : 0) : 0;
-        const timestampB = b.timestamp ? (typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate().getTime() : b.timestamp instanceof Date ? b.timestamp.getTime() : 0) : 0;
-        return timestampA - timestampB;
+        const toMs = (t: any) => {
+          if (!t) return 0;
+          if (typeof t?.toDate === 'function') return t.toDate().getTime();
+          if (t instanceof Date) return t.getTime();
+          // Firestore-admin imported Timestamp-like object
+          if (typeof t?._seconds === 'number') return t._seconds * 1000;
+          return 0;
+        };
+
+        return toMs(a.timestamp) - toMs(b.timestamp);
       });
       
       console.log(`Returning ${sortedMessages.length} combined messages`);
@@ -119,15 +117,13 @@ export const chatService = {
     const q1 = query(
       collection(db, 'messages'),
       where('senderId', '==', userId1),
-      where('recipientId', '==', userId2),
-      orderBy('timestamp', 'asc')
+      where('recipientId', '==', userId2)
     );
     
     const q2 = query(
       collection(db, 'messages'),
       where('senderId', '==', userId2),
-      where('recipientId', '==', userId1),
-      orderBy('timestamp', 'asc')
+      where('recipientId', '==', userId1)
     );
     
     // Unfortunately Firebase doesn't support OR queries, so we need two listeners

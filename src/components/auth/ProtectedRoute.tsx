@@ -70,6 +70,16 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   if (allowedRoles && userData && !allowedRoles.includes(userData.role)) {
     return null; // Will be redirected by the useEffect
   }
+
+  // Block pending/rejected doctors from accessing doctor-only routes
+  if (userData?.role === 'doctor' && allowedRoles?.includes('doctor')) {
+    if (userData?.doctorVerificationStatus === 'pending') {
+      return <Navigate to="/doctor/pending" replace />;
+    }
+    if (userData?.doctorVerificationStatus === 'rejected') {
+      return <Navigate to="/doctor/rejected" replace />;
+    }
+  }
   
   return <>{children}</>;
 };

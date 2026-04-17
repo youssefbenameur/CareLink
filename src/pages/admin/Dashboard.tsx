@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { 
   Users, 
   Activity, 
-  Server, 
   Settings,
   MessageSquare,
   UserPlus,
@@ -19,14 +18,12 @@ import { AnimatedSection } from '@/components/ui/animated-section';
 import { adminService, SupportTicket } from '@/services/adminService';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import SystemMetricChart from '@/components/admin/SystemMetricChart';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
     totalUsers: '0',
     activeDoctors: '0',
     activePatients: '0',
-    systemHealth: '99.9%',
   });
   
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
@@ -87,13 +84,6 @@ const AdminDashboard = () => {
       increasing: true,
       icon: UserPlus,
     },
-    {
-      title: t('admin:dashboard.stats.systemHealth'),
-      value: stats.systemHealth,
-      change: t('admin:dashboard.stats.stable'),
-      increasing: true,
-      icon: Server,
-    },
   ];
   
   const getTicketIcon = (type: string) => {
@@ -144,10 +134,9 @@ const AdminDashboard = () => {
         </AnimatedSection>
         
         <Tabs defaultValue="overview">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview">{t('admin:dashboard.overview')}</TabsTrigger>
             <TabsTrigger value="analytics">{t('admin:dashboard.analytics')}</TabsTrigger>
-            <TabsTrigger value="system">{t('admin:dashboard.system')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6 mt-6">
@@ -172,26 +161,6 @@ const AdminDashboard = () => {
             
             <div className="grid gap-6 md:grid-cols-2">
               <AnimatedSection delay={0.2} direction="left">
-                <Card className="col-span-1">
-                  <CardHeader>
-                    <CardTitle>{t('admin:dashboard.cards.userActivity')}</CardTitle>
-                    <CardDescription>{t('admin:dashboard.cards.userActivityDesc')}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px]">
-                      <SystemMetricChart 
-                        title="User Activity" 
-                        category="users" 
-                        color="#4f46e5" 
-                        valueLabel="Active Users"
-                        height={280} 
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              </AnimatedSection>
-              
-              <AnimatedSection delay={0.3} direction="right">
                 <Card className="col-span-1">
                   <CardHeader>
                     <CardTitle>{t('admin:dashboard.cards.supportRequests')}</CardTitle>
@@ -239,33 +208,6 @@ const AdminDashboard = () => {
               </AnimatedSection>
             </div>
             
-            <AnimatedSection delay={0.4}>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>{t('admin:dashboard.cards.aiPerformance')}</CardTitle>
-                      <CardDescription>{t('admin:dashboard.cards.aiPerformanceDesc')}</CardDescription>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Activity className="mr-2 h-4 w-4" />
-                      {t('admin:dashboard.cards.tuneAi')}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px]">
-                    <SystemMetricChart 
-                      title="AI Response Time" 
-                      category="ai" 
-                      color="#059669" 
-                      valueLabel="Response Time (ms)"
-                      height={280} 
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
           </TabsContent>
           
           <TabsContent value="analytics" className="mt-6">
@@ -283,100 +225,7 @@ const AdminDashboard = () => {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                    <SystemMetricChart 
-                      title="User Sessions" 
-                      category="sessions" 
-                      color="#0ea5e9" 
-                      valueLabel="Sessions"
-                      height={220}
-                    />
-                    <SystemMetricChart 
-                      title="Appointment Bookings" 
-                      category="appointments" 
-                      color="#8b5cf6"
-                      valueLabel="Bookings"
-                      height={220}
-                    />
-                    <SystemMetricChart 
-                      title="Chat Messages" 
-                      category="messages" 
-                      color="#f59e0b"
-                      valueLabel="Messages"
-                      height={220}
-                    />
-                    <SystemMetricChart 
-                      title="Resource Views" 
-                      category="views" 
-                      color="#10b981"
-                      valueLabel="Views"
-                      height={220}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-          </TabsContent>
-          
-          <TabsContent value="system" className="mt-6">
-            <AnimatedSection>
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>{t('admin:dashboard.cards.systemHealth')}</CardTitle>
-                      <CardDescription>{t('admin:dashboard.cards.systemHealthDesc')}</CardDescription>
-                    </div>
-                    <Button variant="outline">
-                      <Settings className="mr-2 h-4 w-4" />
-                      {t('admin:dashboard.cards.advancedSettings')}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
-                      <SystemMetricChart 
-                        title={t('navigation:admin.cpuUsage')} 
-                        category="cpu" 
-                        color="#8884d8"
-                        valueLabel="CPU %"
-                        height={220}
-                      />
-                      <SystemMetricChart 
-                        title={t('navigation:admin.memory')} 
-                        category="memory" 
-                        color="#82ca9d"
-                        valueLabel="Memory (GB)"
-                        height={220}
-                      />
-                      <SystemMetricChart 
-                        title={t('navigation:admin.storage')} 
-                        category="storage" 
-                        color="#ffa726"
-                        valueLabel="Storage %"
-                        height={220}
-                      />
-                    </div>
-                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
-                      <SystemMetricChart 
-                        title="API Requests" 
-                        category="api" 
-                        color="#ef4444"
-                        valueLabel="Requests/min"
-                        height={220}
-                      />
-                      <SystemMetricChart 
-                        title="Server Uptime" 
-                        category="uptime" 
-                        color="#3b82f6"
-                        valueLabel="Uptime (days)"
-                        height={220}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
+                <CardContent />
               </Card>
             </AnimatedSection>
           </TabsContent>

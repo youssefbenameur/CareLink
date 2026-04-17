@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot, collection, addDoc, updateDoc, getDocs, query, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { doc, onSnapshot, collection, addDoc, updateDoc, getDocs, query, orderBy } from 'firebase/firestore';
 
 // Type for system settings
 export interface SystemSetting {
@@ -11,15 +11,6 @@ export interface SystemSetting {
   description?: string;
   lastUpdated?: Date;
   updatedBy?: string;
-}
-
-// Type for system metrics
-export interface SystemMetric {
-  id?: string;
-  name: string;
-  value: number;
-  timestamp: Date;
-  category: string;
 }
 
 const systemSettingsService = {
@@ -135,53 +126,7 @@ const systemSettingsService = {
     return unsubscribe;
   },
   
-  // Get system metrics for charts
-  getSystemMetrics: async (category: string, limitCount: number = 30) => {
-    try {
-      const q = query(
-        collection(db, 'systemMetrics'), 
-        orderBy('timestamp', 'desc'),
-        limit(limitCount)
-      );
-      
-      const snapshot = await getDocs(q);
-      const metrics: SystemMetric[] = [];
-      
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (category === 'all' || data.category === category) {
-          metrics.push({
-            id: doc.id,
-            name: data.name,
-            value: data.value,
-            timestamp: data.timestamp.toDate(),
-            category: data.category
-          });
-        }
-      });
-      
-      return metrics.reverse(); // Reverse to get chronological order for charts
-    } catch (error) {
-      console.error('Error getting system metrics:', error);
-      throw error;
-    }
-  },
-  
-  // Add a new metric data point
-  addMetric: async (metric: Omit<SystemMetric, 'id'>) => {
-    try {
-      const newMetric = {
-        ...metric,
-        timestamp: new Date()
-      };
-      
-      const docRef = await addDoc(collection(db, 'systemMetrics'), newMetric);
-      return { id: docRef.id, ...newMetric };
-    } catch (error) {
-      console.error('Error adding system metric:', error);
-      throw error;
-    }
-  }
+  // System metrics removed (cpu/memory/storage and related charts)
 };
 
 export default systemSettingsService;

@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +15,8 @@ import {
   logoutUser,
   registerUser,
   updateUserSettings,
+  uploadDoctorDocuments,
+  db,
 } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { DocumentData } from "firebase/firestore";
@@ -22,7 +25,7 @@ interface AuthContextType {
   currentUser: User | null;
   userData: any | null;
   loading: boolean;
-  register: (email: string, password: string, userData: any) => Promise<void>;
+  register: (email: string, password: string, userData: any, doctorDocuments?: { doctorLicense?: File; diploma?: File; certification?: File }) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
@@ -48,6 +51,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  // Flag to skip onAuthStateChanged processing during doctor registration
+  const isRegisteringDoctor = useRef(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -55,7 +60,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (currentUser) {
       try {
         const data = await getUserData(currentUser.uid);
-        console.log("User data refreshed:", data);
         setUserData(data);
         return data;
       } catch (error) {
@@ -74,10 +78,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       });
       return false;
     }
-
     try {
       await updateUserSettings(currentUser.uid, settings);
-      // Refresh user data after updating settings
       await refreshUserData();
       toast({
         title: "Settings updated",
@@ -97,15 +99,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      // Skip all processing during doctor registration — we handle it manually
+      if (isRegisteringDoctor.current) return;
+
       setCurrentUser(user);
 
       if (user) {
         try {
           const data = await getUserData(user.uid);
-          console.log("User data fetched:", data);
           setUserData(data);
         } catch (error) {
           console.error("Error fetching user data:", error);
+          setUserData(null);
+          await logoutUser();
         }
       } else {
         setUserData(null);
@@ -117,22 +123,86 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return unsubscribe;
   }, []);
 
-  const register = async (email: string, password: string, userData: any) => {
+  const register = async (
+    email: string,
+    password: string,
+    userData: any,
+    doctorDocuments?: { doctorLicense?: File; diploma?: File; certification?: File }
+  ) => {
     setLoading(true);
     try {
-      // Ensure the role is preserved from the form
       const userDataWithRole = {
         ...userData,
-        role: userData.role || "patient", // Default to patient if not specified
+        role: userData.role || "patient",
       };
 
-      console.log("Registering user with data:", userDataWithRole);
+      if (userDataWithRole.role === "doctor") {
+        // Set flag BEFORE creating auth user so onAuthStateChanged is skipped
+        isRegisteringDoctor.current = true;
 
-      await registerUser(email, password, userDataWithRole);
-      toast({
-        title: "Account created successfully!",
-        description: "You can now log in to your account.",
-      });
+        const { createUserWithEmailAndPassword, signOut: firebaseSignOut } = await import("firebase/auth");
+        const { doc: firestoreDoc, setDoc, Timestamp } = await import("firebase/firestore");
+
+        let user: User | null = null;
+        try {
+          // Step 1: create Firebase Auth user to get UID
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          user = userCredential.user;
+
+          // Step 2: upload documents to Storage if provided
+          let credentialDocuments: Record<string, string> = {};
+          if (doctorDocuments) {
+            const hasFiles = Object.values(doctorDocuments).some(Boolean);
+            if (hasFiles) {
+              try {
+                credentialDocuments = await uploadDoctorDocuments(user.uid, doctorDocuments) as Record<string, string>;
+              } catch (uploadError) {
+                // Upload failed (e.g. CORS) — register anyway without documents
+                // Admin will see empty document slots
+                console.warn("Document upload failed, registering without documents:", uploadError);
+              }
+            }
+          }
+
+          // Step 3: write complete Firestore doc atomically
+          await setDoc(firestoreDoc(db, "users", user.uid), {
+            ...userDataWithRole,
+            doctorVerificationStatus: "pending",
+            credentialDocuments,
+            createdAt: Timestamp.now(),
+            email,
+          });
+
+          // Step 4: sign out — doctor must log in after admin approval
+          await firebaseSignOut(auth);
+
+        } catch (err) {
+          // Cleanup: delete orphaned auth user if Firestore write failed
+          if (user) {
+            try { await user.delete(); } catch (_) {}
+          }
+          throw err;
+        } finally {
+          // Always clear the flag and reset state
+          isRegisteringDoctor.current = false;
+          setCurrentUser(null);
+          setUserData(null);
+          setLoading(false);
+        }
+
+        toast({
+          title: "Registration submitted!",
+          description: "Your account is pending admin approval. You will be notified once approved.",
+        });
+      } else {
+        // Patient registration — normal flow
+        await registerUser(email, password, userDataWithRole);
+        toast({
+          title: "Account created successfully!",
+          description: "You can now log in to your account.",
+        });
+      }
+
       navigate("/login");
     } catch (error: any) {
       toast({
@@ -150,11 +220,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       await loginUser(email, password);
 
-      // After login, get fresh user data to ensure role is correct
       const user = auth.currentUser;
       if (user) {
         const freshUserData = await getUserData(user.uid);
         setUserData(freshUserData);
+
+        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "pending") {
+          navigate("/doctor/pending");
+          return;
+        }
+
+        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "rejected") {
+          navigate("/doctor/rejected");
+          return;
+        }
 
         toast({
           title: "Logged in successfully!",
@@ -167,7 +246,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         });
       }
 
-      // Redirect to role-redirect page instead of directly to dashboard
       navigate("/role-redirect");
     } catch (error: any) {
       toast({
@@ -184,9 +262,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setLoading(true);
     try {
       await logoutUser();
-      toast({
-        title: "Logged out successfully",
-      });
+      toast({ title: "Logged out successfully" });
       navigate("/");
     } catch (error: any) {
       toast({

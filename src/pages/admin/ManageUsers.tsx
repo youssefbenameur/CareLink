@@ -21,8 +21,8 @@ import { Timestamp } from 'firebase/firestore';
 const transformUserData = (users: User[]) => {
   return users.map((user) => ({
     id: user.id || '',
-    firstName: user.firstName || '',
-    lastName: user.lastName || '',
+    firstName: user.firstName || (typeof (user as any).name === 'string' ? (user as any).name.split(' ')[0] : ''),
+    lastName: user.lastName || (typeof (user as any).name === 'string' ? (user as any).name.split(' ').slice(1).join(' ') : ''),
     email: user.email || '',
     role: user.role || 'patient',
     status: user.status || 'active',
@@ -63,7 +63,8 @@ const ManageUsers = () => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const userData = await adminService.getUsers();
+        // Fetch a larger page so doctors show up too (seeded users share the same createdAt)
+        const userData = await adminService.getUsers(200);
         const transformedUsers = transformUserData(userData.users);
         
         setUsers(transformedUsers);
