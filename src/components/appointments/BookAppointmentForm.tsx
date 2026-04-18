@@ -29,6 +29,7 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
   const [notes, setNotes] = useState('');
   const [reason, setReason] = useState('');
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Update date when selectedDate changes from parent
@@ -42,10 +43,11 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
   useEffect(() => {
     if (!date) {
       setAvailableTimes([]);
+      setBookedSlots([]);
       return;
     }
     
-    // For demo purposes, generate times between 9 AM and 5 PM with 30-minute intervals
+    // Generate times between 9 AM and 5 PM with 30-minute intervals
     const times = [];
     const startHour = 9;
     const endHour = 17;
@@ -54,7 +56,6 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     const endTime = setHours(setMinutes(new Date(date), 0), endHour);
     
     while (isBefore(currentTime, endTime)) {
-      // Skip if it's in the past
       if (!isBefore(currentTime, new Date())) {
         times.push(format(currentTime, 'HH:mm'));
       }
@@ -63,7 +64,10 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     
     setAvailableTimes(times);
     setSelectedTime(undefined);
-  }, [date]);
+
+    // Fetch booked slots for this doctor on this date
+    appointmentService.getBookedSlots(doctorId, date).then(setBookedSlots);
+  }, [date, doctorId]);
   
   const handleSubmit = async () => {
     if (!date || !selectedTime || !appointmentType || !currentUser) {
@@ -157,16 +161,22 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
             <Label>{t('appointments:selectTime')}</Label>
             {availableTimes.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
-                {availableTimes.map(time => (
-                  <Button
-                    key={time}
-                    variant={selectedTime === time ? "default" : "outline"}
-                    onClick={() => setSelectedTime(time)}
-                    className="w-full"
-                  >
-                    {time}
-                  </Button>
-                ))}
+                {availableTimes.map(time => {
+                  const isBooked = bookedSlots.includes(time);
+                  return (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      onClick={() => !isBooked && setSelectedTime(time)}
+                      disabled={isBooked}
+                      className={isBooked ? 'opacity-40 cursor-not-allowed line-through' : 'w-full'}
+                      title={isBooked ? 'Already booked' : undefined}
+                    >
+                      {time}
+                      {isBooked && <span className="ml-1 text-xs">✕</span>}
+                    </Button>
+                  );
+                })}
               </div>
             ) : (
               <p className="text-muted-foreground">

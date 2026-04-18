@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useSearchParams } from 'react-router-dom';
 import { BookAppointmentForm } from '@/components/appointments/BookAppointmentForm';
@@ -18,12 +17,16 @@ import { AppointmentCalendar } from '@/components/appointments/AppointmentCalend
 import { useToast } from '@/components/ui/use-toast';
 import { useAppointmentQueryParams } from '@/components/appointments/AppointmentBooking';
 import { convertToDate } from '@/services/appointmentService';
+import { Video, MessageSquare, MapPin, Clock, CalendarDays } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Appointments = () => {
   const { t } = useTranslation(['appointments', 'common']);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [selectedDoctorName, setSelectedDoctorName] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('upcoming');
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const patientId = currentUser?.uid || '';
@@ -72,12 +75,29 @@ const Appointments = () => {
 
   // Handle successful booking
   const handleBookingSuccess = () => {
-    refetch(); // Refresh appointment list
-    // Switch to upcoming tab
-    const upcomingTab = document.querySelector('[data-value="upcoming"]') as HTMLElement;
-    if (upcomingTab) {
-      upcomingTab.dispatchEvent(new Event('click', { bubbles: true }));
+    refetch();
+    setActiveTab('upcoming');
+  };
+
+  // Cancel appointment
+  const handleCancel = async (appointmentId: string) => {
+    setCancellingId(appointmentId);
+    try {
+      await appointmentService.cancelAppointment(appointmentId, patientId);
+      await refetch();
+      toast({ title: 'Appointment cancelled', description: 'Your appointment has been cancelled.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to cancel appointment.', variant: 'destructive' });
+    } finally {
+      setCancellingId(null);
     }
+  };
+
+  // Reschedule — cancel old and switch to Book tab with same doctor
+  const handleReschedule = async (appointment: any) => {
+    setSelectedDoctorId(appointment.doctorId);
+    setSelectedDoctorName(appointment.doctorName?.replace(/^Dr\.\s*/i, '') ?? appointment.doctorName);
+    setActiveTab('schedule');
   };
 
   // Get the active tab from URL or use default
@@ -96,7 +116,7 @@ const Appointments = () => {
           </p>
         </div>
         
-        <Tabs defaultValue={getDefaultTab()} className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="upcoming" data-value="upcoming">{t('upcoming')}</TabsTrigger>
             <TabsTrigger value="schedule" data-value="schedule">{t('book')}</TabsTrigger>
@@ -105,35 +125,26 @@ const Appointments = () => {
           
           {/* Upcoming appointments */}
           <TabsContent value="upcoming">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-4">
               {isLoading ? (
                 <p>{t('common:loading')}</p>
-              ) : appointments && appointments.length > 0 ? (
+              ) : appointments && appointments.filter(app =>
+                  new Date(convertToDate(app.date)) > new Date() && app.status !== 'cancelled'
+                ).length > 0 ? (
                 appointments
-                  .filter(app => 
-                    new Date(convertToDate(app.date)) > new Date() && 
+                  .filter(app =>
+                    new Date(convertToDate(app.date)) > new Date() &&
                     app.status !== 'cancelled'
                   )
                   .map((appointment) => (
-                    <Card key={appointment.id} className="overflow-hidden">
-                      <CardHeader className={`${
-                        appointment.status === 'pending' ? 'bg-yellow-100' : 
-                        appointment.status === 'scheduled' ? 'bg-green-100' : 'bg-gray-100'
-                      }`}>
-                        <CardTitle className="flex justify-between">
-                          <span>{appointment.type}</span>
-                          <span className="text-sm capitalize">{appointment.status}</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <p className="font-medium">{t('with')} Dr. {appointment.doctorName || 'Unknown'}</p>
-                        <p>{format(convertToDate(appointment.date), 'PPP')}</p>
-                        <div className="mt-4 flex justify-end space-x-2">
-                          <Button variant="outline">{t('reschedule')}</Button>
-                          <Button variant="destructive">{t('cancel')}</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    <AppointmentCard
+                      key={appointment.id}
+                      appointment={appointment}
+                      showActions
+                      onCancel={handleCancel}
+                      onReschedule={handleReschedule}
+                      cancellingId={cancellingId}
+                    />
                   ))
               ) : (
                 <p>{t('noUpcoming')}</p>
@@ -203,31 +214,19 @@ const Appointments = () => {
           
           {/* Past appointments */}
           <TabsContent value="past">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-4">
               {isLoading ? (
                 <p>{t('common:loading')}</p>
-              ) : appointments && appointments.length > 0 ? (
+              ) : appointments && appointments.filter(app =>
+                  new Date(convertToDate(app.date)) < new Date() || app.status === 'cancelled'
+                ).length > 0 ? (
                 appointments
-                  .filter(app => 
-                    new Date(convertToDate(app.date)) < new Date() || 
+                  .filter(app =>
+                    new Date(convertToDate(app.date)) < new Date() ||
                     app.status === 'cancelled'
                   )
                   .map((appointment) => (
-                    <Card key={appointment.id} className="overflow-hidden">
-                      <CardHeader className={`${
-                        appointment.status === 'cancelled' ? 'bg-red-100' : 
-                        appointment.status === 'completed' ? 'bg-blue-100' : 'bg-gray-100'
-                      }`}>
-                        <CardTitle className="flex justify-between">
-                          <span>{appointment.type}</span>
-                          <span className="text-sm capitalize">{appointment.status}</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-4">
-                        <p className="font-medium">{t('with')} Dr. {appointment.doctorName || 'Unknown'}</p>
-                        <p>{format(convertToDate(appointment.date), 'PPP')}</p>
-                      </CardContent>
-                    </Card>
+                    <AppointmentCard key={appointment.id} appointment={appointment} />
                   ))
               ) : (
                 <p>{t('noPast')}</p>
@@ -237,6 +236,106 @@ const Appointments = () => {
         </Tabs>
       </div>
     </DashboardLayout>
+  );
+};
+
+// Appointment type config
+const typeConfig = {
+  'Video Call': {
+    icon: Video,
+    accent: 'border-l-blue-500',
+    iconBg: 'bg-blue-500/10 text-blue-600',
+    badge: 'bg-blue-50 text-blue-700 border-blue-200',
+    label: 'Video Call',
+  },
+  'Chat Session': {
+    icon: MessageSquare,
+    accent: 'border-l-violet-500',
+    iconBg: 'bg-violet-500/10 text-violet-600',
+    badge: 'bg-violet-50 text-violet-700 border-violet-200',
+    label: 'Chat Session',
+  },
+  'In-person': {
+    icon: MapPin,
+    accent: 'border-l-emerald-500',
+    iconBg: 'bg-emerald-500/10 text-emerald-600',
+    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    label: 'In-person Visit',
+  },
+};
+
+const statusBadge = (status: string) => {
+  if (status === 'scheduled') return 'bg-green-50 text-green-700 border-green-200';
+  if (status === 'cancelled') return 'bg-red-50 text-red-700 border-red-200';
+  if (status === 'completed') return 'bg-gray-50 text-gray-600 border-gray-200';
+  return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+};
+
+interface AppointmentCardProps {
+  appointment: any;
+  showActions?: boolean;
+  onCancel?: (id: string) => void;
+  onReschedule?: (appointment: any) => void;
+  cancellingId?: string | null;
+}
+
+const AppointmentCard = ({ appointment, showActions, onCancel, onReschedule, cancellingId }: AppointmentCardProps) => {
+  const config = typeConfig[appointment.type as keyof typeof typeConfig] ?? typeConfig['Video Call'];
+  const Icon = config.icon;
+  const d = convertToDate(appointment.date);
+
+  return (
+    <Card className={cn('overflow-hidden border-l-4', config.accent)}>
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className={cn('p-2 rounded-lg shrink-0', config.iconBg)}>
+              <Icon className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full border', config.badge)}>
+                  {config.label}
+                </span>
+                <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full border capitalize', statusBadge(appointment.status))}>
+                  {appointment.status}
+                </span>
+              </div>
+              <p className="font-semibold mt-1.5">Dr. {appointment.doctorName || 'Unknown'}</p>
+              <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  {format(d, 'PPP')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {format(d, 'p')}
+                </span>
+              </div>
+            </div>
+          </div>
+          {showActions && appointment.status === 'scheduled' && (
+            <div className="flex gap-2 shrink-0">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onReschedule?.(appointment)}
+              >
+                Reschedule
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={cancellingId === appointment.id}
+                onClick={() => onCancel?.(appointment.id)}
+              >
+                {cancellingId === appointment.id ? 'Cancelling...' : 'Cancel'}
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

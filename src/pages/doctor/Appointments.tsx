@@ -1,189 +1,313 @@
-
 import { useState, useEffect } from 'react';
 import DoctorLayout from '@/components/layout/DoctorLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { appointmentService, Appointment, convertToDate } from '@/services/appointmentService';
-import { format, isToday } from 'date-fns';
-import { useTranslation } from 'react-i18next';
+import { format, isToday, isThisWeek, isThisMonth, isBefore, startOfDay } from 'date-fns';
+import { Clock, Video, MessageSquare, MapPin, CalendarDays, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 import { DoctorAppointmentCalendar } from '@/components/doctor/DoctorAppointmentCalendar';
-import { AppointmentsList } from '@/components/doctor/AppointmentsList';
+import { cn } from '@/lib/utils';
+
+type UpcomingFilter = 'today' | 'week' | 'month';
+
+const FILTERS: { value: UpcomingFilter; label: string }[] = [
+  { value: 'today', label: 'Today' },
+  { value: 'week', label: 'This Week' },
+  { value: 'month', label: 'This Month' },
+];
+
+const typeConfig: Record<string, { icon: any; accent: string; iconBg: string; badge: string; label: string }> = {
+  'Video Call': {
+    icon: Video,
+    accent: 'border-l-blue-500',
+    iconBg: 'bg-blue-500/10 text-blue-600',
+    badge: 'bg-blue-50 text-blue-700 border-blue-200',
+    label: 'Video Call',
+  },
+  'Chat Session': {
+    icon: MessageSquare,
+    accent: 'border-l-violet-500',
+    iconBg: 'bg-violet-500/10 text-violet-600',
+    badge: 'bg-violet-50 text-violet-700 border-violet-200',
+    label: 'Chat Session',
+  },
+  'In-person': {
+    icon: MapPin,
+    accent: 'border-l-emerald-500',
+    iconBg: 'bg-emerald-500/10 text-emerald-600',
+    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    label: 'In-person Visit',
+  },
+  'In-person Visit': {
+    icon: MapPin,
+    accent: 'border-l-emerald-500',
+    iconBg: 'bg-emerald-500/10 text-emerald-600',
+    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    label: 'In-person Visit',
+  },
+};
+
+const statusStyle = (status: string) => {
+  if (status === 'scheduled') return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (status === 'completed') return 'bg-green-50 text-green-700 border-green-200';
+  if (status === 'cancelled') return 'bg-red-50 text-red-700 border-red-200';
+  return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+};
 
 const DoctorAppointments = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation(['appointments', 'common']);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [upcomingFilter, setUpcomingFilter] = useState<UpcomingFilter>('today');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
-  useEffect(() => {
-    fetchAppointments();
-  }, [currentUser]);
-  
+  const [calendarFiltered, setCalendarFiltered] = useState<Appointment[] | null>(null);
+
+  useEffect(() => { fetchAppointments(); }, [currentUser]);
+
   const fetchAppointments = async () => {
     if (!currentUser) return;
-    
     try {
       setLoading(true);
-      const fetchedAppointments = await appointmentService.getDoctorAppointments(currentUser.uid);
-      setAppointments(fetchedAppointments);
-      
-      // Filter appointments for today's date initially
-      filterAppointmentsByDate(new Date(), fetchedAppointments);
-    } catch (error) {
-      console.error('Error fetching appointments:', error);
-      toast({
-        title: t('common:error'),
-        description: t('common:errors.failedToLoad'),
-        variant: "destructive"
-      });
+      const data = await appointmentService.getDoctorAppointments(currentUser.uid);
+      setAppointments(data);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to load appointments.', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
   };
-  
-  const filterAppointmentsByDate = (date: Date, appointmentsList = appointments) => {
-    const formattedDate = format(date, 'yyyy-MM-dd');
-    
-    const filtered = appointmentsList.filter(appointment => {
-      const appointmentDate = convertToDate(appointment.date);
-      return format(appointmentDate, 'yyyy-MM-dd') === formattedDate;
-    });
-    
-    setFilteredAppointments(filtered);
-    setSelectedDate(date);
-  };
-  
-  const updateAppointmentStatus = async (appointmentId: string, status: 'scheduled' | 'completed' | 'cancelled') => {
+
+  const updateStatus = async (id: string, status: 'scheduled' | 'completed' | 'cancelled') => {
     try {
-      await appointmentService.updateAppointmentStatus(appointmentId, status);
-      
-      // Update local state
-      const updatedAppointments = appointments.map(appointment => 
-        appointment.id === appointmentId ? { ...appointment, status } : appointment
-      );
-      
-      setAppointments(updatedAppointments);
-      
-      // Also update filtered appointments
-      const updatedFiltered = filteredAppointments.map(appointment => 
-        appointment.id === appointmentId ? { ...appointment, status } : appointment
-      );
-      
-      setFilteredAppointments(updatedFiltered);
-      
-      toast({
-        title: t('common:success'),
-        description: `Appointment ${status} successfully`,
-      });
-    } catch (error) {
-      console.error('Error updating appointment status:', error);
-      toast({
-        title: t('common:error'),
-        description: t('common:errors.failedToUpdate'),
-        variant: "destructive"
-      });
+      await appointmentService.updateAppointmentStatus(id, status);
+      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+      toast({ title: 'Updated', description: `Appointment marked as ${status}.` });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update.', variant: 'destructive' });
     }
   };
-  
+
+  const now = startOfDay(new Date());
+
+  const upcoming = appointments.filter(a => {
+    const d = convertToDate(a.date);
+    if (isBefore(d, now)) return false;
+    if (upcomingFilter === 'today') return isToday(d);
+    if (upcomingFilter === 'week') return isThisWeek(d, { weekStartsOn: 1 });
+    return isThisMonth(d);
+  }).sort((a, b) => convertToDate(a.date).getTime() - convertToDate(b.date).getTime());
+
+  const past = appointments
+    .filter(a => isBefore(convertToDate(a.date), now))
+    .sort((a, b) => convertToDate(b.date).getTime() - convertToDate(a.date).getTime());
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    const dateStr = format(date, 'yyyy-MM-dd');
+    setCalendarFiltered(
+      appointments.filter(a => format(convertToDate(a.date), 'yyyy-MM-dd') === dateStr)
+    );
+  };
+
   return (
     <DoctorLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('appointments:title')}</h1>
-          <p className="text-muted-foreground">{t('appointments:schedule')}</p>
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+            <p className="text-muted-foreground mt-1">Manage your schedule</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-1.5 rounded-full">
+            <Calendar className="h-4 w-4" />
+            {format(new Date(), 'EEEE, MMMM d')}
+          </div>
         </div>
-        
-        <DoctorAppointmentsContent 
-          appointments={appointments}
-          filteredAppointments={filteredAppointments}
-          loading={loading}
-          selectedDate={selectedDate}
-          filterAppointmentsByDate={filterAppointmentsByDate}
-          updateAppointmentStatus={updateAppointmentStatus}
-        />
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          {/* Calendar */}
+          <Card className="col-span-1 md:col-span-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CalendarDays className="h-4 w-4 text-primary" /> Calendar
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DoctorAppointmentCalendar onDateSelect={handleDateSelect} selectedDate={selectedDate} />
+              {calendarFiltered !== null && (
+                <div className="mt-4 border-t pt-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    {format(selectedDate, 'MMM d')} · {calendarFiltered.length} appointment(s)
+                  </p>
+                  {calendarFiltered.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-2">No appointments this day.</p>
+                  ) : calendarFiltered.map(a => (
+                    <AppointmentCard key={a.id} appointment={a} onStatusUpdate={updateStatus} compact />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Main content */}
+          <div className="col-span-1 md:col-span-8">
+            <Tabs defaultValue="upcoming" className="space-y-4">
+              <TabsList className="w-full h-11 bg-muted/60">
+                <TabsTrigger value="upcoming" className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Upcoming
+                  <span className="ml-2 bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">{upcoming.length}</span>
+                </TabsTrigger>
+                <TabsTrigger value="past" className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Past
+                  <span className="ml-2 bg-muted text-muted-foreground text-xs px-1.5 py-0.5 rounded-full">{past.length}</span>
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Upcoming */}
+              <TabsContent value="upcoming" className="space-y-4 mt-0">
+                {/* Filter pills */}
+                <div className="flex gap-2">
+                  {FILTERS.map(f => {
+                    const count = appointments.filter(a => {
+                      const d = convertToDate(a.date);
+                      if (isBefore(d, now)) return false;
+                      if (f.value === 'today') return isToday(d);
+                      if (f.value === 'week') return isThisWeek(d, { weekStartsOn: 1 });
+                      return isThisMonth(d);
+                    }).length;
+                    return (
+                      <button
+                        key={f.value}
+                        onClick={() => setUpcomingFilter(f.value)}
+                        className={cn(
+                          'px-4 py-1.5 rounded-full text-sm font-medium transition-all border flex items-center gap-1.5',
+                          upcomingFilter === f.value
+                            ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                            : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+                        )}
+                      >
+                        {f.label}
+                        <span className={cn(
+                          'text-xs px-1.5 py-0.5 rounded-full',
+                          upcomingFilter === f.value ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
+                        )}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {loading ? <Skeletons /> : upcoming.length === 0 ? (
+                  <EmptyState message={`No appointments ${upcomingFilter === 'today' ? 'today' : upcomingFilter === 'week' ? 'this week' : 'this month'}.`} />
+                ) : (
+                  <div className="space-y-3">
+                    {upcoming.map(a => (
+                      <AppointmentCard key={a.id} appointment={a} onStatusUpdate={updateStatus} showDate />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              {/* Past */}
+              <TabsContent value="past" className="mt-0">
+                {loading ? <Skeletons /> : past.length === 0 ? (
+                  <EmptyState message="No past appointments." />
+                ) : (
+                  <div className="space-y-3">
+                    {past.map(a => (
+                      <AppointmentCard key={a.id} appointment={a} onStatusUpdate={updateStatus} showDate />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
       </div>
     </DoctorLayout>
   );
 };
 
-interface DoctorAppointmentsContentProps {
-  appointments: Appointment[];
-  filteredAppointments: Appointment[];
-  loading: boolean;
-  selectedDate: Date;
-  filterAppointmentsByDate: (date: Date) => void;
-  updateAppointmentStatus: (appointmentId: string, status: 'scheduled' | 'completed' | 'cancelled') => Promise<void>;
+const EmptyState = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <CalendarDays className="h-10 w-10 text-muted-foreground/40 mb-3" />
+    <p className="text-muted-foreground text-sm">{message}</p>
+  </div>
+);
+
+const Skeletons = () => (
+  <div className="space-y-3">
+    {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
+  </div>
+);
+
+interface AppointmentCardProps {
+  appointment: Appointment;
+  onStatusUpdate: (id: string, status: 'scheduled' | 'completed' | 'cancelled') => Promise<void>;
+  showDate?: boolean;
+  compact?: boolean;
 }
 
-const DoctorAppointmentsContent = ({
-  appointments,
-  filteredAppointments,
-  loading,
-  selectedDate,
-  filterAppointmentsByDate,
-  updateAppointmentStatus
-}: DoctorAppointmentsContentProps) => {
-  const { t } = useTranslation(['appointments', 'common']);
-  
+const AppointmentCard = ({ appointment, onStatusUpdate, showDate, compact }: AppointmentCardProps) => {
+  const d = convertToDate(appointment.date);
+  const config = typeConfig[appointment.type] ?? typeConfig['Video Call'];
+  const Icon = config.icon;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-      {/* Calendar View */}
-      <Card className="col-span-1 md:col-span-4">
-        <CardHeader className="pb-3">
-          <CardTitle>{t('appointments:calendar')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DoctorAppointmentCalendar 
-            onDateSelect={filterAppointmentsByDate}
-            selectedDate={selectedDate}
-          />
-        </CardContent>
-      </Card>
-      
-      {/* Appointments List */}
-      <Card className="col-span-1 md:col-span-8">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>
-                {isToday(selectedDate) ? 
-                  t('appointments:upcoming') : 
-                  t('appointments:appointmentsFor', { date: format(selectedDate, 'PPP') })
-                }
-              </CardTitle>
-              <CardDescription>
-                {filteredAppointments.length} {filteredAppointments.length === 1 
-                  ? t('appointments:appointment') 
-                  : t('appointments:appointmentsPlural')}
-              </CardDescription>
+    <Card className={cn('overflow-hidden border-l-4', config.accent, compact && 'shadow-none')}>
+      <CardContent className={cn('p-4', compact && 'p-2.5')}>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className={cn('p-2 rounded-lg shrink-0', config.iconBg)}>
+              <Icon className={cn('h-5 w-5', compact && 'h-4 w-4')} />
             </div>
-            <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => filterAppointmentsByDate(new Date())}
-              >
-                {t('appointments:today')}
-              </Button>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full border', config.badge)}>
+                  {config.label}
+                </span>
+                <span className={cn('text-xs font-medium px-2 py-0.5 rounded-full border capitalize', statusStyle(appointment.status))}>
+                  {appointment.status}
+                </span>
+              </div>
+              <p className={cn('font-semibold mt-1.5', compact && 'text-xs mt-1')}>{appointment.patientName}</p>
+              <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
+                {showDate && (
+                  <span className="flex items-center gap-1">
+                    <CalendarDays className="h-3 w-3" />
+                    {format(d, 'MMM d')}
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" />
+                  {format(d, 'p')}
+                </span>
+              </div>
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          <AppointmentsList 
-            appointments={appointments}
-            filteredAppointments={filteredAppointments}
-            loading={loading}
-            onStatusUpdate={updateAppointmentStatus}
-            selectedDate={selectedDate}
-          />
-        </CardContent>
-      </Card>
-    </div>
+          {!compact && appointment.status === 'scheduled' && (
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" variant="outline"
+                className="h-7 text-xs gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                onClick={() => onStatusUpdate(appointment.id!, 'completed')}>
+                <CheckCircle2 className="h-3.5 w-3.5" /> Complete
+              </Button>
+              <Button size="sm" variant="outline"
+                className="h-7 text-xs gap-1 text-red-500 border-red-200 hover:bg-red-50"
+                onClick={() => onStatusUpdate(appointment.id!, 'cancelled')}>
+                <XCircle className="h-3.5 w-3.5" /> Cancel
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

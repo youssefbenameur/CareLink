@@ -1,6 +1,7 @@
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, addDoc, Timestamp, orderBy, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { activityService } from './activityService';
+import { format } from 'date-fns';
 
 export interface Appointment {
   id?: string;
@@ -31,10 +32,10 @@ export const appointmentService = {
         collection(db, "appointments"),
         where("patientId", "==", patientId)
       );
-      
+
       const querySnapshot = await getDocs(appointmentsQuery);
       const appointments: Appointment[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         appointments.push({
@@ -42,9 +43,9 @@ export const appointmentService = {
           patientId: data.patientId,
           doctorId: data.doctorId,
           // Handle different date formats by checking the type
-          date: data.date instanceof Timestamp ? data.date : 
-                typeof data.date === 'string' ? new Date(data.date) : 
-                data.dateTime ? new Date(data.dateTime) : new Date(),
+          date: data.date instanceof Timestamp ? data.date :
+            typeof data.date === 'string' ? new Date(data.date) :
+              data.dateTime ? new Date(data.dateTime) : new Date(),
           status: data.status,
           type: data.type || 'Video Call',
           notes: data.notes,
@@ -53,7 +54,7 @@ export const appointmentService = {
           reason: data.reason,
         });
       });
-      
+
       // Sort by date
       return appointments.sort((a, b) => {
         const dateA = a.date instanceof Timestamp ? a.date.toDate().getTime() : new Date(a.date).getTime();
@@ -65,7 +66,7 @@ export const appointmentService = {
       throw error;
     }
   },
-  
+
   // Get available doctors
   getAvailableDoctors: async () => {
     try {
@@ -73,9 +74,9 @@ export const appointmentService = {
         collection(db, 'users'),
         where('role', '==', 'doctor')
       );
-      
+
       const querySnapshot = await getDocs(doctorsQuery);
-      
+
       const doctors = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
@@ -86,7 +87,7 @@ export const appointmentService = {
           // Add other relevant doctor fields
         });
       });
-      
+
       return doctors;
     } catch (error) {
       console.error('Error getting available doctors:', error);
@@ -98,18 +99,18 @@ export const appointmentService = {
       ];
     }
   },
-  
+
   // Get upcoming appointments for a patient
   getUpcomingAppointments: async (patientId: string): Promise<Appointment[]> => {
     try {
       const allAppointments = await appointmentService.getPatientAppointments(patientId);
       const now = new Date();
-      
+
       // Filter to only include future appointments that aren't cancelled
       return allAppointments
         .filter(app => {
-          const appDate = app.date instanceof Timestamp ? 
-            app.date.toDate() : 
+          const appDate = app.date instanceof Timestamp ?
+            app.date.toDate() :
             new Date(app.date);
           return appDate > now && app.status !== 'cancelled';
         })
@@ -123,7 +124,7 @@ export const appointmentService = {
       throw error;
     }
   },
-  
+
   // Get appointments for a doctor
   getDoctorAppointments: async (doctorId: string): Promise<Appointment[]> => {
     try {
@@ -132,10 +133,10 @@ export const appointmentService = {
         collection(db, "appointments"),
         where("doctorId", "==", doctorId)
       );
-      
+
       const querySnapshot = await getDocs(appointmentsQuery);
       const appointments: Appointment[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         console.log("Appointment data:", data);
@@ -144,9 +145,9 @@ export const appointmentService = {
           patientId: data.patientId,
           doctorId: data.doctorId,
           // Handle different date formats by checking the type
-          date: data.date instanceof Timestamp ? data.date : 
-                typeof data.date === 'string' ? new Date(data.date) : 
-                data.dateTime ? new Date(data.dateTime) : new Date(),
+          date: data.date instanceof Timestamp ? data.date :
+            typeof data.date === 'string' ? new Date(data.date) :
+              data.dateTime ? new Date(data.dateTime) : new Date(),
           status: data.status,
           type: data.type || 'Video Call',
           notes: data.notes,
@@ -155,7 +156,7 @@ export const appointmentService = {
           reason: data.reason,
         });
       });
-      
+
       console.log(`Found ${appointments.length} appointments for doctor ${doctorId}`);
       // Sort by date
       return appointments.sort((a, b) => {
@@ -168,12 +169,12 @@ export const appointmentService = {
       throw error;
     }
   },
-  
+
   // Create a new appointment
   createAppointment: async (appointment: Omit<Appointment, 'id'>): Promise<string> => {
     try {
       console.log("Creating appointment with data:", appointment);
-      
+
       // Get doctor name if doctorId is provided
       let doctorName = 'Unknown Doctor';
       if (appointment.doctorId) {
@@ -182,25 +183,25 @@ export const appointmentService = {
           doctorName = doctorDoc.data().name || 'Unknown Doctor';
         }
       }
-      
+
       // Get patient name
       const patientDoc = await getDoc(doc(db, "users", appointment.patientId));
       const patientName = patientDoc.exists() ? patientDoc.data().name : 'Unknown Patient';
-      
+
       // Store consistent date format
       const appointmentData = {
         ...appointment,
         doctorName,
         patientName,
-        date: appointment.date instanceof Date ? 
-          Timestamp.fromDate(appointment.date) : 
+        date: appointment.date instanceof Date ?
+          Timestamp.fromDate(appointment.date) :
           appointment.date,
         createdAt: Timestamp.now()
       };
-      
+
       console.log("Saving appointment with data:", appointmentData);
       const docRef = await addDoc(collection(db, "appointments"), appointmentData);
-      
+
       // Log this as an activity
       await activityService.createActivity({
         userId: appointment.patientId,
@@ -208,24 +209,24 @@ export const appointmentService = {
         description: `Scheduled an appointment with ${doctorName}`,
         timestamp: new Date()
       });
-      
+
       return docRef.id;
     } catch (error) {
       console.error('Error creating appointment:', error);
       throw error;
     }
   },
-  
+
   // Update appointment status
   updateAppointmentStatus: async (appointmentId: string, status: Appointment['status'], patientId?: string): Promise<void> => {
     try {
       const appointmentRef = doc(db, "appointments", appointmentId);
       const appointmentDoc = await getDoc(appointmentRef);
-      
+
       if (appointmentDoc.exists()) {
         const appointmentData = appointmentDoc.data();
         await updateDoc(appointmentRef, { status });
-        
+
         // Log this as an activity only if patientId is provided
         if (patientId) {
           await activityService.createActivity({
@@ -241,17 +242,17 @@ export const appointmentService = {
       throw error;
     }
   },
-  
+
   // Cancel appointment
   cancelAppointment: async (appointmentId: string, patientId: string): Promise<void> => {
     try {
       const appointmentRef = doc(db, "appointments", appointmentId);
       const appointmentDoc = await getDoc(appointmentRef);
-      
+
       if (appointmentDoc.exists()) {
         const appointmentData = appointmentDoc.data();
         await updateDoc(appointmentRef, { status: 'cancelled' });
-        
+
         // Log this as an activity
         await activityService.createActivity({
           userId: patientId,
@@ -265,7 +266,33 @@ export const appointmentService = {
       throw error;
     }
   },
-  
+
+  // Get booked time slots for a doctor on a specific date
+  getBookedSlots: async (doctorId: string, date: Date): Promise<string[]> => {
+    try {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const q = query(
+        collection(db, 'appointments'),
+        where('doctorId', '==', doctorId),
+        where('status', 'in', ['scheduled', 'pending'])
+      );
+      const snapshot = await getDocs(q);
+      const booked: string[] = [];
+      snapshot.forEach(d => {
+        const data = d.data();
+        const apptDate = data.date instanceof Timestamp ? data.date.toDate() :
+          typeof data.date === 'string' ? new Date(data.date) : new Date();
+        if (format(apptDate, 'yyyy-MM-dd') === dateStr) {
+          booked.push(format(apptDate, 'HH:mm'));
+        }
+      });
+      return booked;
+    } catch (error) {
+      console.error('Error getting booked slots:', error);
+      return [];
+    }
+  },
+
   // Delete appointment (admin only)
   deleteAppointment: async (appointmentId: string): Promise<void> => {
     try {
