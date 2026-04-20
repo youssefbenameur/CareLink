@@ -4,7 +4,7 @@ import ChatInterface from '@/components/chatbot/ChatInterface';
 
 export const ChatWindow = () => {
   return (
-    <div className="h-[calc(100vh-theme(spacing.32))]">
+    <div className="h-full w-full">
       <ChatInterface />
     </div>
   );

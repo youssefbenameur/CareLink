@@ -55,8 +55,8 @@ export const PatientActivityTimeline = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Patient Activity</CardTitle>
-        <CardDescription>Recent activity from your patients</CardDescription>
+        <CardTitle>Patient Mood Activity</CardTitle>
+        <CardDescription>Recent mood logs from your patients</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

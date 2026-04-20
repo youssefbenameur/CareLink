@@ -8,6 +8,7 @@ import {
   Menu,
   X,
   ClipboardCheck,
+  TicketCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -44,6 +45,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       name: "Doctor Approvals",
       href: "/admin/doctor-approvals",
       icon: ClipboardCheck,
+    },
+    {
+      name: "Support Tickets",
+      href: "/admin/support-tickets",
+      icon: TicketCheck,
     },
     {
       name: t("navigation:admin.settings"),

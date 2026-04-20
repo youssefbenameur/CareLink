@@ -19,14 +19,20 @@ import { useAppointmentQueryParams } from '@/components/appointments/Appointment
 import { convertToDate } from '@/services/appointmentService';
 import { Video, MessageSquare, MapPin, Clock, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 const Appointments = () => {
   const { t } = useTranslation(['appointments', 'common']);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [selectedDoctorName, setSelectedDoctorName] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('upcoming');
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('doctorId') || params.get('tab') === 'schedule') return 'schedule';
+    return 'upcoming';
+  });
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const patientId = currentUser?.uid || '';
@@ -79,17 +85,23 @@ const Appointments = () => {
     setActiveTab('upcoming');
   };
 
-  // Cancel appointment
+  // Cancel appointment — shows confirmation first
   const handleCancel = async (appointmentId: string) => {
-    setCancellingId(appointmentId);
+    setConfirmCancelId(appointmentId);
+  };
+
+  const confirmCancel = async () => {
+    if (!confirmCancelId) return;
+    setCancellingId(confirmCancelId);
     try {
-      await appointmentService.cancelAppointment(appointmentId, patientId);
+      await appointmentService.deleteAppointment(confirmCancelId);
       await refetch();
-      toast({ title: 'Appointment cancelled', description: 'Your appointment has been cancelled.' });
+      toast({ title: 'Appointment cancelled', description: 'Your appointment has been removed.' });
     } catch {
       toast({ title: 'Error', description: 'Failed to cancel appointment.', variant: 'destructive' });
     } finally {
       setCancellingId(null);
+      setConfirmCancelId(null);
     }
   };
 
@@ -102,11 +114,12 @@ const Appointments = () => {
 
   // Get the active tab from URL or use default
   const getDefaultTab = () => {
-    if (searchParams.get('doctorId')) return "schedule";
+    if (searchParams.get('doctorId') || searchParams.get('tab') === 'schedule') return "schedule";
     return "upcoming";
   };
 
   return (
+    <>
     <DashboardLayout>
       <div className="space-y-6">
         <div>
@@ -236,6 +249,27 @@ const Appointments = () => {
         </Tabs>
       </div>
     </DashboardLayout>
+
+    <AlertDialog open={!!confirmCancelId} onOpenChange={() => setConfirmCancelId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to cancel this appointment? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Keep Appointment</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={confirmCancel}
+          >
+            Yes, Cancel It
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 

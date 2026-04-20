@@ -102,9 +102,19 @@ const DoctorDashboard = () => {
           return false;
         }).length;
         
-        // For now, let's use mock data for messages and attention required
-        const pendingMessagesCount = 5;
-        const attentionRequiredCount = 2;
+        // Count pending (unread) messages for this doctor
+        let pendingMessagesCount = 0;
+        try {
+          const messagesQuery = query(
+            collection(db, "messages"),
+            where("receiverId", "==", currentUser.uid),
+            where("read", "==", false)
+          );
+          const messagesSnapshot = await getDocs(messagesQuery);
+          pendingMessagesCount = messagesSnapshot.size;
+        } catch (e) {
+          console.warn("Could not fetch messages count:", e);
+        }
         
         setStats({
           totalPatients: uniquePatientIds.length,
@@ -112,7 +122,7 @@ const DoctorDashboard = () => {
           todayAppointments: todayApps.length,
           completedToday,
           pendingMessages: pendingMessagesCount,
-          attentionRequired: attentionRequiredCount
+          attentionRequired: 0
         });
         
       } catch (error) {

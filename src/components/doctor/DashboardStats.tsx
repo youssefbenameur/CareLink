@@ -19,7 +19,7 @@ export const DashboardStats = ({ stats }: StatsProps) => {
   const { t } = useTranslation(['doctorDashboard']);
   
   return (
-    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
       <AnimatedSection delay={0.1}>
         <Card className="bg-white/50 backdrop-blur-sm border-neutral-200/50">
           <CardHeader className="p-3">
@@ -66,23 +66,6 @@ export const DashboardStats = ({ stats }: StatsProps) => {
             <div className="text-2xl font-bold">{stats.pendingMessages}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {t('doctorDashboard:stats.from', { count: Math.min(stats.pendingMessages, 3) })}
-            </p>
-          </CardContent>
-        </Card>
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.4}>
-        <Card className="bg-white/50 backdrop-blur-sm border-neutral-200/50">
-          <CardHeader className="p-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">{t('doctorDashboard:stats.attentionRequired')}</CardTitle>
-              <FileText className="h-4 w-4 text-primary/70" />
-            </div>
-          </CardHeader>
-          <CardContent className="p-3 pt-0">
-            <div className="text-2xl font-bold">{stats.attentionRequired}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {t('doctorDashboard:stats.needingFollowUp')}
             </p>
           </CardContent>
         </Card>

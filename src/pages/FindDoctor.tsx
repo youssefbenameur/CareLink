@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Calendar, Mail, Phone, Globe, GraduationCap, Languages } from "lucide-react";
+import { Search, Calendar, MapPin, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
@@ -25,6 +25,7 @@ interface Doctor {
   email?: string;
   phone?: string;
   location?: string;
+  clinicLocation?: string;
   consultationFee?: string;
   about?: string;
 }
@@ -84,10 +85,11 @@ const FindDoctor = () => {
             languages: languagesArray,
             education: data.education || t('common:notSpecified'),
             rating: data.rating || (4 + Math.random()).toFixed(1),
-            available: true, // Default to available
+            available: true,
             email: data.email || null,
             phone: data.phone || null,
             location: data.location || null,
+            clinicLocation: data.clinicLocation || null,
             consultationFee: data.consultationFee || null,
             about: data.about || null,
           };
@@ -125,8 +127,7 @@ const FindDoctor = () => {
   };
 
   const handleBookAppointment = (doctor: Doctor) => {
-    // Navigate to the appointments page with doctor information as query parameters
-    navigate(`/appointments/book?doctorId=${doctor.id}&doctorName=${encodeURIComponent(doctor.name)}`);
+    navigate(`/appointments?doctorId=${doctor.id}&doctorName=${encodeURIComponent(doctor.name)}&tab=schedule`);
   };
 
   return (
@@ -186,65 +187,35 @@ const FindDoctor = () => {
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="space-y-4">
-                    {doctor.about && (
-                      <p className="text-sm text-muted-foreground">
-                        {doctor.about}
-                      </p>
-                    )}
-                    
                     <div className="space-y-2">
-                      {doctor.education && (
+                      {doctor.clinicLocation && (
                         <div className="flex items-center text-sm">
-                          <GraduationCap className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <span>{doctor.education}</span>
+                          <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <span>{doctor.clinicLocation}</span>
                         </div>
                       )}
                       
                       {doctor.experience && (
                         <div className="flex items-center text-sm">
                           <Globe className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <span>{doctor.experience} {t('findDoctor:yearsExperience')}</span>
-                        </div>
-                      )}
-                      
-                      {doctor.languages && (
-                        <div className="flex items-center text-sm">
-                          <Languages className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <span>
-                            {Array.isArray(doctor.languages) 
-                              ? doctor.languages.join(', ')
-                              : typeof doctor.languages === 'string'
-                                ? doctor.languages
-                                : 'English'}
-                          </span>
+                          <span>{doctor.experience} years experience</span>
                         </div>
                       )}
                       
                       {doctor.consultationFee && (
-                        <p className="text-sm font-medium">
-                          {t('findDoctor:consultationFee')}: {doctor.consultationFee}
-                        </p>
+                        <div className="flex items-center text-sm font-semibold">
+                          <span className="text-primary">Consultation: {doctor.consultationFee} TND</span>
+                        </div>
                       )}
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                      {doctor.email && (
-                        <Button variant="outline" className="w-full justify-start" asChild>
-                          <a href={`mailto:${doctor.email}`}>
-                            <Mail className="h-4 w-4 mr-2" />
-                            {t('findDoctor:contactEmail')}
-                          </a>
-                        </Button>
-                      )}
-                      
-                      <Button 
-                        className="w-full"
+                    <Button 
+                        className="w-full mt-4"
                         onClick={() => handleBookAppointment(doctor)}
                       >
                         <Calendar className="h-4 w-4 mr-2" />
                         {t('findDoctor:bookAppointment')}
                       </Button>
-                    </div>
                   </div>
                 </CardContent>
               </Card>

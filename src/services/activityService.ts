@@ -20,10 +20,10 @@ export const activityService = {
         orderBy("timestamp", "desc"),
         limit(limitCount)
       );
-      
+
       const querySnapshot = await getDocs(activitiesQuery);
       const activities: Activity[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         activities.push({
@@ -35,7 +35,7 @@ export const activityService = {
           metadata: data.metadata
         });
       });
-      
+
       // If no activities are found in the database, return mock data
       if (activities.length === 0) {
         return [
@@ -62,24 +62,24 @@ export const activityService = {
           }
         ];
       }
-      
+
       return activities;
     } catch (error) {
       console.error('Error getting user activities:', error);
       throw error;
     }
   },
-  
+
   // Add a new activity
   createActivity: async (activity: Omit<Activity, 'id'>): Promise<string> => {
     try {
       const activityData = {
         ...activity,
-        timestamp: activity.timestamp instanceof Date ? 
-          Timestamp.fromDate(activity.timestamp) : 
+        timestamp: activity.timestamp instanceof Date ?
+          Timestamp.fromDate(activity.timestamp) :
           activity.timestamp
       };
-      
+
       const docRef = await addDoc(collection(db, "activities"), activityData);
       console.log('Activity logged:', activity.description);
       return docRef.id;
@@ -88,7 +88,7 @@ export const activityService = {
       throw error;
     }
   },
-  
+
   // Get activities for a doctor's patients
   getDoctorPatientActivities: async (doctorId: string): Promise<Activity[]> => {
     try {
@@ -97,33 +97,32 @@ export const activityService = {
         collection(db, "appointments"),
         where("doctorId", "==", doctorId)
       );
-      
+
       const appointmentDocs = await getDocs(patientsQuery);
       const patientIds = new Set<string>();
-      
+
       appointmentDocs.forEach(doc => {
         const appointment = doc.data();
         if (appointment.patientId) {
           patientIds.add(appointment.patientId);
         }
       });
-      
-      // If no patients, return empty array
-      if (patientIds.size === 0) {
-        return [];
-      }
-      
-      // Get activities for all patients
+
+      if (patientIds.size === 0) return [];
+
+      // Only fetch mood-related activities — doctors should not see
+      // appointment or navigation activities from other doctors
       const activitiesQuery = query(
         collection(db, "activities"),
         where("userId", "in", Array.from(patientIds)),
+        where("type", "==", "mood"),
         orderBy("timestamp", "desc"),
         limit(20)
       );
-      
+
       const activitiesSnapshot = await getDocs(activitiesQuery);
       const activities: Activity[] = [];
-      
+
       activitiesSnapshot.forEach((doc) => {
         const data = doc.data();
         activities.push({
@@ -135,7 +134,7 @@ export const activityService = {
           metadata: data.metadata
         });
       });
-      
+
       return activities;
     } catch (error) {
       console.error('Error getting doctor patient activities:', error);

@@ -10,8 +10,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Bot } from 'lucide-react';
+import { MessageSquare, Bot, TicketCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { SupportTicketForm } from '@/components/support/SupportTicketForm';
 
 const ChatPage = () => {
   const { doctorId } = useParams<{ doctorId: string }>();
@@ -47,14 +48,7 @@ const ChatPage = () => {
   
   return (
     <DashboardLayout>
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Chat Support</h1>
-          <p className="text-muted-foreground">
-            Connect with your healthcare providers or chat with our AI assistant
-          </p>
-        </div>
-        
+      <div className="space-y-2">
         <Tabs defaultValue={doctorId ? "doctors" : "ai"} className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="ai" className="flex items-center">
@@ -65,15 +59,19 @@ const ChatPage = () => {
               <MessageSquare className="mr-2 h-4 w-4" />
               Your Doctors
             </TabsTrigger>
+            <TabsTrigger value="support" className="flex items-center">
+              <TicketCheck className="mr-2 h-4 w-4" />
+              Support
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="ai" className="mt-0 border rounded-md h-[calc(100vh-theme(spacing.32))]">
+          <TabsContent value="ai" className="mt-0 rounded-xl border overflow-hidden" style={{ height: 'calc(100vh - 120px)' }}>
             <ChatWindow />
           </TabsContent>
           
           <TabsContent value="doctors" className="mt-0">
             <div className="grid gap-4 md:grid-cols-5">
-              <div className="col-span-2 border rounded-md p-4 h-[calc(100vh-theme(spacing.32))] overflow-y-auto">
+              <div className="col-span-2 border rounded-md p-4 overflow-y-auto" style={{ height: 'calc(100vh - 180px)' }}>
                 <h3 className="font-medium mb-4">Your Care Team</h3>
                 
                 {loading ? (
@@ -114,7 +112,7 @@ const ChatPage = () => {
                 )}
               </div>
               
-              <div className="col-span-3 border rounded-md h-[calc(100vh-theme(spacing.32))]">
+              <div className="col-span-3 border rounded-md overflow-hidden" style={{ height: 'calc(100vh - 180px)' }}>
                 {doctorId ? (
                   <PatientChat />
                 ) : (
@@ -128,6 +126,9 @@ const ChatPage = () => {
                 )}
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="support" className="mt-0">
+            <SupportTicketForm />
           </TabsContent>
         </Tabs>
       </div>

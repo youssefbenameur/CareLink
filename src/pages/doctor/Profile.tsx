@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Calendar, BookOpen, Clock, Shield, Edit2, Save } from 'lucide-react';
+import { User, Mail, Phone, Calendar, BookOpen, Clock, Shield, Edit2, Save, MapPin, X } from 'lucide-react';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ const DoctorProfile = () => {
     available: true,
     consultationFee: '',
     sessionDuration: '50',
+    clinicLocation: '',
   });
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
@@ -68,6 +69,7 @@ const DoctorProfile = () => {
             available: data.available !== false,
             consultationFee: data.consultationFee || '',
             sessionDuration: data.sessionDuration || '50',
+            clinicLocation: data.clinicLocation || '',
           });
           
           setSecurityData({
@@ -141,6 +143,7 @@ const DoctorProfile = () => {
         available: profileData.available,
         consultationFee: profileData.consultationFee,
         sessionDuration: profileData.sessionDuration,
+        clinicLocation: profileData.clinicLocation,
         updatedAt: new Date()
       });
       
@@ -225,22 +228,28 @@ const DoctorProfile = () => {
               {t('settings:profile.description')}
             </p>
           </div>
-          <Button onClick={() => setIsEditing(!isEditing)} disabled={isLoading}>
+          <Button onClick={() => setIsEditing(!isEditing)} disabled={isLoading} variant={isEditing ? "outline" : "default"}>
             {isEditing ? (
               <>
-                <Edit2 className="h-4 w-4 mr-2" />
-                {t('settings:profile.cancelEditing')}
+                <X className="h-4 w-4 mr-2" />
+                Cancel
               </>
             ) : (
               <>
                 <Edit2 className="h-4 w-4 mr-2" />
-                {t('settings:profile.editProfile')}
+                Edit Profile
               </>
             )}
           </Button>
         </div>
         
         <Tabs defaultValue="personal" className="space-y-4">
+          {isEditing && (
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 border border-primary/20 rounded-lg text-sm text-primary font-medium">
+              <Edit2 className="h-4 w-4" />
+              You are in edit mode — make your changes and click Save.
+            </div>
+          )}
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
             <TabsTrigger value="personal">{t('settings:profile.title')}</TabsTrigger>
             <TabsTrigger value="professional">{t('settings:doctor.professional.title')}</TabsTrigger>
@@ -383,6 +392,21 @@ const DoctorProfile = () => {
                         onChange={handleInputChange}
                         disabled={!isEditing || isLoading}
                         placeholder="e.g., Cognitive Behavioral Therapy"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="clinicLocation">Clinic / Cabinet Location</Label>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="clinicLocation"
+                        name="clinicLocation"
+                        value={profileData.clinicLocation}
+                        onChange={handleInputChange}
+                        disabled={!isEditing || isLoading}
+                        placeholder="e.g., 12 Rue de la Santé, Tunis"
                       />
                     </div>
                   </div>

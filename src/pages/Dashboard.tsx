@@ -65,6 +65,14 @@ const Dashboard = () => {
     recentActivities: [],
   });
 
+  // Scroll to top when dashboard loads
+  useEffect(() => {
+    const main = document.querySelector('main');
+    if (main) {
+      main.scrollTop = 0;
+    }
+  }, []);
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!currentUser) return;
@@ -173,7 +181,7 @@ const Dashboard = () => {
 
         <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-12">
           <div className="col-span-1 md:col-span-12 space-y-6">
-            <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 xl:grid-cols-3">
               {/* Mood Trend Card */}
               <Card className="col-span-1 sm:col-span-1">
                 <CardHeader className="p-4 pb-2">
@@ -244,34 +252,6 @@ const Dashboard = () => {
                   ) : (
                     <div className="py-2 text-muted-foreground">
                       {t("appointments.noUpcoming")}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Resources Card */}
-              <Card className="col-span-1 sm:col-span-1">
-                <CardHeader className="p-4 pb-2">
-                  <CardTitle className="flex text-sm md:text-base justify-between">
-                    <span>{t("dashboard:stats.resources")}</span>
-                    <BookOpen className="h-4 w-4" />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center p-4 pt-2">
-                  {loading ? (
-                    <Skeleton className="h-16 w-full" />
-                  ) : data.recommendedResources?.length ? (
-                    <>
-                      <h3 className="text-xl md:text-2xl font-bold">
-                        {data.recommendedResources.length}
-                      </h3>
-                      <p className="text-xs md:text-sm text-muted-foreground mt-1">
-                        {t("resources.recommended")}
-                      </p>
-                    </>
-                  ) : (
-                    <div className="py-2 text-muted-foreground">
-                      {t("resources.noResults")}
                     </div>
                   )}
                 </CardContent>
@@ -598,7 +578,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="p-0">
                 <div
-                  className={`border-t ${isMobile ? "h-[220px]" : "h-[320px]"}`}
+                  className={`border-t ${isMobile ? "h-[400px]" : "h-[500px]"}`}
                 >
                   <ChatWindow />
                 </div>

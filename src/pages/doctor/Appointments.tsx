@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { appointmentService, Appointment, convertToDate } from '@/services/appointmentService';
@@ -68,6 +69,7 @@ const DoctorAppointments = () => {
   const [upcomingFilter, setUpcomingFilter] = useState<UpcomingFilter>('today');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarFiltered, setCalendarFiltered] = useState<Appointment[] | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
 
   useEffect(() => { fetchAppointments(); }, [currentUser]);
 
@@ -86,11 +88,28 @@ const DoctorAppointments = () => {
 
   const updateStatus = async (id: string, status: 'scheduled' | 'completed' | 'cancelled') => {
     try {
+      if (status === 'cancelled') {
+        setConfirmCancelId(id);
+        return;
+      }
       await appointmentService.updateAppointmentStatus(id, status);
       setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
       toast({ title: 'Updated', description: `Appointment marked as ${status}.` });
     } catch {
       toast({ title: 'Error', description: 'Failed to update.', variant: 'destructive' });
+    }
+  };
+
+  const confirmCancel = async () => {
+    if (!confirmCancelId) return;
+    try {
+      await appointmentService.deleteAppointment(confirmCancelId);
+      setAppointments(prev => prev.filter(a => a.id !== confirmCancelId));
+      toast({ title: 'Appointment deleted', description: 'The appointment has been removed.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to delete.', variant: 'destructive' });
+    } finally {
+      setConfirmCancelId(null);
     }
   };
 
@@ -117,6 +136,7 @@ const DoctorAppointments = () => {
   };
 
   return (
+    <>
     <DoctorLayout>
       <div className="space-y-6">
         {/* Header */}
@@ -231,6 +251,27 @@ const DoctorAppointments = () => {
         </div>
       </div>
     </DoctorLayout>
+
+    <AlertDialog open={!!confirmCancelId} onOpenChange={() => setConfirmCancelId(null)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to cancel this appointment? This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Keep Appointment</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={confirmCancel}
+          >
+            Yes, Cancel It
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 

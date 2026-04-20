@@ -7,10 +7,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, RefreshCcw } from 'lucide-react';
+import { MessageSquare, RefreshCcw, TicketCheck } from 'lucide-react';
 import { DoctorPatientChat } from '@/components/chat/DoctorPatientChat';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
+import { SupportTicketForm } from '@/components/support/SupportTicketForm';
 
 const DoctorChatPage = () => {
   const { patientId } = useParams<{ patientId: string }>();
@@ -70,7 +72,20 @@ const DoctorChatPage = () => {
             Refresh
           </Button>
         </div>
-        
+
+        <Tabs defaultValue="patients" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="patients" className="flex items-center">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Patients
+            </TabsTrigger>
+            <TabsTrigger value="support" className="flex items-center">
+              <TicketCheck className="mr-2 h-4 w-4" />
+              Support
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="patients" className="mt-0">
         <div className="grid gap-4 md:grid-cols-5">
           <div className="col-span-2 border rounded-md p-4 h-[calc(100vh-theme(spacing.32))] overflow-y-auto">
             <h3 className="font-medium mb-4">{t('chat.yourPatients', 'Your Patients')}</h3>
@@ -124,6 +139,12 @@ const DoctorChatPage = () => {
             )}
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="support" className="mt-0">
+            <SupportTicketForm />
+          </TabsContent>
+        </Tabs>
       </div>
     </DoctorLayout>
   );

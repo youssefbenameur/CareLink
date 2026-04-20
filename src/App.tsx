@@ -25,6 +25,7 @@ import AdminDashboard from "@/pages/admin/Dashboard";
 import ManageUsers from "@/pages/admin/ManageUsers";
 import SystemSettings from "@/pages/admin/SystemSettings";
 import DoctorApprovals from "@/pages/admin/DoctorApprovals";
+import SupportTickets from "@/pages/admin/SupportTickets";
 import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import PendingApproval from "@/pages/doctor/PendingApproval";
@@ -126,6 +127,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DoctorApprovals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/support-tickets"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <SupportTickets />
               </ProtectedRoute>
             }
           />
