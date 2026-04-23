@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { format, addMinutes, setMinutes, setHours, isBefore, isAfter } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 import { appointmentService } from '@/services/appointmentService';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +18,6 @@ interface BookAppointmentFormProps {
 }
 
 export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSuccess }: BookAppointmentFormProps) => {
-  const { t } = useTranslation(['appointments', 'common', 'errors']);
   const { toast } = useToast();
   const { currentUser } = useAuth();
   
@@ -72,8 +70,8 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
   const handleSubmit = async () => {
     if (!date || !selectedTime || !appointmentType || !currentUser) {
       toast({
-        title: t('errors:validationError'),
-        description: t('errors:fillRequired'),
+        title: "Validation Error",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -95,12 +93,12 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
         type: appointmentType,
         notes,
         reason,
-        status: 'scheduled',
+        status: 'pending',
       });
       
       toast({
-        title: t('appointments:appointmentBooked'),
-        description: `${format(appointmentDate, 'PPp')} ${t('appointments:with')} ${doctorName}`,
+        title: "Appointment requested",
+        description: `${format(appointmentDate, 'PPp')} with ${doctorName} - Awaiting doctor approval`,
       });
       
       // Reset form
@@ -115,8 +113,8 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     } catch (error) {
       console.error("Error booking appointment:", error);
       toast({
-        title: t('errors:generic'),
-        description: t('errors:tryAgain'),
+        title: "Error",
+        description: "Please try again",
         variant: "destructive",
       });
     } finally {
@@ -124,27 +122,27 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     }
   };
   
-  // Map the appointment type values to their translated labels
+  // Map the appointment type values to their labels
   const appointmentTypes = [
-    { value: 'Video Call', label: t('appointments:initialConsultation') },
-    { value: 'Chat Session', label: t('appointments:followUp') },
-    { value: 'In-person', label: t('appointments:therapy') },
+    { value: 'Video Call', label: 'Initial Consultation' },
+    { value: 'Chat Session', label: 'Follow-up' },
+    { value: 'In-person', label: 'Therapy Session' },
   ];
   
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{t('appointments:bookAppointment')}</CardTitle>
+        <CardTitle>Book Appointment</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label>{t('appointments:appointmentType')}</Label>
+          <Label>Appointment Type</Label>
           <Select 
             value={appointmentType} 
             onValueChange={(value) => setAppointmentType(value as 'Video Call' | 'Chat Session' | 'In-person')}
           >
             <SelectTrigger>
-              <SelectValue placeholder={t('appointments:selectType')} />
+              <SelectValue placeholder="Select appointment type" />
             </SelectTrigger>
             <SelectContent>
               {appointmentTypes.map(type => (
@@ -158,7 +156,7 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
         
         {date && (
           <div className="space-y-2">
-            <Label>{t('appointments:selectTime')}</Label>
+            <Label>Select time</Label>
             {availableTimes.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
                 {availableTimes.map(time => {
@@ -180,17 +178,17 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
               </div>
             ) : (
               <p className="text-muted-foreground">
-                {t('appointments:noTimesAvailable')}
+                No available times for this date
               </p>
             )}
           </div>
         )}
         
         <div className="space-y-2">
-          <Label htmlFor="reason">{t('appointments:reason')}</Label>
+          <Label htmlFor="reason">Reason for appointment</Label>
           <Textarea
             id="reason"
-            placeholder={t('appointments:reasonPlaceholder')}
+            placeholder="Describe the reason for your appointment"
             value={reason}
             onChange={e => setReason(e.target.value)}
             className="min-h-[80px]"
@@ -198,10 +196,10 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="notes">{t('common:notes')}</Label>
+          <Label htmlFor="notes">Notes</Label>
           <Textarea
             id="notes"
-            placeholder={t('appointments:notesPlaceholder')}
+            placeholder="Add any additional notes (optional)"
             value={notes}
             onChange={e => setNotes(e.target.value)}
             className="min-h-[80px]"
@@ -214,7 +212,7 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
           disabled={!date || !selectedTime || isSubmitting}
           className="w-full"
         >
-          {isSubmitting ? t('common:submitting') : t('appointments:confirmAppointment')}
+          {isSubmitting ? "Submitting..." : "Confirm Appointment"}
         </Button>
       </CardFooter>
     </Card>

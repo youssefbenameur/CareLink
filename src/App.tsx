@@ -30,6 +30,7 @@ import About from "@/pages/About";
 import Privacy from "@/pages/Privacy";
 import PendingApproval from "@/pages/doctor/PendingApproval";
 import RejectedApplication from "@/pages/doctor/RejectedApplication";
+import ResubmitDocuments from "@/pages/doctor/ResubmitDocuments";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -52,6 +53,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
     if (userData?.role === "doctor") {
       const status = userData?.doctorVerificationStatus;
       if (status === "pending") return <Navigate to="/doctor/pending" replace />;
+      if (status === "resubmit") return <Navigate to="/doctor/resubmit" replace />;
       if (status === "rejected") return <Navigate to="/doctor/rejected" replace />;
       return <Navigate to="/doctor/dashboard" replace />;
     }
@@ -240,6 +242,7 @@ function App() {
           {/* Doctor routes */}
           <Route path="/doctor/pending" element={<PendingApproval />} />
           <Route path="/doctor/rejected" element={<RejectedApplication />} />
+          <Route path="/doctor/resubmit" element={<ResubmitDocuments />} />
           <Route
             path="/doctor/dashboard"
             element={

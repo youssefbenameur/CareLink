@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Search, Calendar, MapPin, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/lib/firebase';
+import { getAllDoctors } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Badge } from "@/components/ui/badge";
@@ -37,48 +35,29 @@ const FindDoctor = () => {
   const [loading, setLoading] = useState(true);
   
   const { toast } = useToast();
-  const { currentUser } = useAuth();
   const { t } = useTranslation(['findDoctor', 'common']);
   const navigate = useNavigate();
 
-  // Load doctors from Firebase
+  // Load only approved doctors from Firebase
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         setLoading(true);
-        console.log("Fetching doctors...");
-        
-        // Query users with role "doctor"
-        const doctorsQuery = query(
-          collection(db, 'users'),
-          where('role', '==', 'doctor')
-        );
-        
-        const doctorSnapshot = await getDocs(doctorsQuery);
-        
-        if (doctorSnapshot.empty) {
-          console.log("No doctors found");
-          setDoctors([]);
-          setFilteredDoctors([]);
-          return;
-        }
-        
-        // Map the data to our Doctor interface
-        const doctorData: Doctor[] = doctorSnapshot.docs.map(doc => {
-          const data = doc.data();
-          // Ensure languages is always an array, even if it comes as a string
+
+        const rawDoctors = await getAllDoctors('approved');
+
+        const doctorData: Doctor[] = rawDoctors.map(data => {
           let languagesArray: string[] = [];
-          
           if (Array.isArray(data.languages)) {
             languagesArray = data.languages;
           } else if (typeof data.languages === 'string') {
             languagesArray = [data.languages];
           } else {
-            languagesArray = ["English"]; // Default fallback
+            languagesArray = ["English"];
           }
-          
+
           return {
-            id: doc.id,
+            id: data.id,
             name: data.name || t('common:unknown'),
             specialty: data.specialty || t('common:general'),
             experience: data.experience || t('common:notSpecified'),
@@ -94,11 +73,9 @@ const FindDoctor = () => {
             about: data.about || null,
           };
         });
-        
-        console.log(`Found ${doctorData.length} doctors`);
+
         setDoctors(doctorData);
         setFilteredDoctors(doctorData);
-        
       } catch (error) {
         console.error("Error fetching doctors:", error);
         toast({

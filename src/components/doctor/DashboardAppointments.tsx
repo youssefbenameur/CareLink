@@ -5,16 +5,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { appointmentService, convertToDate } from '@/services/appointmentService';
 import { Badge } from '@/components/ui/badge';
 import { Timestamp } from 'firebase/firestore';
-import { useTranslation } from 'react-i18next';
+import { useToast } from '@/components/ui/use-toast';
 
 export const DashboardAppointments = () => {
   const { currentUser } = useAuth();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
-  const { t } = useTranslation(['doctorDashboard', 'appointments']);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const { data: appointments, isLoading } = useQuery({
     queryKey: ['doctorAppointments', currentUser?.uid],
@@ -32,10 +33,48 @@ export const DashboardAppointments = () => {
       appointmentDate.getFullYear() === selectedDate.getFullYear();
   });
 
+  // Separate pending and scheduled appointments
+  const pendingAppointments = selectedDateAppointments?.filter(a => a.status === 'pending') || [];
+  const scheduledAppointments = selectedDateAppointments?.filter(a => a.status !== 'pending') || [];
+
   // Function to get dates with appointments for the calendar
   const getDatesWithAppointments = () => {
     if (!appointments) return [];
     return appointments.map(appointment => convertToDate(appointment.date));
+  };
+
+  const handleApprove = async (appointmentId: string) => {
+    try {
+      await appointmentService.updateAppointmentStatus(appointmentId, 'scheduled');
+      queryClient.invalidateQueries({ queryKey: ['doctorAppointments'] });
+      toast({
+        title: "Approved",
+        description: "Appointment has been approved",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Please try again",
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleReject = async (appointmentId: string) => {
+    try {
+      await appointmentService.updateAppointmentStatus(appointmentId, 'cancelled');
+      queryClient.invalidateQueries({ queryKey: ['doctorAppointments'] });
+      toast({
+        title: "Rejected",
+        description: "Appointment has been rejected",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Please try again",
+        variant: 'destructive',
+      });
+    }
   };
 
   if (isLoading) {
@@ -74,14 +113,58 @@ export const DashboardAppointments = () => {
             className="rounded-md border"
           />
           
+          {/* Pending Appointments Section */}
+          {pendingAppointments.length > 0 && (
+            <div className="space-y-2 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <h4 className="font-medium text-sm text-yellow-900 dark:text-yellow-100">
+                {t('appointments:pending')} ({pendingAppointments.length})
+              </h4>
+              <div className="space-y-2">
+                {pendingAppointments.map((appointment) => (
+                  <div 
+                    key={appointment.id} 
+                    className="flex items-center justify-between p-2 bg-white dark:bg-slate-800 border rounded-lg"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{appointment.patientName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {convertToDate(appointment.date).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="default"
+                        onClick={() => handleApprove(appointment.id!)}
+                      >
+                        {t('appointments:approve')}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-destructive border-destructive"
+                        onClick={() => handleReject(appointment.id!)}
+                      >
+                        {t('appointments:reject')}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Scheduled Appointments Section */}
           <div className="space-y-2">
             <h4 className="font-medium text-sm">
-              {selectedDateAppointments && selectedDateAppointments.length > 0 
+              {scheduledAppointments && scheduledAppointments.length > 0 
                 ? t('doctorDashboard:appointments.forDate', { date: selectedDate?.toLocaleDateString() })
-                : t('doctorDashboard:appointments.noAppointments')}
+                : selectedDateAppointments && selectedDateAppointments.length === 0
+                ? t('doctorDashboard:appointments.noAppointments')
+                : null}
             </h4>
             <div className="space-y-2">
-              {selectedDateAppointments?.map((appointment) => (
+              {scheduledAppointments?.map((appointment) => (
                 <div 
                   key={appointment.id} 
                   className="flex items-center justify-between p-2 border rounded-lg"

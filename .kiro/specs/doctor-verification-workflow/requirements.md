@@ -120,6 +120,26 @@ The existing `approvalStatus` Firestore field is replaced by `doctorVerification
 
 ---
 
+### Requirement 6: Admin Email Notification on Approval or Rejection
+
+**User Story:** As an admin, I want the system to automatically send an email to a doctor when I approve or reject their application, so that the doctor is promptly informed of the decision without needing to log back in to check.
+
+#### Acceptance Criteria
+
+1. WHEN an admin clicks "Approve" for a pending doctor and the Firestore update succeeds, THE Admin_Approvals_Panel SHALL trigger an email to the doctor's registered email address informing them that their application has been approved and that they can now log in to access the platform.
+
+2. WHEN an admin clicks "Reject" for a pending doctor and the Firestore update succeeds, THE Admin_Approvals_Panel SHALL trigger an email to the doctor's registered email address informing them that their application was not approved and providing a support contact link for follow-up.
+
+3. THE approval email SHALL include: the doctor's name, a confirmation that the account is now active, and a direct link to the login page.
+
+4. THE rejection email SHALL include: the doctor's name, a statement that the application was not approved, and a support contact email or link.
+
+5. IF the email sending fails, THE Admin_Approvals_Panel SHALL log the error but SHALL NOT block or reverse the Firestore approval/rejection update — the status change is authoritative and the email is best-effort.
+
+6. THE email sending SHALL be triggered client-side by writing a document to a Firestore `mail` collection (compatible with the Firebase Extension "Trigger Email from Firestore"), so that no separate backend server is required.
+
+---
+
 ### Requirement 5: Field Migration from `approvalStatus` to `doctorVerificationStatus`
 
 **User Story:** As a developer maintaining CareLink, I want all references to the old `approvalStatus` field replaced with `doctorVerificationStatus`, so that the codebase is consistent and the Firestore schema is unambiguous.

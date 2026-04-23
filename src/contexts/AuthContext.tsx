@@ -31,6 +31,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   refreshUserData: () => Promise<DocumentData | void>;
   updateSettings: (settings: any) => Promise<boolean>;
+  resubmitDocuments: (documents: { doctorLicense?: File; diploma?: File; certification?: File }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -152,15 +153,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Step 2: upload documents to Storage if provided
           let credentialDocuments: Record<string, string> = {};
           if (doctorDocuments) {
-            const hasFiles = Object.values(doctorDocuments).some(Boolean);
-            if (hasFiles) {
+            const hasRequiredFiles = doctorDocuments.doctorLicense && doctorDocuments.diploma;
+            if (hasRequiredFiles) {
               try {
                 credentialDocuments = await uploadDoctorDocuments(user.uid, doctorDocuments) as Record<string, string>;
+                // Verify that required documents were uploaded successfully
+                if (!credentialDocuments.doctorLicense || !credentialDocuments.diploma) {
+                  throw new Error("Required documents (Medical License and Diploma) failed to upload. Please try again.");
+                }
               } catch (uploadError) {
-                // Upload failed (e.g. CORS) — register anyway without documents
-                // Admin will see empty document slots
-                console.warn("Document upload failed, registering without documents:", uploadError);
+                // Upload failed - clean up and throw error to block registration
+                console.error("Document upload failed:", uploadError);
+                throw new Error("Failed to upload required documents. Please check your internet connection and try again.");
               }
+            } else {
+              // Required documents not provided - block registration
+              throw new Error("Medical License and Diploma are required for doctor registration.");
             }
           }
 
@@ -168,6 +176,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           await setDoc(firestoreDoc(db, "users", user.uid), {
             ...userDataWithRole,
             doctorVerificationStatus: "pending",
+            status: 'active',
             credentialDocuments,
             createdAt: Timestamp.now(),
             email,
@@ -225,8 +234,26 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const freshUserData = await getUserData(user.uid);
         setUserData(freshUserData);
 
+        // Block suspended users immediately
+        if (freshUserData?.status === 'suspended') {
+          await logoutUser();
+          setCurrentUser(null);
+          setUserData(null);
+          toast({
+            variant: "destructive",
+            title: "Account suspended",
+            description: "Your account has been suspended. Please contact support@carelink.com for assistance.",
+          });
+          return;
+        }
+
         if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "pending") {
           navigate("/doctor/pending");
+          return;
+        }
+
+        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "resubmit") {
+          navigate("/doctor/resubmit");
           return;
         }
 
@@ -234,7 +261,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           navigate("/doctor/rejected");
           return;
         }
-
         toast({
           title: "Logged in successfully!",
           description: `Welcome back to CareLink, ${freshUserData?.name || "User"}`,
@@ -275,6 +301,46 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const resubmitDocuments = async (
+    documents: { doctorLicense?: File; diploma?: File; certification?: File }
+  ) => {
+    if (!currentUser) return;
+    setLoading(true);
+    try {
+      const { doc: firestoreDoc, updateDoc, Timestamp } = await import("firebase/firestore");
+
+      const credentialDocuments = await uploadDoctorDocuments(currentUser.uid, documents) as Record<string, string>;
+
+      if (!credentialDocuments.doctorLicense || !credentialDocuments.diploma) {
+        throw new Error("Required documents (Medical License and Diploma) failed to upload. Please try again.");
+      }
+
+      await updateDoc(firestoreDoc(db, "users", currentUser.uid), {
+        credentialDocuments,
+        doctorVerificationStatus: "pending",
+        resubmitNote: null,
+        resubmittedAt: Timestamp.now(),
+      });
+
+      await refreshUserData();
+
+      toast({
+        title: "Documents resubmitted!",
+        description: "Your application is back under review. You will be notified once a decision is made.",
+      });
+
+      navigate("/doctor/pending");
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Resubmission failed",
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     currentUser,
     userData,
@@ -285,6 +351,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAuthenticated: !!currentUser,
     refreshUserData,
     updateSettings,
+    resubmitDocuments,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -9,7 +9,8 @@ export interface User {
   lastName: string;
   email: string;
   role: 'admin' | 'doctor' | 'patient';
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'suspended';
+  doctorVerificationStatus?: 'pending' | 'approved' | 'rejected' | 'resubmit';
   joinedDate?: Date | Timestamp;
   lastLogin?: Date | Timestamp;
   createdAt?: Date | Timestamp;
@@ -66,7 +67,7 @@ const mockUsers: User[] = [
     lastName: 'Johnson',
     email: 'robert.johnson@example.com',
     role: 'patient',
-    status: 'inactive',
+    status: 'active',
     joinedDate: new Date('2023-03-10'),
     lastLogin: new Date('2023-03-15')
   }
@@ -116,7 +117,7 @@ export const adminService = {
 
       // Build query
       let usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(pageSize));
-      
+
       // Apply filters if any
       if (filters) {
         if (filters.role && filters.role !== 'all') {
@@ -127,12 +128,12 @@ export const adminService = {
         }
         // Add more filters as needed
       }
-      
+
       // Apply pagination
       if (lastDoc) {
         usersQuery = query(usersQuery, startAfter(lastDoc));
       }
-      
+
       const querySnapshot = await getDocs(usersQuery);
       const users: User[] = [];
       querySnapshot.forEach((doc) => {
@@ -149,10 +150,10 @@ export const adminService = {
           id: doc.id
         });
       });
-      
+
       // Get total count - this is inefficient for large collections and should be handled differently in production
       const countSnapshot = await getDocs(collection(db, 'users'));
-      
+
       return {
         users,
         lastDoc: querySnapshot.docs[querySnapshot.docs.length - 1] || null,
@@ -171,14 +172,14 @@ export const adminService = {
         if (!user) throw new Error('User not found');
         return user;
       }
-      
+
       const docRef = doc(db, 'users', id);
       const docSnap = await getDoc(docRef);
-      
+
       if (!docSnap.exists()) {
         throw new Error('User not found');
       }
-      
+
       const data = docSnap.data() as User;
       // Convert Firestore Timestamps to Date objects
       if (data.joinedDate && 'toDate' in data.joinedDate) {
@@ -187,7 +188,7 @@ export const adminService = {
       if (data.lastLogin && 'toDate' in data.lastLogin) {
         data.lastLogin = data.lastLogin.toDate();
       }
-      
+
       return {
         ...data,
         id: docSnap.id
@@ -210,14 +211,14 @@ export const adminService = {
         mockUsers.push(newUser);
         return newUser;
       }
-      
+
       // Add timestamps
       const userWithTimestamps = {
         ...user,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now()
       };
-      
+
       const docRef = await addDoc(collection(db, 'users'), userWithTimestamps);
       return {
         ...user,
@@ -241,13 +242,13 @@ export const adminService = {
         };
         return mockUsers[index];
       }
-      
+
       const userRef = doc(db, 'users', id);
       await updateDoc(userRef, {
         ...userData,
         updatedAt: Timestamp.now()
       });
-      
+
       // Fetch and return the updated user
       const updatedDocSnap = await getDoc(userRef);
       return {
@@ -268,7 +269,7 @@ export const adminService = {
         mockUsers.splice(index, 1);
         return true;
       }
-      
+
       await deleteDoc(doc(db, 'users', id));
       return true;
     } catch (error) {
@@ -289,11 +290,11 @@ export const adminService = {
           systemHealth: '99.9%'
         };
       }
-      
+
       // Get user counts
       const usersSnapshot = await getDocs(collection(db, 'users'));
       const totalUsers = usersSnapshot.size;
-      
+
       // Count active doctors
       const doctorsQuery = query(
         collection(db, 'users'),
@@ -302,7 +303,7 @@ export const adminService = {
       );
       const doctorsSnapshot = await getDocs(doctorsQuery);
       const activeDoctors = doctorsSnapshot.size;
-      
+
       // Count active patients
       const patientsQuery = query(
         collection(db, 'users'),
@@ -311,10 +312,10 @@ export const adminService = {
       );
       const patientsSnapshot = await getDocs(patientsQuery);
       const activePatients = patientsSnapshot.size;
-      
+
       // In a real application, system health would be fetched from a monitoring service
       const systemHealth = '99.9%';
-      
+
       return {
         totalUsers,
         activeDoctors,
@@ -326,7 +327,7 @@ export const adminService = {
       throw new Error('Failed to fetch system statistics');
     }
   },
-  
+
   // Support Tickets
   async getSupportTickets(): Promise<SupportTicket[]> {
     try {
@@ -340,32 +341,32 @@ export const adminService = {
           };
         });
       }
-      
+
       const ticketsQuery = query(
         collection(db, 'supportTickets'),
         orderBy('createdAt', 'desc'),
         limit(10)
       );
-      
+
       const querySnapshot = await getDocs(ticketsQuery);
       const tickets: SupportTicket[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         const data = doc.data() as SupportTicket;
-        
+
         // Convert Firestore Timestamps to Date objects
-        const createdAt = data.createdAt && 'toDate' in data.createdAt 
-          ? data.createdAt.toDate() 
+        const createdAt = data.createdAt && 'toDate' in data.createdAt
+          ? data.createdAt.toDate()
           : data.createdAt;
-          
-        const updatedAt = data.updatedAt && 'toDate' in data.updatedAt 
-          ? data.updatedAt.toDate() 
+
+        const updatedAt = data.updatedAt && 'toDate' in data.updatedAt
+          ? data.updatedAt.toDate()
           : data.updatedAt;
-          
-        const time = data.time && 'toDate' in data.time 
-          ? data.time.toDate() 
+
+        const time = data.time && 'toDate' in data.time
+          ? data.time.toDate()
           : data.time;
-        
+
         tickets.push({
           ...data,
           id: doc.id,
@@ -374,7 +375,7 @@ export const adminService = {
           time: time as Date
         });
       });
-      
+
       return tickets;
     } catch (error) {
       console.error('Error fetching support tickets:', error);

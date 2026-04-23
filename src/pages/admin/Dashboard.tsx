@@ -28,6 +28,7 @@ const AdminDashboard = () => {
     activeDoctors: '0',
     activePatients: '0',
     pendingDoctors: '0',
+    pendingSupportTickets: '0',
   });
   
   const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
@@ -49,11 +50,18 @@ const AdminDashboard = () => {
         const activePatients = allUsers.filter(u => u.role === 'patient').length;
         const pendingDoctors = allUsers.filter(u => u.role === 'doctor' && u.doctorVerificationStatus === 'pending').length;
 
+        // Fetch pending support tickets count
+        const pendingTicketsSnap = await getDocs(
+          query(collection(db, 'supportTickets'), where('status', '==', 'Open'))
+        );
+        const pendingSupportTickets = pendingTicketsSnap.size;
+
         setStats({
           totalUsers: totalUsers.toString(),
           activeDoctors: activeDoctors.toString(),
           activePatients: activePatients.toString(),
           pendingDoctors: pendingDoctors.toString(),
+          pendingSupportTickets: pendingSupportTickets.toString(),
         });
 
         // Recent registrations — last 5 users sorted by createdAt
@@ -114,9 +122,9 @@ const AdminDashboard = () => {
       icon: UserCheck,
     },
     {
-      title: 'Patients',
-      value: stats.activePatients,
-      icon: UserPlus,
+      title: 'Pending Support Tickets',
+      value: stats.pendingSupportTickets,
+      icon: TicketCheck,
     },
     {
       title: 'Pending Approvals',

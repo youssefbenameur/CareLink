@@ -174,7 +174,21 @@ Migrate the doctor approval system from the legacy `approvalStatus` field and ge
     - `approved` → redirect to `/doctor/dashboard` (existing behavior)
     - _Requirements: 2.1, 4.3_
 
-- [ ] 11. Final checkpoint — Ensure all tests pass
+- [x] 11. Add email notification on doctor approval / rejection
+  - [x] 11.1 Add `sendApprovalEmail` helper to `firebase.ts`
+    - Import `addDoc` from `firebase/firestore`
+    - Write a document to the Firestore `mail` collection with `to`, `message.subject`, and `message.html` fields
+    - Approval email: subject "Your CareLink application has been approved", body includes doctor name and a login link
+    - Rejection email: subject "Update on your CareLink application", body includes doctor name and support contact link
+    - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.6_
+
+  - [x] 11.2 Call `sendApprovalEmail` in `DoctorApprovals.handleApproval`
+    - After the `updateDoc` call succeeds, call `sendApprovalEmail(doctor.email, doctor.name, status)`
+    - Wrap the call in a try/catch — log the error with `console.warn` but do NOT show a blocking toast or revert the status
+    - The doctor's email and name must be read from the local `selectedDoctor` or the `doctors` list by `doctorId`
+    - _Requirements: 6.1, 6.2, 6.5_
+
+- [ ] 12. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

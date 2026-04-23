@@ -17,6 +17,7 @@ import {
   setDoc,
   getDoc,
   updateDoc,
+  addDoc,
   Timestamp,
   query,
   where,
@@ -115,7 +116,8 @@ const fileToBase64 = (file: File): Promise<string> =>
     img.src = url;
   });
 
-// Upload doctor credential documents - stores as compressed base64 in Firestore
+// Upload doctor credential documents to Firebase Storage
+// Upload doctor credential documents - stores as compressed base64 images
 export const uploadDoctorDocuments = async (
   userId: string,
   documents: { doctorLicense?: File; diploma?: File; certification?: File }
@@ -124,10 +126,23 @@ export const uploadDoctorDocuments = async (
 
   for (const [key, file] of Object.entries(documents)) {
     if (!file) continue;
-    const base64 = await fileToBase64(file);
-    (result as Record<string, string>)[key] = base64;
+
+    try {
+      console.log(`Converting ${key} to base64:`, file.name);
+      const base64 = await fileToBase64(file);
+      (result as Record<string, string>)[key] = base64;
+      console.log(`✓ ${key} converted successfully`);
+    } catch (error: any) {
+      console.error(`Error converting ${key}:`, error);
+      throw new Error(`Failed to process ${key}. ${error.message}`);
+    }
   }
 
+  if (Object.keys(result).length === 0) {
+    throw new Error("No documents were processed successfully.");
+  }
+
+  console.log("All documents processed successfully");
   return result;
 };
 
@@ -137,16 +152,15 @@ export const registerUser = async (email: string, password: string, userData: an
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Make sure we preserve the role from userData
     const userRole = userData.role || 'patient';
-    console.log(`Registering user with role: ${userRole}`); // Debugging
+    console.log(`Registering user with role: ${userRole}`);
 
     const doctorVerificationStatus = userRole === 'doctor' ? 'pending' : undefined;
 
-    // Save additional user data to Firestore
     await setDoc(doc(db, "users", user.uid), {
       ...userData,
       role: userRole,
+      status: 'active',
       ...(doctorVerificationStatus ? { doctorVerificationStatus } : {}),
       createdAt: Timestamp.now(),
       email
@@ -220,9 +234,17 @@ export const sendPasswordResetEmail = async (email: string) => {
   }
 };
 
-export const getAllDoctors = async () => {
+export const getAllDoctors = async (verificationStatus?: 'pending' | 'approved' | 'rejected') => {
   try {
-    const q = query(collection(db, 'users'), where("role", "==", "doctor"));
+    let q;
+    if (verificationStatus) {
+      q = query(collection(db, 'users'),
+        where("role", "==", "doctor"),
+        where("doctorVerificationStatus", "==", verificationStatus)
+      );
+    } else {
+      q = query(collection(db, 'users'), where("role", "==", "doctor"));
+    }
     const querySnapshot = await getDocs(q);
 
     const doctors: any[] = [];
@@ -238,4 +260,30 @@ export const getAllDoctors = async () => {
     console.error("Error getting all doctors:", error);
     throw error;
   }
+};
+
+export const sendApprovalEmail = async (
+  doctorEmail: string,
+  doctorName: string,
+  status: 'approved' | 'rejected'
+): Promise<void> => {
+  const loginUrl = `${window.location.origin}/login`;
+  const subject = status === 'approved'
+    ? 'Your CareLink application has been approved'
+    : 'Update on your CareLink application';
+
+  const html = status === 'approved'
+    ? `<p>Hi ${doctorName},</p>
+       <p>Congratulations! Your doctor account on <strong>CareLink</strong> has been <strong>approved</strong>.</p>
+       <p>You can now <a href="${loginUrl}">log in</a> and start providing care.</p>
+       <p>Welcome to the CareLink team!</p>`
+    : `<p>Hi ${doctorName},</p>
+       <p>Thank you for applying to CareLink. Unfortunately, your application was <strong>not approved</strong> at this time.</p>
+       <p>If you have questions or would like to follow up, please contact us at
+       <a href="mailto:support@carelink.com">support@carelink.com</a>.</p>`;
+
+  await addDoc(collection(db, 'mail'), {
+    to: doctorEmail,
+    message: { subject, html },
+  });
 };

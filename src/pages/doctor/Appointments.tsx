@@ -58,7 +58,8 @@ const statusStyle = (status: string) => {
   if (status === 'scheduled') return 'bg-blue-50 text-blue-700 border-blue-200';
   if (status === 'completed') return 'bg-green-50 text-green-700 border-green-200';
   if (status === 'cancelled') return 'bg-red-50 text-red-700 border-red-200';
-  return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+  if (status === 'pending') return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+  return 'bg-gray-50 text-gray-700 border-gray-200';
 };
 
 const DoctorAppointments = () => {
@@ -86,7 +87,7 @@ const DoctorAppointments = () => {
     }
   };
 
-  const updateStatus = async (id: string, status: 'scheduled' | 'completed' | 'cancelled') => {
+  const updateStatus = async (id: string, status: 'scheduled' | 'completed' | 'cancelled' | 'pending') => {
     try {
       if (status === 'cancelled') {
         setConfirmCancelId(id);
@@ -94,7 +95,8 @@ const DoctorAppointments = () => {
       }
       await appointmentService.updateAppointmentStatus(id, status);
       setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-      toast({ title: 'Updated', description: `Appointment marked as ${status}.` });
+      const statusLabel = status === 'pending' ? 'pending' : status === 'scheduled' ? 'approved' : status;
+      toast({ title: 'Updated', description: `Appointment marked as ${statusLabel}.` });
     } catch {
       toast({ title: 'Error', description: 'Failed to update.', variant: 'destructive' });
     }
@@ -290,7 +292,7 @@ const Skeletons = () => (
 
 interface AppointmentCardProps {
   appointment: Appointment;
-  onStatusUpdate: (id: string, status: 'scheduled' | 'completed' | 'cancelled') => Promise<void>;
+  onStatusUpdate: (id: string, status: 'scheduled' | 'completed' | 'cancelled' | 'pending') => Promise<void>;
   showDate?: boolean;
   compact?: boolean;
 }
@@ -332,18 +334,36 @@ const AppointmentCard = ({ appointment, onStatusUpdate, showDate, compact }: App
               </div>
             </div>
           </div>
-          {!compact && appointment.status === 'scheduled' && (
+          {!compact && (appointment.status === 'scheduled' || appointment.status === 'pending') && (
             <div className="flex items-center gap-2 shrink-0">
-              <Button size="sm" variant="outline"
-                className="h-7 text-xs gap-1 text-green-600 border-green-200 hover:bg-green-50"
-                onClick={() => onStatusUpdate(appointment.id!, 'completed')}>
-                <CheckCircle2 className="h-3.5 w-3.5" /> Complete
-              </Button>
-              <Button size="sm" variant="outline"
-                className="h-7 text-xs gap-1 text-red-500 border-red-200 hover:bg-red-50"
-                onClick={() => onStatusUpdate(appointment.id!, 'cancelled')}>
-                <XCircle className="h-3.5 w-3.5" /> Cancel
-              </Button>
+              {appointment.status === 'pending' && (
+                <>
+                  <Button size="sm" variant="default"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => onStatusUpdate(appointment.id!, 'scheduled')}>
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Approve
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    className="h-7 text-xs gap-1 text-red-500 border-red-200 hover:bg-red-50"
+                    onClick={() => onStatusUpdate(appointment.id!, 'cancelled')}>
+                    <XCircle className="h-3.5 w-3.5" /> Reject
+                  </Button>
+                </>
+              )}
+              {appointment.status === 'scheduled' && (
+                <>
+                  <Button size="sm" variant="outline"
+                    className="h-7 text-xs gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                    onClick={() => onStatusUpdate(appointment.id!, 'completed')}>
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Complete
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    className="h-7 text-xs gap-1 text-red-500 border-red-200 hover:bg-red-50"
+                    onClick={() => onStatusUpdate(appointment.id!, 'cancelled')}>
+                    <XCircle className="h-3.5 w-3.5" /> Cancel
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>

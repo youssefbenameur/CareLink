@@ -67,7 +67,7 @@ const AppointmentSkeletons = () => (
 
 interface AppointmentCardProps {
   appointment: Appointment;
-  onStatusUpdate: (appointmentId: string, status: 'scheduled' | 'completed' | 'cancelled') => Promise<void>;
+  onStatusUpdate: (appointmentId: string, status: 'scheduled' | 'completed' | 'cancelled' | 'pending') => Promise<void>;
 }
 
 const AppointmentCard = ({ appointment, onStatusUpdate }: AppointmentCardProps) => {
@@ -113,12 +113,15 @@ const AppointmentCard = ({ appointment, onStatusUpdate }: AppointmentCardProps) 
       </div>
       <div className="flex flex-wrap gap-2">
         <Badge variant={
+          appointment.status === 'pending' ? 'outline' :
           appointment.status === 'scheduled' ? 'default' :
           appointment.status === 'completed' ? 'secondary' : 'destructive'
         }>{appointment.status}</Badge>
-        {appointment.status === 'scheduled' && (
-          <AppointmentActions appointmentId={appointment.id!} onStatusUpdate={onStatusUpdate} />
-        )}
+        <AppointmentActions 
+          appointmentId={appointment.id!} 
+          status={appointment.status as 'scheduled' | 'completed' | 'cancelled' | 'pending'}
+          onStatusUpdate={onStatusUpdate} 
+        />
       </div>
     </div>
   );
@@ -126,29 +129,58 @@ const AppointmentCard = ({ appointment, onStatusUpdate }: AppointmentCardProps) 
 
 interface AppointmentActionsProps {
   appointmentId: string;
-  onStatusUpdate: (appointmentId: string, status: 'scheduled' | 'completed' | 'cancelled') => Promise<void>;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'pending';
+  onStatusUpdate: (appointmentId: string, status: 'scheduled' | 'completed' | 'cancelled' | 'pending') => Promise<void>;
 }
 
-const AppointmentActions = ({ appointmentId, onStatusUpdate }: AppointmentActionsProps) => {
-  return (
-    <div className="flex space-x-2">
-      <Button 
-        variant="outline" 
-        size="sm"
-        onClick={() => onStatusUpdate(appointmentId, 'completed')}
-      >
-        Complete
-      </Button>
-      <Button 
-        variant="outline" 
-        size="sm" 
-        className="text-destructive border-destructive"
-        onClick={() => onStatusUpdate(appointmentId, 'cancelled')}
-      >
-        Cancel
-      </Button>
-    </div>
-  );
+const AppointmentActions = ({ appointmentId, status, onStatusUpdate }: AppointmentActionsProps) => {
+  const { t } = useTranslation(['appointments', 'common']);
+  
+  if (status === 'pending') {
+    return (
+      <div className="flex space-x-2">
+        <Button 
+          variant="default" 
+          size="sm"
+          onClick={() => onStatusUpdate(appointmentId, 'scheduled')}
+        >
+          {t('appointments:approve')}
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-destructive border-destructive"
+          onClick={() => onStatusUpdate(appointmentId, 'cancelled')}
+        >
+          {t('appointments:reject')}
+        </Button>
+      </div>
+    );
+  }
+
+  if (status === 'scheduled') {
+    return (
+      <div className="flex space-x-2">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => onStatusUpdate(appointmentId, 'completed')}
+        >
+          {t('appointments:complete')}
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="text-destructive border-destructive"
+          onClick={() => onStatusUpdate(appointmentId, 'cancelled')}
+        >
+          {t('appointments:cancel')}
+        </Button>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default AppointmentsList;

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { User as UserIcon, Edit, Trash2, Search, AlertCircle, RefreshCw } from 'lucide-react';
+import { User as UserIcon, Edit, Trash2, Search, AlertCircle, RefreshCw, ShieldCheck, ShieldOff } from 'lucide-react';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,20 +26,20 @@ const transformUserData = (users: User[]) => {
     email: user.email || '',
     role: user.role || 'patient',
     status: user.status || 'active',
-    // Convert timestamps/dates to Date objects
-    createdAt: user.createdAt ? 
-      (typeof user.createdAt === 'string' ? 
-        new Date(user.createdAt) : 
-        'toDate' in user.createdAt ? 
-          user.createdAt.toDate() : 
-          user.createdAt) : 
+    doctorVerificationStatus: (user as any).doctorVerificationStatus ?? undefined,
+    createdAt: user.createdAt ?
+      (typeof user.createdAt === 'string' ?
+        new Date(user.createdAt) :
+        'toDate' in user.createdAt ?
+          user.createdAt.toDate() :
+          user.createdAt) :
       new Date(),
-    lastLogin: user.lastLogin ? 
-      (typeof user.lastLogin === 'string' ? 
-        new Date(user.lastLogin) : 
-        'toDate' in user.lastLogin ? 
-          user.lastLogin.toDate() : 
-          user.lastLogin) : 
+    lastLogin: user.lastLogin ?
+      (typeof user.lastLogin === 'string' ?
+        new Date(user.lastLogin) :
+        'toDate' in user.lastLogin ?
+          user.lastLogin.toDate() :
+          user.lastLogin) :
       new Date()
   }));
 };
@@ -65,7 +65,9 @@ const ManageUsers = () => {
         setLoading(true);
         // Fetch a larger page so doctors show up too (seeded users share the same createdAt)
         const userData = await adminService.getUsers(200);
-        const transformedUsers = transformUserData(userData.users);
+        const transformedUsers = transformUserData(userData.users).filter(u =>
+          u.role !== 'doctor' || u.doctorVerificationStatus === 'approved'
+        );
         
         setUsers(transformedUsers);
         setFilteredUsers(transformedUsers);
@@ -172,7 +174,7 @@ const ManageUsers = () => {
     const lastName = formData.get('lastName') as string;
     const email = formData.get('email') as string;
     const role = formData.get('role') as "admin" | "doctor" | "patient";
-    const status = formData.get('status') as "active" | "inactive" | "suspended";
+    const status = formData.get('status') as "active" | "suspended";
     
     try {
       // Create user with proper User type
@@ -218,7 +220,7 @@ const ManageUsers = () => {
     const lastName = formData.get('lastName') as string;
     const email = formData.get('email') as string;
     const role = formData.get('role') as "admin" | "doctor" | "patient";
-    const status = formData.get('status') as "active" | "inactive" | "suspended";
+    const status = formData.get('status') as "active" | "suspended";
     
     const updatedUser: User = {
       ...userToEdit,
@@ -230,6 +232,17 @@ const ManageUsers = () => {
     };
     
     handleUpdateUser(updatedUser);
+  };
+
+  const getVerificationBadge = (user: User) => {
+    if (user.role !== 'doctor') return null;
+    switch (user.doctorVerificationStatus) {
+      case 'approved':  return <Badge className="bg-green-600 text-xs">Approved</Badge>;
+      case 'pending':   return <Badge className="bg-yellow-500 text-xs">Pending</Badge>;
+      case 'resubmit':  return <Badge className="bg-orange-500 text-xs">Re-upload</Badge>;
+      case 'rejected':  return <Badge variant="destructive" className="text-xs">Rejected</Badge>;
+      default:          return <Badge variant="outline" className="text-xs">Unverified</Badge>;
+    }
   };
 
   const getRoleBadge = (role: string) => {
@@ -245,12 +258,24 @@ const ManageUsers = () => {
     }
   };
 
+  const handleToggleStatus = async (user: User) => {
+    const newStatus = user.status === 'active' ? 'suspended' : 'active';
+    try {
+      await adminService.updateUser(user.id || '', { status: newStatus });
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: newStatus } : u));
+      toast({
+        title: newStatus === 'active' ? 'User activated' : 'User suspended',
+        description: `${user.firstName} ${user.lastName} is now ${newStatus}.`,
+      });
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('common:error'), description: t('common:errors.updateFailed') });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
         return <Badge className="bg-green-600">{t('admin:manageUsers.filters.active')}</Badge>;
-      case 'inactive':
-        return <Badge variant="secondary">{t('admin:manageUsers.filters.inactive')}</Badge>;
       case 'suspended':
         return <Badge variant="destructive">{t('admin:manageUsers.filters.suspended')}</Badge>;
       default:
@@ -333,7 +358,6 @@ const ManageUsers = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">{t('admin:manageUsers.filters.active')}</SelectItem>
-                      <SelectItem value="inactive">{t('admin:manageUsers.filters.inactive')}</SelectItem>
                       <SelectItem value="suspended">{t('admin:manageUsers.filters.suspended')}</SelectItem>
                     </SelectContent>
                   </Select>
@@ -396,7 +420,6 @@ const ManageUsers = () => {
                   <SelectContent>
                     <SelectItem value="all">{t('admin:manageUsers.filters.allStatuses')}</SelectItem>
                     <SelectItem value="active">{t('admin:manageUsers.filters.active')}</SelectItem>
-                    <SelectItem value="inactive">{t('admin:manageUsers.filters.inactive')}</SelectItem>
                     <SelectItem value="suspended">{t('admin:manageUsers.filters.suspended')}</SelectItem>
                   </SelectContent>
                 </Select>
@@ -439,7 +462,9 @@ const ManageUsers = () => {
                           {user.firstName} {user.lastName}
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
-                        <TableCell>{getRoleBadge(user.role)}</TableCell>
+                        <TableCell>
+                          {getRoleBadge(user.role)}
+                        </TableCell>
                         <TableCell>{getStatusBadge(user.status)}</TableCell>
                         <TableCell>
                           {user.createdAt instanceof Date ? 
@@ -457,6 +482,16 @@ const ManageUsers = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              title={user.status === 'active' ? 'Suspend user' : 'Activate user'}
+                              onClick={() => handleToggleStatus(user)}
+                            >
+                              {user.status === 'active'
+                                ? <ShieldOff className="h-4 w-4 text-destructive" />
+                                : <ShieldCheck className="h-4 w-4 text-green-600" />}
+                            </Button>
                             <Sheet>
                               <SheetTrigger asChild>
                                 <Button variant="outline" size="icon" onClick={() => setUserToEdit(user)}>
@@ -527,7 +562,6 @@ const ManageUsers = () => {
                                         </SelectTrigger>
                                         <SelectContent>
                                           <SelectItem value="active">{t('admin:manageUsers.filters.active')}</SelectItem>
-                                          <SelectItem value="inactive">{t('admin:manageUsers.filters.inactive')}</SelectItem>
                                           <SelectItem value="suspended">{t('admin:manageUsers.filters.suspended')}</SelectItem>
                                         </SelectContent>
                                       </Select>

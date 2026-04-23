@@ -25,6 +25,9 @@ export const RoleRedirectPage = () => {
           if (verificationStatus === 'pending') {
             setRedirectInfo('verification pending page');
             setTimeout(() => navigate('/doctor/pending'), 1500);
+          } else if (verificationStatus === 'resubmit') {
+            setRedirectInfo('document resubmission page');
+            setTimeout(() => navigate('/doctor/resubmit'), 1500);
           } else if (verificationStatus === 'rejected') {
             setRedirectInfo('application status page');
             setTimeout(() => navigate('/doctor/rejected'), 1500);

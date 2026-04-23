@@ -16,8 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { Settings, User, LogOut } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "../LanguageSwitcher";
 
 interface HeaderProps {
   children?: React.ReactNode;
@@ -27,7 +25,6 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const { t } = useTranslation(["navigation", "common", "auth"]);
 
   const handleLogout = async () => {
     try {
@@ -90,8 +87,8 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
             className="mr-2"
             aria-label={
               theme === "dark"
-                ? t("common:switchToLight")
-                : t("common:switchToDark")
+                ? "Switch to light mode"
+                : "Switch to dark mode"
             }
           >
             {theme === "dark" ? (
@@ -100,8 +97,6 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
               <MoonIcon className="h-5 w-5" />
             )}
           </Button>
-
-          <LanguageSwitcher />
 
           {currentUser ? (
             <DropdownMenu>

@@ -251,6 +251,68 @@ The `PublicRoute` component must also be updated to redirect pending/rejected do
 
 ---
 
+## Email Notification via Firestore `mail` Collection
+
+### Approach
+
+Email sending is handled client-side by writing a document to the Firestore `mail` collection. This is compatible with the [Firebase Extension "Trigger Email from Firestore"](https://extensions.dev/extensions/firebase/firestore-send-email), which watches that collection and dispatches emails via a configured SMTP provider (e.g. SendGrid, Mailgun). No separate backend server is required.
+
+### `sendApprovalEmail` helper (`src/lib/firebase.ts`)
+
+```typescript
+export const sendApprovalEmail = async (
+  doctorEmail: string,
+  doctorName: string,
+  status: 'approved' | 'rejected'
+): Promise<void> => {
+  const subject = status === 'approved'
+    ? 'Your CareLink application has been approved'
+    : 'Update on your CareLink application';
+
+  const html = status === 'approved'
+    ? `<p>Hi ${doctorName},</p>
+       <p>Congratulations! Your doctor account on CareLink has been <strong>approved</strong>.</p>
+       <p>You can now <a href="${window.location.origin}/login">log in</a> and start providing care.</p>`
+    : `<p>Hi ${doctorName},</p>
+       <p>Thank you for applying to CareLink. Unfortunately, your application was <strong>not approved</strong> at this time.</p>
+       <p>If you have questions, please contact us at <a href="mailto:support@carelink.com">support@carelink.com</a>.</p>`;
+
+  await addDoc(collection(db, 'mail'), {
+    to: doctorEmail,
+    message: { subject, html },
+  });
+};
+```
+
+### DoctorApprovals — updated `handleApproval`
+
+After the successful `updateDoc` call, `handleApproval` calls `sendApprovalEmail`. Failure is caught and logged but does not affect the approval state:
+
+```typescript
+// After updateDoc succeeds:
+try {
+  await sendApprovalEmail(doctor.email, doctor.name, status);
+} catch (emailError) {
+  console.warn('Email notification failed (non-blocking):', emailError);
+}
+```
+
+### Data Model — Firestore `mail` document
+
+```typescript
+{
+  to: string;           // doctor's email address
+  message: {
+    subject: string;
+    html: string;
+  };
+}
+```
+
+The Firebase Extension picks this up automatically and sends the email. The document is write-only from the client; no read-back is needed.
+
+---
+
 ## Data Models
 
 ### Firestore `users` document (doctor)

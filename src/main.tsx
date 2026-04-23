@@ -7,13 +7,16 @@ import './i18n/i18n'
 import { BrowserRouter as Router } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <App />
+          <NotificationProvider>
+            <App />
+          </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>

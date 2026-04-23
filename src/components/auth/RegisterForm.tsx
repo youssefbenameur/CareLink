@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, User, Camera, X, Image } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Camera, X, FileText } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -78,7 +78,7 @@ const RegisterForm = () => {
     setDocumentSlots(prev => prev.map((slot, i) => {
       if (i !== slotIndex) return slot;
       if (!ALLOWED_TYPES.includes(file.type)) {
-        return { ...slot, file: null, error: 'Only JPG and PNG photos are accepted.' };
+        return { ...slot, file: null, error: 'Only JPG or PNG photos are accepted.' };
       }
       return { ...slot, file, error: null };
     }));
@@ -104,7 +104,7 @@ const RegisterForm = () => {
       setDocumentSlots(prev => prev.map(slot => {
         if (slot.required && slot.file === null) {
           hasErrors = true;
-          return { ...slot, error: 'This photo is required.' };
+          return { ...slot, error: 'This document is required.' };
         }
         return slot;
       }));
@@ -233,8 +233,8 @@ const RegisterForm = () => {
             {/* Doctor credential photo upload */}
             {formData.role === 'doctor' && (
               <div className="space-y-3 rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4">
-                <Label className="text-sm font-medium">Credential Photos</Label>
-                <p className="text-xs text-muted-foreground">Take a clear photo of each document (JPG or PNG).</p>
+                <Label className="text-sm font-medium">Credential Documents</Label>
+                <p className="text-xs text-muted-foreground">Upload each document as a JPG or PNG file.</p>
 
                 {documentSlots.map((slot, index) => (
                   <div key={slot.key} className="space-y-1">
