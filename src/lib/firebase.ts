@@ -8,7 +8,10 @@ import {
   signOut,
   onAuthStateChanged,
   User,
-  sendPasswordResetEmail as firebaseSendPasswordResetEmail
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from "firebase/auth";
 import {
   getFirestore,
@@ -234,7 +237,65 @@ export const sendPasswordResetEmail = async (email: string) => {
   }
 };
 
-export const getAllDoctors = async (verificationStatus?: 'pending' | 'approved' | 'rejected') => {
+export const changePassword = async (currentPassword: string, newPassword: string) => {
+  try {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      throw new Error("No user is currently logged in");
+    }
+
+    // Re-authenticate the user with their current password
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // Update to the new password
+    await updatePassword(user, newPassword);
+    return true;
+  } catch (error: any) {
+    console.error("Error changing password:", error);
+    if (error.code === "auth/wrong-password" || error.message.includes("password is invalid")) {
+      throw new Error("Current password is incorrect");
+    }
+    if (error.code === "auth/weak-password") {
+      throw new Error("New password is too weak. Use at least 6 characters");
+    }
+    throw error;
+  }
+};
+
+export const deleteUserAccount = async (password: string) => {
+  try {
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+      throw new Error("No user is currently logged in");
+    }
+
+    // Re-authenticate the user with their password
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+
+    // Delete user data from Firestore first
+    try {
+      await updateDoc(doc(db, "users", user.uid), {
+        deletedAt: new Date(),
+        status: 'deleted'
+      });
+    } catch (error) {
+      console.error("Error marking user as deleted in Firestore:", error);
+    }
+
+    // Delete the user account
+    await user.delete();
+    
+    return true;
+  } catch (error: any) {
+    console.error("Error deleting account:", error);
+    if (error.code === "auth/wrong-password" || error.message.includes("password is invalid")) {
+      throw new Error("Password is incorrect. Account not deleted.");
+    }
+    throw error;
+  }
+};
   try {
     let q;
     if (verificationStatus) {

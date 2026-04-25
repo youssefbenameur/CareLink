@@ -9,17 +9,33 @@ import { format, addMinutes, setMinutes, setHours, isBefore, isAfter } from 'dat
 import { appointmentService } from '@/services/appointmentService';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { getAllDoctors } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface Doctor {
+  id: string;
+  name: string;
+  specialty?: string;
+  experience?: string;
+  [key: string]: any;
+}
 
 interface BookAppointmentFormProps {
-  doctorId: string;
-  doctorName: string;
+  doctorId?: string;
+  doctorName?: string;
   selectedDate?: Date;
   onSuccess?: () => void;
 }
 
-export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSuccess }: BookAppointmentFormProps) => {
+export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDoctorName, selectedDate, onSuccess }: BookAppointmentFormProps) => {
   const { toast } = useToast();
   const { currentUser } = useAuth();
+  
+  // Doctor selection states
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(propDoctorId || '');
+  const [selectedDoctorName, setSelectedDoctorName] = useState<string>(propDoctorName || '');
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
   
   const [date, setDate] = useState<Date | undefined>(selectedDate || new Date());
   const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
@@ -30,6 +46,29 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Fetch all approved doctors on component mount
+  useEffect(() => {
+    const fetchApprovedDoctors = async () => {
+      try {
+        setLoadingDoctors(true);
+        const approvedDoctors = await getAllDoctors('approved');
+        setDoctors(approvedDoctors as Doctor[]);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load doctors",
+          variant: "destructive",
+        });
+      } finally {
+        setLoadingDoctors(false);
+      }
+    };
+    
+    fetchApprovedDoctors();
+  }, [toast]);
+  
+  
   // Update date when selectedDate changes from parent
   useEffect(() => {
     if (selectedDate) {
@@ -37,9 +76,18 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     }
   }, [selectedDate]);
   
+  // Handle doctor selection
+  const handleDoctorChange = (doctorId: string) => {
+    const doctor = doctors.find(d => d.id === doctorId);
+    if (doctor) {
+      setSelectedDoctorId(doctorId);
+      setSelectedDoctorName(doctor.name || '');
+    }
+  };
+  
   // Generate available times for the selected date
   useEffect(() => {
-    if (!date) {
+    if (!date || !selectedDoctorId) {
       setAvailableTimes([]);
       setBookedSlots([]);
       return;
@@ -64,11 +112,11 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     setSelectedTime(undefined);
 
     // Fetch booked slots for this doctor on this date
-    appointmentService.getBookedSlots(doctorId, date).then(setBookedSlots);
-  }, [date, doctorId]);
+    appointmentService.getBookedSlots(selectedDoctorId, date).then(setBookedSlots);
+  }, [date, selectedDoctorId]);
   
   const handleSubmit = async () => {
-    if (!date || !selectedTime || !appointmentType || !currentUser) {
+    if (!date || !selectedTime || !appointmentType || !currentUser || !selectedDoctorId) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -86,8 +134,8 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
     
     try {
       await appointmentService.createAppointment({
-        doctorId,
-        doctorName,
+        doctorId: selectedDoctorId,
+        doctorName: selectedDoctorName,
         patientId: currentUser.uid,
         date: appointmentDate,
         type: appointmentType,
@@ -98,7 +146,7 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
       
       toast({
         title: "Appointment requested",
-        description: `${format(appointmentDate, 'PPp')} with ${doctorName} - Awaiting doctor approval`,
+        description: `${format(appointmentDate, 'PPp')} with ${selectedDoctorName} - Awaiting doctor approval`,
       });
       
       // Reset form
@@ -135,6 +183,40 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
         <CardTitle>Book Appointment</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Doctor Selection */}
+        <div className="space-y-2">
+          <Label htmlFor="doctor">Select Doctor</Label>
+          {loadingDoctors ? (
+            <Skeleton className="w-full h-10" />
+          ) : (
+            <Select 
+              value={selectedDoctorId} 
+              onValueChange={handleDoctorChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a doctor" />
+              </SelectTrigger>
+              <SelectContent>
+                {doctors.map(doctor => (
+                  <SelectItem key={doctor.id} value={doctor.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{doctor.name}</span>
+                      {doctor.specialty && (
+                        <span className="text-sm text-muted-foreground">({doctor.specialty})</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {selectedDoctorId && (
+            <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
+              Selected: {selectedDoctorName}
+            </div>
+          )}
+        </div>
+        
         <div className="space-y-2">
           <Label>Appointment Type</Label>
           <Select 
@@ -209,7 +291,7 @@ export const BookAppointmentForm = ({ doctorId, doctorName, selectedDate, onSucc
       <CardFooter>
         <Button 
           onClick={handleSubmit}
-          disabled={!date || !selectedTime || isSubmitting}
+          disabled={!date || !selectedTime || !selectedDoctorId || isSubmitting}
           className="w-full"
         >
           {isSubmitting ? "Submitting..." : "Confirm Appointment"}

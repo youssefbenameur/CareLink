@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { Settings, User, LogOut } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { MoonIcon, SunIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface HeaderProps {
   children?: React.ReactNode;
@@ -25,6 +26,7 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+  const { t } = useTranslation();
 
   const handleLogout = async () => {
     try {

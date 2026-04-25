@@ -248,17 +248,50 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "pending") {
-          navigate("/doctor/pending");
+          await logoutUser();
+          setCurrentUser(null);
+          setUserData(null);
+          toast({
+            variant: "destructive",
+            title: "Account pending approval",
+            description: "Your account is still pending admin approval. You cannot log in yet.",
+          });
           return;
         }
 
         if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "resubmit") {
-          navigate("/doctor/resubmit");
+          await logoutUser();
+          setCurrentUser(null);
+          setUserData(null);
+          toast({
+            variant: "destructive",
+            title: "Resubmit required",
+            description: "Your documents need to be resubmitted. Please contact support@carelink.com for details.",
+          });
           return;
         }
 
         if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "rejected") {
-          navigate("/doctor/rejected");
+          await logoutUser();
+          setCurrentUser(null);
+          setUserData(null);
+          toast({
+            variant: "destructive",
+            title: "Account rejected",
+            description: "Your account application has been rejected. Please contact support@carelink.com for more information.",
+          });
+          return;
+        }
+
+        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus !== "approved") {
+          await logoutUser();
+          setCurrentUser(null);
+          setUserData(null);
+          toast({
+            variant: "destructive",
+            title: "Login not allowed",
+            description: "Your account is not approved for login.",
+          });
           return;
         }
         toast({

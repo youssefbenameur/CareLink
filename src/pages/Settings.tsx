@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   Mail, 
@@ -8,7 +9,9 @@ import {
   Calendar,
   Home,
   Save, 
-  Check
+  Check,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +27,7 @@ import { AnimatedSection } from '@/components/ui/animated-section';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Textarea } from '@/components/ui/textarea';
 import { userService } from '@/services/userService';
+import { changePassword, deleteUserAccount } from '@/lib/firebase';
 
 interface ProfileFormData {
   name: string;
@@ -36,6 +40,7 @@ interface ProfileFormData {
 const Settings = () => {
   const { currentUser, userData } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<ProfileFormData>({
     defaultValues: {
@@ -54,7 +59,17 @@ const Settings = () => {
     updates: false
   });
   
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  
   const [isSaving, setSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   useEffect(() => {
     if (userData) {
@@ -98,6 +113,117 @@ const Settings = () => {
       title: "Notification Preferences Updated",
       description: "Your notification settings have been saved.",
     });
+  };
+  
+  const handleChangePassword = async () => {
+    // Validation
+    if (!passwordData.currentPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your current password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!passwordData.newPassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter a new password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: "Validation Error",
+        description: "New password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Validation Error",
+        description: "New passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (passwordData.newPassword === passwordData.currentPassword) {
+      toast({
+        title: "Validation Error",
+        description: "New password must be different from current password",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      await changePassword(passwordData.currentPassword, passwordData.newPassword);
+      
+      // Clear the form
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+
+      toast({
+        title: "Success",
+        description: "Your password has been changed successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast({
+        title: "Password Change Failed",
+        description: error.message || "There was a problem changing your password. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      toast({
+        title: "Validation Error",
+        description: "Please enter your password to confirm account deletion",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsDeletingAccount(true);
+    try {
+      await deleteUserAccount(deletePassword);
+      
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+
+      // Redirect to home page
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "Delete Failed",
+        description: error.message || "There was a problem deleting your account. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setShowDeleteConfirm(false);
+      setDeletePassword('');
+    }
   };
   
   return (
@@ -350,6 +476,8 @@ const Settings = () => {
                       id="current-password"
                       type="password"
                       placeholder="Enter your current password"
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                     />
                   </div>
                   
@@ -360,6 +488,8 @@ const Settings = () => {
                         id="new-password"
                         type="password"
                         placeholder="Enter new password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                       />
                     </div>
                     
@@ -369,6 +499,8 @@ const Settings = () => {
                         id="confirm-password"
                         type="password"
                         placeholder="Confirm new password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                       />
                     </div>
                   </div>
@@ -378,9 +510,21 @@ const Settings = () => {
                   </p>
                 </CardContent>
                 <CardFooter>
-                  <Button>
-                    <Save className="mr-2 h-4 w-4" />
-                    Update Password
+                  <Button 
+                    onClick={handleChangePassword}
+                    disabled={isChangingPassword}
+                  >
+                    {isChangingPassword ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Update Password
+                      </>
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

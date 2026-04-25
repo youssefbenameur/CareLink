@@ -10,11 +10,13 @@ import { appointmentService, convertToDate } from '@/services/appointmentService
 import { Badge } from '@/components/ui/badge';
 import { Timestamp } from 'firebase/firestore';
 import { useToast } from '@/components/ui/use-toast';
+import { useTranslation } from 'react-i18next';
 
 export const DashboardAppointments = () => {
   const { currentUser } = useAuth();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   
   const { data: appointments, isLoading } = useQuery({

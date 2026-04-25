@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { AnimatedSection } from '@/components/ui/animated-section';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { changePassword } from '@/lib/firebase';
 
 const UserProfile = () => {
   const { currentUser, userData } = useAuth();
@@ -40,6 +41,14 @@ const UserProfile = () => {
     messages: true,
     updates: false
   });
+  
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,11 +73,86 @@ const UserProfile = () => {
     });
   };
   
-  const handleSaveSecurity = () => {
-    toast({
-      title: "Security Settings Updated",
-      description: "Your security preferences have been saved.",
-    });
+  const handleSaveSecurity = async () => {
+    // Check if any password field is filled
+    if (passwordData.currentPassword || passwordData.newPassword || passwordData.confirmPassword) {
+      // Validation
+      if (!passwordData.currentPassword) {
+        toast({
+          title: "Validation Error",
+          description: "Please enter your current password",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!passwordData.newPassword) {
+        toast({
+          title: "Validation Error",
+          description: "Please enter a new password",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (passwordData.newPassword.length < 6) {
+        toast({
+          title: "Validation Error",
+          description: "New password must be at least 6 characters long",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        toast({
+          title: "Validation Error",
+          description: "New passwords do not match",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (passwordData.newPassword === passwordData.currentPassword) {
+        toast({
+          title: "Validation Error",
+          description: "New password must be different from current password",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setIsChangingPassword(true);
+      try {
+        await changePassword(passwordData.currentPassword, passwordData.newPassword);
+        
+        // Clear the form
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+
+        toast({
+          title: "Success",
+          description: "Your password has been changed successfully.",
+        });
+      } catch (error: any) {
+        console.error('Error changing password:', error);
+        toast({
+          title: "Password Change Failed",
+          description: error.message || "There was a problem changing your password. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsChangingPassword(false);
+      }
+    } else {
+      toast({
+        title: "No Changes",
+        description: "Please fill in password fields to update your security settings.",
+      });
+    }
   };
   
   return (
@@ -294,6 +378,8 @@ const UserProfile = () => {
                           type="password"
                           placeholder="Enter current password"
                           className="pl-10"
+                          value={passwordData.currentPassword}
+                          onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
                         />
                       </div>
                     </div>
@@ -305,6 +391,8 @@ const UserProfile = () => {
                           id="new-password"
                           type="password"
                           placeholder="Enter new password"
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
                         />
                       </div>
                       
@@ -314,6 +402,8 @@ const UserProfile = () => {
                           id="confirm-password"
                           type="password"
                           placeholder="Confirm new password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
                         />
                       </div>
                     </div>
@@ -321,36 +411,24 @@ const UserProfile = () => {
                     <p className="text-sm text-muted-foreground">
                       Password must be at least 8 characters and include a combination of letters, numbers, and special characters.
                     </p>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Two-Factor Authentication</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Add an extra layer of security to your account
-                        </p>
-                      </div>
-                      <Button variant="outline">Set Up 2FA</Button>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Session Management</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Manage devices where you're currently logged in
-                        </p>
-                      </div>
-                      <Button variant="outline">View Sessions</Button>
-                    </div>
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleSaveSecurity}>
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                    Update Security Settings
+                  <Button 
+                    onClick={handleSaveSecurity}
+                    disabled={isChangingPassword}
+                  >
+                    {isChangingPassword ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></div>
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        Update Security Settings
+                      </>
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
