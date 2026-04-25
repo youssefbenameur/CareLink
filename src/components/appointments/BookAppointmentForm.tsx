@@ -1,16 +1,34 @@
-
-import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { format, addMinutes, setMinutes, setHours, isBefore, isAfter } from 'date-fns';
-import { appointmentService } from '@/services/appointmentService';
-import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import { getAllDoctors } from '@/lib/firebase';
-import { Skeleton } from '@/components/ui/skeleton';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  format,
+  addMinutes,
+  setMinutes,
+  setHours,
+  isBefore,
+  isAfter,
+} from "date-fns";
+import { appointmentService } from "@/services/appointmentService";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { getAllDoctors } from "@/lib/firebase";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Doctor {
   id: string;
@@ -27,31 +45,46 @@ interface BookAppointmentFormProps {
   onSuccess?: () => void;
 }
 
-export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDoctorName, selectedDate, onSuccess }: BookAppointmentFormProps) => {
+export const BookAppointmentForm = ({
+  doctorId: propDoctorId,
+  doctorName: propDoctorName,
+  selectedDate,
+  onSuccess,
+}: BookAppointmentFormProps) => {
   const { toast } = useToast();
   const { currentUser } = useAuth();
-  
+
   // Doctor selection states
-  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(propDoctorId || '');
-  const [selectedDoctorName, setSelectedDoctorName] = useState<string>(propDoctorName || '');
+  const [selectedDoctorId, setSelectedDoctorId] = useState<string>(
+    propDoctorId || "",
+  );
+  const [selectedDoctorName, setSelectedDoctorName] = useState<string>(
+    propDoctorName || "",
+  );
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
-  
-  const [date, setDate] = useState<Date | undefined>(selectedDate || new Date());
-  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
-  const [appointmentType, setAppointmentType] = useState<'Video Call' | 'Chat Session' | 'In-person'>('Video Call');
-  const [notes, setNotes] = useState('');
-  const [reason, setReason] = useState('');
+
+  const [date, setDate] = useState<Date | undefined>(
+    selectedDate || new Date(),
+  );
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(
+    undefined,
+  );
+  const [appointmentType, setAppointmentType] = useState<
+    "Video Call" | "Chat Session" | "In-person"
+  >("Video Call");
+  const [notes, setNotes] = useState("");
+  const [reason, setReason] = useState("");
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Fetch all approved doctors on component mount
   useEffect(() => {
     const fetchApprovedDoctors = async () => {
       try {
         setLoadingDoctors(true);
-        const approvedDoctors = await getAllDoctors('approved');
+        const approvedDoctors = await getAllDoctors("approved");
         setDoctors(approvedDoctors as Doctor[]);
       } catch (error) {
         console.error("Error fetching doctors:", error);
@@ -64,27 +97,26 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
         setLoadingDoctors(false);
       }
     };
-    
+
     fetchApprovedDoctors();
   }, [toast]);
-  
-  
+
   // Update date when selectedDate changes from parent
   useEffect(() => {
     if (selectedDate) {
       setDate(selectedDate);
     }
   }, [selectedDate]);
-  
+
   // Handle doctor selection
   const handleDoctorChange = (doctorId: string) => {
-    const doctor = doctors.find(d => d.id === doctorId);
+    const doctor = doctors.find((d) => d.id === doctorId);
     if (doctor) {
       setSelectedDoctorId(doctorId);
-      setSelectedDoctorName(doctor.name || '');
+      setSelectedDoctorName(doctor.name || "");
     }
   };
-  
+
   // Generate available times for the selected date
   useEffect(() => {
     if (!date || !selectedDoctorId) {
@@ -92,31 +124,39 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
       setBookedSlots([]);
       return;
     }
-    
+
     // Generate times between 9 AM and 5 PM with 30-minute intervals
     const times = [];
     const startHour = 9;
     const endHour = 17;
-    
+
     let currentTime = setHours(setMinutes(new Date(date), 0), startHour);
     const endTime = setHours(setMinutes(new Date(date), 0), endHour);
-    
+
     while (isBefore(currentTime, endTime)) {
       if (!isBefore(currentTime, new Date())) {
-        times.push(format(currentTime, 'HH:mm'));
+        times.push(format(currentTime, "HH:mm"));
       }
       currentTime = addMinutes(currentTime, 30);
     }
-    
+
     setAvailableTimes(times);
     setSelectedTime(undefined);
 
     // Fetch booked slots for this doctor on this date
-    appointmentService.getBookedSlots(selectedDoctorId, date).then(setBookedSlots);
+    appointmentService
+      .getBookedSlots(selectedDoctorId, date)
+      .then(setBookedSlots);
   }, [date, selectedDoctorId]);
-  
+
   const handleSubmit = async () => {
-    if (!date || !selectedTime || !appointmentType || !currentUser || !selectedDoctorId) {
+    if (
+      !date ||
+      !selectedTime ||
+      !appointmentType ||
+      !currentUser ||
+      !selectedDoctorId
+    ) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -124,14 +164,14 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
       });
       return;
     }
-    
+
     // Combine date and time into a single Date object
-    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const [hours, minutes] = selectedTime.split(":").map(Number);
     const appointmentDate = new Date(date);
     appointmentDate.setHours(hours, minutes, 0, 0);
-    
+
     setIsSubmitting(true);
-    
+
     try {
       await appointmentService.createAppointment({
         doctorId: selectedDoctorId,
@@ -141,20 +181,20 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
         type: appointmentType,
         notes,
         reason,
-        status: 'pending',
+        status: "pending",
       });
-      
+
       toast({
         title: "Appointment requested",
-        description: `${format(appointmentDate, 'PPp')} with ${selectedDoctorName} - Awaiting doctor approval`,
+        description: `${format(appointmentDate, "PPp")} with ${selectedDoctorName} - Awaiting doctor approval`,
       });
-      
+
       // Reset form
       setSelectedTime(undefined);
-      setAppointmentType('Video Call');
-      setNotes('');
-      setReason('');
-      
+      setAppointmentType("Video Call");
+      setNotes("");
+      setReason("");
+
       if (onSuccess) {
         onSuccess();
       }
@@ -169,14 +209,14 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
       setIsSubmitting(false);
     }
   };
-  
+
   // Map the appointment type values to their labels
   const appointmentTypes = [
-    { value: 'Video Call', label: 'Initial Consultation' },
-    { value: 'Chat Session', label: 'Follow-up' },
-    { value: 'In-person', label: 'Therapy Session' },
+    { value: "Video Call", label: "Initial Consultation" },
+    { value: "Chat Session", label: "Follow-up" },
+    { value: "In-person", label: "Therapy Session" },
   ];
-  
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -189,20 +229,19 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
           {loadingDoctors ? (
             <Skeleton className="w-full h-10" />
           ) : (
-            <Select 
-              value={selectedDoctorId} 
-              onValueChange={handleDoctorChange}
-            >
+            <Select value={selectedDoctorId} onValueChange={handleDoctorChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose a doctor" />
               </SelectTrigger>
               <SelectContent>
-                {doctors.map(doctor => (
+                {doctors.map((doctor) => (
                   <SelectItem key={doctor.id} value={doctor.id}>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{doctor.name}</span>
                       {doctor.specialty && (
-                        <span className="text-sm text-muted-foreground">({doctor.specialty})</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({doctor.specialty})
+                        </span>
                       )}
                     </div>
                   </SelectItem>
@@ -216,18 +255,22 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
             </div>
           )}
         </div>
-        
+
         <div className="space-y-2">
           <Label>Appointment Type</Label>
-          <Select 
-            value={appointmentType} 
-            onValueChange={(value) => setAppointmentType(value as 'Video Call' | 'Chat Session' | 'In-person')}
+          <Select
+            value={appointmentType}
+            onValueChange={(value) =>
+              setAppointmentType(
+                value as "Video Call" | "Chat Session" | "In-person",
+              )
+            }
           >
             <SelectTrigger>
               <SelectValue placeholder="Select appointment type" />
             </SelectTrigger>
             <SelectContent>
-              {appointmentTypes.map(type => (
+              {appointmentTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
@@ -235,13 +278,13 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
             </SelectContent>
           </Select>
         </div>
-        
+
         {date && (
           <div className="space-y-2">
             <Label>Select time</Label>
             {availableTimes.length > 0 ? (
               <div className="grid grid-cols-3 gap-2">
-                {availableTimes.map(time => {
+                {availableTimes.map((time) => {
                   const isBooked = bookedSlots.includes(time);
                   return (
                     <Button
@@ -249,8 +292,12 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
                       variant={selectedTime === time ? "default" : "outline"}
                       onClick={() => !isBooked && setSelectedTime(time)}
                       disabled={isBooked}
-                      className={isBooked ? 'opacity-40 cursor-not-allowed line-through' : 'w-full'}
-                      title={isBooked ? 'Already booked' : undefined}
+                      className={
+                        isBooked
+                          ? "opacity-40 cursor-not-allowed line-through"
+                          : "w-full"
+                      }
+                      title={isBooked ? "Already booked" : undefined}
                     >
                       {time}
                       {isBooked && <span className="ml-1 text-xs">✕</span>}
@@ -265,31 +312,31 @@ export const BookAppointmentForm = ({ doctorId: propDoctorId, doctorName: propDo
             )}
           </div>
         )}
-        
+
         <div className="space-y-2">
           <Label htmlFor="reason">Reason for appointment</Label>
           <Textarea
             id="reason"
             placeholder="Describe the reason for your appointment"
             value={reason}
-            onChange={e => setReason(e.target.value)}
+            onChange={(e) => setReason(e.target.value)}
             className="min-h-[80px]"
           />
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="notes">Notes</Label>
           <Textarea
             id="notes"
             placeholder="Add any additional notes (optional)"
             value={notes}
-            onChange={e => setNotes(e.target.value)}
+            onChange={(e) => setNotes(e.target.value)}
             className="min-h-[80px]"
           />
         </div>
       </CardContent>
       <CardFooter>
-        <Button 
+        <Button
           onClick={handleSubmit}
           disabled={!date || !selectedTime || !selectedDoctorId || isSubmitting}
           className="w-full"

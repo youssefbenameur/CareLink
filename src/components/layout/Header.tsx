@@ -88,9 +88,7 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
             onClick={toggleTheme}
             className="mr-2"
             aria-label={
-              theme === "dark"
-                ? "Switch to light mode"
-                : "Switch to dark mode"
+              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
             }
           >
             {theme === "dark" ? (

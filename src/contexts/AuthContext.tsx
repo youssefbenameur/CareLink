@@ -25,13 +25,26 @@ interface AuthContextType {
   currentUser: User | null;
   userData: any | null;
   loading: boolean;
-  register: (email: string, password: string, userData: any, doctorDocuments?: { doctorLicense?: File; diploma?: File; certification?: File }) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    userData: any,
+    doctorDocuments?: {
+      doctorLicense?: File;
+      diploma?: File;
+      certification?: File;
+    },
+  ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   refreshUserData: () => Promise<DocumentData | void>;
   updateSettings: (settings: any) => Promise<boolean>;
-  resubmitDocuments: (documents: { doctorLicense?: File; diploma?: File; certification?: File }) => Promise<void>;
+  resubmitDocuments: (documents: {
+    doctorLicense?: File;
+    diploma?: File;
+    certification?: File;
+  }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -128,7 +141,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     email: string,
     password: string,
     userData: any,
-    doctorDocuments?: { doctorLicense?: File; diploma?: File; certification?: File }
+    doctorDocuments?: {
+      doctorLicense?: File;
+      diploma?: File;
+      certification?: File;
+    },
   ) => {
     setLoading(true);
     try {
@@ -141,34 +158,56 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Set flag BEFORE creating auth user so onAuthStateChanged is skipped
         isRegisteringDoctor.current = true;
 
-        const { createUserWithEmailAndPassword, signOut: firebaseSignOut } = await import("firebase/auth");
-        const { doc: firestoreDoc, setDoc, Timestamp } = await import("firebase/firestore");
+        const { createUserWithEmailAndPassword, signOut: firebaseSignOut } =
+          await import("firebase/auth");
+        const {
+          doc: firestoreDoc,
+          setDoc,
+          Timestamp,
+        } = await import("firebase/firestore");
 
         let user: User | null = null;
         try {
           // Step 1: create Firebase Auth user to get UID
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password,
+          );
           user = userCredential.user;
 
           // Step 2: upload documents to Storage if provided
           let credentialDocuments: Record<string, string> = {};
           if (doctorDocuments) {
-            const hasRequiredFiles = doctorDocuments.doctorLicense && doctorDocuments.diploma;
+            const hasRequiredFiles =
+              doctorDocuments.doctorLicense && doctorDocuments.diploma;
             if (hasRequiredFiles) {
               try {
-                credentialDocuments = await uploadDoctorDocuments(user.uid, doctorDocuments) as Record<string, string>;
+                credentialDocuments = (await uploadDoctorDocuments(
+                  user.uid,
+                  doctorDocuments,
+                )) as Record<string, string>;
                 // Verify that required documents were uploaded successfully
-                if (!credentialDocuments.doctorLicense || !credentialDocuments.diploma) {
-                  throw new Error("Required documents (Medical License and Diploma) failed to upload. Please try again.");
+                if (
+                  !credentialDocuments.doctorLicense ||
+                  !credentialDocuments.diploma
+                ) {
+                  throw new Error(
+                    "Required documents (Medical License and Diploma) failed to upload. Please try again.",
+                  );
                 }
               } catch (uploadError) {
                 // Upload failed - clean up and throw error to block registration
                 console.error("Document upload failed:", uploadError);
-                throw new Error("Failed to upload required documents. Please check your internet connection and try again.");
+                throw new Error(
+                  "Failed to upload required documents. Please check your internet connection and try again.",
+                );
               }
             } else {
               // Required documents not provided - block registration
-              throw new Error("Medical License and Diploma are required for doctor registration.");
+              throw new Error(
+                "Medical License and Diploma are required for doctor registration.",
+              );
             }
           }
 
@@ -176,7 +215,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           await setDoc(firestoreDoc(db, "users", user.uid), {
             ...userDataWithRole,
             doctorVerificationStatus: "pending",
-            status: 'active',
+            status: "active",
             credentialDocuments,
             createdAt: Timestamp.now(),
             email,
@@ -184,11 +223,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
           // Step 4: sign out — doctor must log in after admin approval
           await firebaseSignOut(auth);
-
         } catch (err) {
           // Cleanup: delete orphaned auth user if Firestore write failed
           if (user) {
-            try { await user.delete(); } catch (_) {}
+            try {
+              await user.delete();
+            } catch (_) {}
           }
           throw err;
         } finally {
@@ -201,7 +241,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         toast({
           title: "Registration submitted!",
-          description: "Your account is pending admin approval. You will be notified once approved.",
+          description:
+            "Your account is pending admin approval. You will be notified once approved.",
         });
       } else {
         // Patient registration — normal flow
@@ -235,55 +276,71 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUserData(freshUserData);
 
         // Block suspended users immediately
-        if (freshUserData?.status === 'suspended') {
+        if (freshUserData?.status === "suspended") {
           await logoutUser();
           setCurrentUser(null);
           setUserData(null);
           toast({
             variant: "destructive",
             title: "Account suspended",
-            description: "Your account has been suspended. Please contact support@carelink.com for assistance.",
+            description:
+              "Your account has been suspended. Please contact support@carelink.com for assistance.",
           });
           return;
         }
 
-        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "pending") {
+        if (
+          freshUserData?.role === "doctor" &&
+          freshUserData?.doctorVerificationStatus === "pending"
+        ) {
           await logoutUser();
           setCurrentUser(null);
           setUserData(null);
           toast({
             variant: "destructive",
             title: "Account pending approval",
-            description: "Your account is still pending admin approval. You cannot log in yet.",
+            description:
+              "Your account is still pending admin approval. You cannot log in yet.",
           });
           return;
         }
 
-        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "resubmit") {
+        if (
+          freshUserData?.role === "doctor" &&
+          freshUserData?.doctorVerificationStatus === "resubmit"
+        ) {
           await logoutUser();
           setCurrentUser(null);
           setUserData(null);
           toast({
             variant: "destructive",
             title: "Resubmit required",
-            description: "Your documents need to be resubmitted. Please contact support@carelink.com for details.",
+            description:
+              "Your documents need to be resubmitted. Please contact support@carelink.com for details.",
           });
           return;
         }
 
-        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus === "rejected") {
+        if (
+          freshUserData?.role === "doctor" &&
+          freshUserData?.doctorVerificationStatus === "rejected"
+        ) {
           await logoutUser();
           setCurrentUser(null);
           setUserData(null);
           toast({
             variant: "destructive",
             title: "Account rejected",
-            description: "Your account application has been rejected. Please contact support@carelink.com for more information.",
+            description:
+              "Your account application has been rejected. Please contact support@carelink.com for more information.",
           });
           return;
         }
 
-        if (freshUserData?.role === "doctor" && freshUserData?.doctorVerificationStatus !== "approved") {
+        if (
+          freshUserData?.role === "doctor" &&
+          freshUserData?.doctorVerificationStatus !== "approved"
+        ) {
           await logoutUser();
           setCurrentUser(null);
           setUserData(null);
@@ -334,18 +391,29 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const resubmitDocuments = async (
-    documents: { doctorLicense?: File; diploma?: File; certification?: File }
-  ) => {
+  const resubmitDocuments = async (documents: {
+    doctorLicense?: File;
+    diploma?: File;
+    certification?: File;
+  }) => {
     if (!currentUser) return;
     setLoading(true);
     try {
-      const { doc: firestoreDoc, updateDoc, Timestamp } = await import("firebase/firestore");
+      const {
+        doc: firestoreDoc,
+        updateDoc,
+        Timestamp,
+      } = await import("firebase/firestore");
 
-      const credentialDocuments = await uploadDoctorDocuments(currentUser.uid, documents) as Record<string, string>;
+      const credentialDocuments = (await uploadDoctorDocuments(
+        currentUser.uid,
+        documents,
+      )) as Record<string, string>;
 
       if (!credentialDocuments.doctorLicense || !credentialDocuments.diploma) {
-        throw new Error("Required documents (Medical License and Diploma) failed to upload. Please try again.");
+        throw new Error(
+          "Required documents (Medical License and Diploma) failed to upload. Please try again.",
+        );
       }
 
       await updateDoc(firestoreDoc(db, "users", currentUser.uid), {
@@ -359,7 +427,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       toast({
         title: "Documents resubmitted!",
-        description: "Your application is back under review. You will be notified once a decision is made.",
+        description:
+          "Your application is back under review. You will be notified once a decision is made.",
       });
 
       navigate("/doctor/pending");
