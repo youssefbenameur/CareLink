@@ -15,10 +15,11 @@ import { Label } from '@/components/ui/label';
 import { FileUp, Plus, FileText, Search, Trash2, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { convertToDate } from '@/services/appointmentService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Timestamp } from 'firebase/firestore';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ImageLightbox from '@/components/ui/ImageLightbox';
 
 const MedicalRecords = () => {
   const { t } = useTranslation(['medicalRecords', 'common', 'errors']);
@@ -39,6 +40,60 @@ const MedicalRecords = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [filteredRecords, setFilteredRecords] = useState<MedicalRecord[]>([]);
+  const [attachments, setAttachments] = useState<{ name: string; base64: string; type: string }[]>([]);
+  const [editAttachments, setEditAttachments] = useState<string[]>([]);
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    files.forEach((file) => {
+      if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+        toast({ title: "Photos only", description: `${file.name} is not a JPG or PNG and was skipped.`, variant: "destructive" });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: "File too large", description: `${file.name} exceeds 10MB.`, variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAttachments((prev) => [
+          ...prev,
+          { name: file.name, base64: reader.result as string, type: file.type },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    files.forEach((file) => {
+      if (file.type !== 'image/jpeg' && file.type !== 'image/png') {
+        toast({ title: "Photos only", description: `${file.name} is not a JPG or PNG and was skipped.`, variant: "destructive" });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: "File too large", description: `${file.name} exceeds 10MB.`, variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        setEditAttachments((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  const removeEditAttachment = (index: number) => {
+    setEditAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
   useEffect(() => {
     const loadPatients = async () => {
@@ -126,7 +181,8 @@ const MedicalRecords = () => {
         description: recordDescription,
         date: new Date(),
         doctorId: currentUser.uid,
-        doctorName: userData?.name || t('common:unknown')
+        doctorName: userData?.name || t('common:unknown'),
+        attachments: attachments.map((a) => a.base64),
       };
 
       await medicalRecordsService.createRecord(newRecord);
@@ -137,6 +193,7 @@ const MedicalRecords = () => {
       loadRecords();
       setRecordTitle('');
       setRecordDescription('');
+      setAttachments([]);
     } catch (error) {
       console.error('Error creating record:', error);
       toast({
@@ -154,7 +211,8 @@ const MedicalRecords = () => {
       await medicalRecordsService.updateRecord(selectedRecord.id, {
         title: recordTitle,
         description: recordDescription,
-        type: recordType
+        type: recordType,
+        attachments: editAttachments,
       });
       
       toast({ 
@@ -165,6 +223,7 @@ const MedicalRecords = () => {
       setIsDialogOpen(false);
       setSelectedRecord(null);
       setIsEditing(false);
+      setEditAttachments([]);
     } catch (error) {
       console.error('Error updating record:', error);
       toast({
@@ -206,15 +265,13 @@ const MedicalRecords = () => {
     { value: 'medications', label: t('medicalRecords:medications') },
   ];
 
-  // Function to format date properly, handling both Date and Timestamp
-  const formatRecordDate = (date: Date | Timestamp) => {
-    if (date instanceof Timestamp) {
-      return format(date.toDate(), 'PP');
-    }
-    return format(date, 'PP');
+  // Format date using the global convertToDate helper
+  const formatRecordDate = (date: any) => {
+    return format(convertToDate(date), 'PP');
   };
 
   return (
+    <>
     <DoctorLayout>
       <div className="space-y-6">
         <div>
@@ -310,6 +367,7 @@ const MedicalRecords = () => {
                                 setRecordTitle(record.title);
                                 setRecordDescription(record.description);
                                 setRecordType(record.type);
+                                setEditAttachments(record.attachments ?? []);
                                 setIsEditing(true);
                                 setIsDialogOpen(true);
                               }}
@@ -331,6 +389,24 @@ const MedicalRecords = () => {
                             </Button>
                           </div>
                         </div>
+                        {record.attachments && record.attachments.length > 0 && (
+                          <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {record.attachments.map((src, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => setLightbox({ images: record.attachments!, index: i })}
+                                className="block focus:outline-none focus:ring-2 focus:ring-primary rounded-md"
+                              >
+                                <img
+                                  src={src}
+                                  alt={`Attachment ${i + 1}`}
+                                  className="w-full h-24 object-cover rounded-md border hover:opacity-80 transition-opacity"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -407,20 +483,53 @@ const MedicalRecords = () => {
                   </div>
                   
                   <div>
-                    <Label>{t('medicalRecords:recordAttachments')}</Label>
+                    <Label>Photos</Label>
                     <div className="mt-2">
-                      <div className="flex items-center justify-center border-2 border-dashed rounded-md p-6">
+                      <label
+                        htmlFor="attachmentInput"
+                        className="flex items-center justify-center border-2 border-dashed rounded-md p-6 cursor-pointer hover:border-primary/50 transition-colors"
+                      >
                         <div className="text-center">
                           <FileUp className="h-10 w-10 text-muted-foreground mb-2 mx-auto" />
-                          <p className="text-sm font-medium">{t('medicalRecords:uploadFile')}</p>
+                          <p className="text-sm font-medium">Upload Photo</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            JPG, PNG, PDF up to 10MB
+                            JPG, PNG up to 10MB
                           </p>
-                          <Button variant="outline" size="sm" className="mt-4">
+                          <span className="mt-4 inline-flex items-center px-3 py-1.5 rounded-md border text-sm font-medium bg-background hover:bg-muted transition-colors">
                             {t('common:chooseFile')}
-                          </Button>
+                          </span>
                         </div>
-                      </div>
+                      </label>
+                      <input
+                        id="attachmentInput"
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        multiple
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                      {attachments.length > 0 && (
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          {attachments.map((att, i) => (
+                            <div key={i} className="relative group rounded-md overflow-hidden border">
+                              <img
+                                src={att.base64}
+                                alt={att.name}
+                                className="w-full h-24 object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeAttachment(i)}
+                                className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                aria-label="Remove image"
+                              >
+                                ✕
+                              </button>
+                              <p className="text-[10px] text-muted-foreground truncate px-1 pb-1">{att.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -436,7 +545,7 @@ const MedicalRecords = () => {
       </div>
       
       {/* Edit Record Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditAttachments([]); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('medicalRecords:editRecord')}</DialogTitle>
@@ -476,6 +585,49 @@ const MedicalRecords = () => {
                 rows={4}
               />
             </div>
+
+            <div>
+              <Label>Photos</Label>
+              <div className="mt-2">
+                {/* Existing photos */}
+                {editAttachments.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 mb-3">
+                    {editAttachments.map((src, i) => (
+                      <div key={i} className="relative group rounded-md overflow-hidden border">
+                        <img src={src} alt={`Photo ${i + 1}`} className="w-full h-24 object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeEditAttachment(i)}
+                          className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Remove photo"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Add new photos */}
+                <label
+                  htmlFor="editAttachmentInput"
+                  className="flex items-center justify-center border-2 border-dashed rounded-md p-4 cursor-pointer hover:border-primary/50 transition-colors"
+                >
+                  <div className="text-center">
+                    <FileUp className="h-6 w-6 text-muted-foreground mb-1 mx-auto" />
+                    <p className="text-xs font-medium">Add Photos</p>
+                    <p className="text-xs text-muted-foreground">JPG, PNG up to 10MB</p>
+                  </div>
+                </label>
+                <input
+                  id="editAttachmentInput"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  multiple
+                  className="hidden"
+                  onChange={handleEditFileChange}
+                />
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
@@ -506,6 +658,14 @@ const MedicalRecords = () => {
         </AlertDialogContent>
       </AlertDialog>
     </DoctorLayout>
+    {lightbox && (
+      <ImageLightbox
+        images={lightbox.images}
+        startIndex={lightbox.index}
+        onClose={() => setLightbox(null)}
+      />
+    )}
+    </>
   );
 };
 

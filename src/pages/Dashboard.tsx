@@ -17,8 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   appointmentService,
   convertToDate,
-} from "@/services/appointmentService";
-import { moodTrackerService } from "@/services/moodTracker";
+} from "@/services/appointmentService";import { moodTrackerService } from "@/services/moodTracker";
 import { userService } from "@/services/userService";
 import { activityService } from "@/services/activityService";
 import { format } from "date-fns";
@@ -32,14 +31,12 @@ import {
   ArrowRight,
   Smile,
   Star,
-  Video,
   BookOpen,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChatWindow } from "@/components/chat/ChatWindow";
-import { Timestamp } from "firebase/firestore";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
@@ -79,7 +76,7 @@ const Dashboard = () => {
 
       try {
         const upcomingAppointments =
-          await appointmentService.getPatientAppointments(currentUser.uid);
+          await appointmentService.getUpcomingAppointments(currentUser.uid);
         const latestMoodEntry = await moodTrackerService.getLatestMoodEntry(
           currentUser.uid,
         );
@@ -116,16 +113,7 @@ const Dashboard = () => {
 
   const formatAppointmentDate = (date) => {
     try {
-      const dateObj =
-        date instanceof Timestamp
-          ? date.toDate()
-          : typeof date === "string"
-            ? new Date(date)
-            : date && typeof date.toDate === "function"
-              ? date.toDate()
-              : new Date();
-
-      return format(dateObj, "PPP");
+      return format(convertToDate(date), "PPP");
     } catch (error) {
       console.error("Error formatting date:", error, date);
       return "Invalid date";
@@ -134,16 +122,7 @@ const Dashboard = () => {
 
   const formatAppointmentTime = (date) => {
     try {
-      const dateObj =
-        date instanceof Timestamp
-          ? date.toDate()
-          : typeof date === "string"
-            ? new Date(date)
-            : date && typeof date.toDate === "function"
-              ? date.toDate()
-              : new Date();
-
-      return format(dateObj, "p");
+      return format(convertToDate(date), "p");
     } catch (error) {
       console.error("Error formatting time:", error, date);
       return "Invalid time";
@@ -246,7 +225,6 @@ const Dashboard = () => {
                       </p>
                       <div className="flex items-center justify-center mt-1 gap-1 text-xs text-muted-foreground">
                         <span>{`${t("appointments.with")} ${data.nextSession.doctorName}`}</span>
-                        <Video className="h-3 w-3 inline ml-1" />
                       </div>
                     </>
                   ) : (
@@ -358,13 +336,16 @@ const Dashboard = () => {
                     </div>
                   ) : localData.appointments.length > 0 ? (
                     <div className="space-y-4">
-                      {localData.appointments.slice(0, 2).map((appointment) => (
+                      {localData.appointments.slice(0, 2).map((appointment) => {
+                        const doctor = localData.doctors.find((d: any) => d.id === appointment.doctorId || d.uid === appointment.doctorId);
+                        return (
                         <div
                           key={appointment.id}
                           className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
                         >
                           <div className="flex items-center space-x-2 sm:space-x-3">
                             <Avatar className="h-8 w-8">
+                              <AvatarImage src={doctor?.avatarBase64} alt={appointment.doctorName} />
                               <AvatarFallback>
                                 {appointment.doctorName
                                   ?.split(" ")
@@ -403,24 +384,22 @@ const Dashboard = () => {
                             {appointment.status}
                           </Badge>
                         </div>
-                      ))}
+                      );})}
 
-                      {localData.appointments.length > 2 && (
-                        <Button
-                          variant="link"
-                          className="px-0"
-                          onClick={() => {
-                            logActivity(
-                              "navigation",
-                              "Viewed all appointments",
-                            );
-                            navigate("/appointments");
-                          }}
-                        >
-                          {t("appointments.upcoming")}
-                          <ArrowRight className="ml-1 h-4 w-4" />
-                        </Button>
-                      )}
+                      <Button
+                        variant="link"
+                        className="px-0"
+                        onClick={() => {
+                          logActivity(
+                            "navigation",
+                            "Viewed all appointments",
+                          );
+                          navigate("/appointments");
+                        }}
+                      >
+                        {t("appointments.upcoming")}
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                      </Button>
                     </div>
                   ) : (
                     <div className="text-center py-4">
@@ -460,6 +439,7 @@ const Dashboard = () => {
                         >
                           <div className="flex items-center space-x-2 sm:space-x-3">
                             <Avatar className="h-8 w-8">
+                              <AvatarImage src={doctor.avatarBase64} alt={doctor.name} />
                               <AvatarFallback>
                                 {doctor.name
                                   ?.split(" ")
@@ -472,7 +452,7 @@ const Dashboard = () => {
                                 {doctor.name}
                               </p>
                               <p className="text-[10px] sm:text-xs text-muted-foreground">
-                                {doctor.specialty || "Healthcare Provider"}
+                                {doctor.specialty || doctor.specialization || "Healthcare Provider"}
                               </p>
                             </div>
                           </div>
@@ -523,12 +503,7 @@ const Dashboard = () => {
                 ) : localData.recentActivities.length > 0 ? (
                   <div className="space-y-4">
                     {localData.recentActivities.map((activity) => {
-                      const activityDate =
-                        activity.timestamp instanceof Date
-                          ? activity.timestamp
-                          : typeof activity.timestamp?.toDate === "function"
-                            ? activity.timestamp.toDate()
-                            : new Date();
+                      const activityDate = convertToDate(activity.timestamp);
 
                       return (
                         <div

@@ -34,20 +34,30 @@ import {
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase configuration loaded from environment variables.
+// Copy .env.example to .env and fill in your project values.
 const firebaseConfig = {
-  apiKey: "AIzaSyCYxiXMhW7ZDo7MGpjxkGubjUT4EUEvEf8",
-  authDomain: "sereneminds-db66f.firebaseapp.com",
-  projectId: "sereneminds-db66f",
-  storageBucket: "sereneminds-db66f.firebasestorage.app",
-  messagingSenderId: "1094579647659",
-  appId: "1:1094579647659:web:3f5708e08a20f9a789b3ee",
-  measurementId: "G-08L9SRYGHN"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// Analytics requires a valid apiKey and measurementId — skip silently if either
+// is missing (e.g. during local dev before .env is fully populated).
+const analytics =
+  typeof window !== 'undefined' &&
+  firebaseConfig.apiKey &&
+  firebaseConfig.measurementId
+    ? getAnalytics(app)
+    : null;
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -296,6 +306,8 @@ export const deleteUserAccount = async (password: string) => {
     throw error;
   }
 };
+
+export const getAllDoctors = async (verificationStatus?: string) => {
   try {
     let q;
     if (verificationStatus) {

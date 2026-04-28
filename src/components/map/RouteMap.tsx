@@ -80,10 +80,10 @@ export const RouteMap = ({ doctorAddress, doctorLat, doctorLng, doctorName }: Ro
         <div className="flex items-center gap-2 text-sm">
           <MapPin className="h-4 w-4 text-primary" />
           <span className="font-medium">Clinic Location</span>
-          {doctorAddress && <span className="text-muted-foreground">— {doctorAddress}</span>}
+          {doctorAddress && <span className="text-muted-foreground truncate max-w-[260px]">— {doctorAddress}</span>}
         </div>
         {distance !== null && (
-          <span className="text-sm font-medium text-green-600 flex items-center gap-1">
+          <span className="text-sm font-medium text-green-600 flex items-center gap-1 shrink-0 ml-2">
             <Navigation className="h-3.5 w-3.5" />
             {distance < 1 ? `${Math.round(distance * 1000)} m away` : `${distance.toFixed(1)} km away`}
           </span>
@@ -91,7 +91,7 @@ export const RouteMap = ({ doctorAddress, doctorLat, doctorLng, doctorName }: Ro
       </div>
 
       {/* Map */}
-      <div className="h-64 rounded-lg border overflow-hidden bg-muted">
+      <div className="rounded-xl border overflow-hidden bg-muted" style={{ height: '300px' }}>
         {geocoding ? (
           <div className="h-full flex items-center justify-center gap-2 text-muted-foreground text-sm">
             <Loader2 className="h-4 w-4 animate-spin" />

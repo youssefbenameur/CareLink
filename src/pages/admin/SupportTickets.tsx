@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from '@/hooks/use-toast';
 import { TicketCheck, Clock, AlertCircle, CheckCircle, XCircle, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { convertToDate } from '@/services/appointmentService';
 
 const STATUS_OPTIONS = ['Open', 'In Progress', 'Resolved', 'Closed'];
 
@@ -194,7 +195,7 @@ interface TicketRowProps {
 const TicketRow = ({ ticket, onView, onStatusChange, updating }: TicketRowProps) => {
   const cfg = statusConfig[ticket.status] ?? statusConfig['Open'];
   const StatusIcon = cfg.icon;
-  const createdAt = ticket.createdAt?.toDate ? ticket.createdAt.toDate() : new Date(ticket.createdAt);
+  const createdAt = convertToDate(ticket.createdAt);
 
   return (
     <div className="flex items-center justify-between py-3 gap-3">

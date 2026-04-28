@@ -5,7 +5,6 @@ import {
   query,
   where,
   onSnapshot,
-  Timestamp,
 } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -86,42 +85,33 @@ export function useNavBadges(): NavBadges {
         ),
       );
 
-      // Unread messages from patients
+      // Unread messages from patients — single-field query, filter client-side.
       unsubs.push(
         onSnapshot(
           query(
             collection(db, "messages"),
             where("recipientId", "==", uid),
-            where("read", "==", false),
           ),
-          (snap) => setBadges((b) => ({ ...b, unreadPatientMessages: snap.size })),
+          (snap) => {
+            const count = snap.docs.filter((d) => d.data().read === false).length;
+            setBadges((b) => ({ ...b, unreadPatientMessages: count }));
+          },
         ),
       );
     }
 
     if (role === "patient") {
-      // Only count future scheduled appointments (date >= now)
-      const now = Timestamp.now();
-      unsubs.push(
-        onSnapshot(
-          query(
-            collection(db, "appointments"),
-            where("patientId", "==", uid),
-            where("status", "==", "scheduled"),
-            where("date", ">=", now),
-          ),
-          (snap) => setBadges((b) => ({ ...b, upcomingAppointments: snap.size })),
-        ),
-      );
-
+      // Single-field query for unread messages — no composite index needed.
       unsubs.push(
         onSnapshot(
           query(
             collection(db, "messages"),
             where("recipientId", "==", uid),
-            where("read", "==", false),
           ),
-          (snap) => setBadges((b) => ({ ...b, unreadMessages: snap.size })),
+          (snap) => {
+            const count = snap.docs.filter((d) => d.data().read === false).length;
+            setBadges((b) => ({ ...b, unreadMessages: count }));
+          },
         ),
       );
     }

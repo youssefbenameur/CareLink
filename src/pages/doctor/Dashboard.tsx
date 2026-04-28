@@ -1,28 +1,24 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { appointmentService } from '@/services/appointmentService';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { DashboardHeader } from '@/components/doctor/DashboardHeader';
-import { DashboardStats } from '@/components/doctor/DashboardStats';
 import { DashboardPatientList } from '@/components/doctor/DashboardPatientList';
 import { DashboardAppointments } from '@/components/doctor/DashboardAppointments';
 import { PatientActivityTimeline } from '@/components/doctor/PatientActivityTimeline';
-import { AnimatedSection } from '@/components/ui/animated-section';
 import { Appointment, convertToDate } from '@/services/appointmentService';
 import { useTranslation } from 'react-i18next';
+import { Users, Calendar, MessageSquare, CalendarDays } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
 
 const DoctorDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, userData } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [patients, setPatients] = useState<any[]>([]);
   const { t } = useTranslation(['doctorDashboard']);
   const [stats, setStats] = useState({
     totalPatients: 0,
@@ -30,169 +26,157 @@ const DoctorDashboard = () => {
     todayAppointments: 0,
     completedToday: 0,
     pendingMessages: 0,
-    attentionRequired: 0
   });
 
   useEffect(() => {
     const fetchDoctorData = async () => {
       if (!currentUser) return;
-      
       try {
         setLoading(true);
-        
-        // Fetch appointments
         const doctorAppointments = await appointmentService.getDoctorAppointments(currentUser.uid);
-        setAppointments(doctorAppointments);
-        
-        // Fetch unique patients
         const uniquePatientIds = [...new Set(doctorAppointments.map(app => app.patientId))];
-        
-        // Get patient details
+
         const patientDetailsPromises = uniquePatientIds.map(async (patientId) => {
           try {
-            const userDoc = await getDocs(query(
-              collection(db, "users"),
-              where("uid", "==", patientId)
-            ));
-            
-            if (!userDoc.empty) {
-              return { id: patientId, ...userDoc.docs[0].data() };
-            }
-            return { id: patientId, name: "Unknown Patient" };
-          } catch (error) {
-            console.error("Error fetching patient:", error);
-            return { id: patientId, name: "Unknown Patient" };
-          }
+            const userDoc = await getDocs(query(collection(db, "users"), where("uid", "==", patientId)));
+            if (!userDoc.empty) return { id: patientId, ...userDoc.docs[0].data() };
+            return { id: patientId };
+          } catch { return { id: patientId }; }
         });
-        
         const patientDetails = await Promise.all(patientDetailsPromises);
-        setPatients(patientDetails);
-        
-        // Calculate stats
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        
-        // Today's appointments
+
         const todayApps = doctorAppointments.filter(app => {
-          const appDate = convertToDate(app.date);
-          const appDateStart = new Date(appDate);
-          appDateStart.setHours(0, 0, 0, 0);
-          return appDateStart.getTime() === today.getTime();
+          const d = convertToDate(app.date);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime() === today.getTime();
         });
-        
-        const completedToday = todayApps.filter(app => app.status === 'completed').length;
-        
-        // Count patients who joined this month
-        const newPatientsThisMonth = patientDetails.filter(patient => {
-          if (patient && typeof patient === 'object' && 'createdAt' in patient && patient.createdAt) {
-            let createdAtDate: Date;
-            
-            if (patient.createdAt instanceof Timestamp) {
-              createdAtDate = patient.createdAt.toDate();
-            } else if (typeof patient.createdAt === 'string' || typeof patient.createdAt === 'number') {
-              createdAtDate = new Date(patient.createdAt);
-            } else {
-              return false; // Skip if createdAt is not a valid type
-            }
-            
-            return createdAtDate >= firstDayOfMonth;
-          }
-          return false;
+
+        const newPatientsThisMonth = patientDetails.filter(p => {
+          if (!p?.createdAt) return false;
+          const d = p.createdAt instanceof Timestamp ? p.createdAt.toDate() : new Date(p.createdAt);
+          return d >= firstDayOfMonth;
         }).length;
-        
-        // Count pending (unread) messages for this doctor
-        let pendingMessagesCount = 0;
+
+        let pendingMessages = 0;
         try {
-          const messagesQuery = query(
-            collection(db, "messages"),
-            where("receiverId", "==", currentUser.uid),
-            where("read", "==", false)
-          );
-          const messagesSnapshot = await getDocs(messagesQuery);
-          pendingMessagesCount = messagesSnapshot.size;
-        } catch (e) {
-          console.warn("Could not fetch messages count:", e);
-        }
-        
+          const snap = await getDocs(query(collection(db, "messages"), where("receiverId", "==", currentUser.uid), where("read", "==", false)));
+          pendingMessages = snap.size;
+        } catch {}
+
         setStats({
           totalPatients: uniquePatientIds.length,
           newPatientsThisMonth,
           todayAppointments: todayApps.length,
-          completedToday,
-          pendingMessages: pendingMessagesCount,
-          attentionRequired: 0
+          completedToday: todayApps.filter(a => a.status === 'completed').length,
+          pendingMessages,
         });
-        
       } catch (error) {
         console.error("Error fetching doctor data:", error);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchDoctorData();
   }, [currentUser]);
-
-  const handleViewCalendar = () => navigate('/doctor/appointments');
-  const handlePatientMessages = () => navigate('/doctor/chat');
 
   if (loading) {
     return (
       <DoctorLayout>
         <div className="flex h-64 items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
         </div>
       </DoctorLayout>
     );
   }
 
+  const doctorName = userData?.name || currentUser?.displayName || 'Doctor';
+
   return (
     <DoctorLayout>
-      <div className="space-y-3 p-3 max-w-7xl mx-auto">
-        <DashboardHeader
-          doctorName={currentUser?.displayName?.split(' ')[0] || 'User'}
-          onViewCalendar={handleViewCalendar}
-          onPatientMessages={handlePatientMessages}
-        />
-        
-        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/50 backdrop-blur-sm">
-            <TabsTrigger value="overview">{t('doctorDashboard:tabs.overview')}</TabsTrigger>
-            <TabsTrigger value="patients">{t('doctorDashboard:tabs.patients')}</TabsTrigger>
-            <TabsTrigger value="appointments">{t('doctorDashboard:tabs.appointments')}</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="overview" className="space-y-3 mt-3">
-            <DashboardStats stats={stats} />
-            
-            <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
-              <AnimatedSection delay={0.2} direction="up">
-                <DashboardPatientList />
-              </AnimatedSection>
-              <AnimatedSection delay={0.3} direction="up">
-                <DashboardAppointments />
-              </AnimatedSection>
-            </div>
-          
-            <AnimatedSection delay={0.4} direction="up">
-              <PatientActivityTimeline />
-            </AnimatedSection>
-          </TabsContent>
-        
-          <TabsContent value="patients" className="mt-3">
-            <AnimatedSection delay={0.1}>
-              <DashboardPatientList />
-            </AnimatedSection>
-          </TabsContent>
-        
-          <TabsContent value="appointments" className="mt-3">
-            <AnimatedSection delay={0.1}>
-              <DashboardAppointments />
-            </AnimatedSection>
-          </TabsContent>
-        </Tabs>
+      <div className="space-y-6 max-w-7xl mx-auto">
+
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              {t('doctorDashboard:title')}
+            </h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              {format(new Date(), 'EEEE, MMMM d, yyyy')}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate('/doctor/appointments')}>
+              <CalendarDays className="h-4 w-4 mr-2" />
+              Appointments
+            </Button>
+            <Button size="sm" onClick={() => navigate('/doctor/chat')}>
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Messages
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-muted-foreground">Total Patients</p>
+                <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-4 w-4 text-primary" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold">{stats.totalPatients}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                +{stats.newPatientsThisMonth} new this month
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-muted-foreground">Today's Appointments</p>
+                <div className="h-9 w-9 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <Calendar className="h-4 w-4 text-blue-500" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold">{stats.todayAppointments}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.completedToday} completed, {stats.todayAppointments - stats.completedToday} remaining
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-2 lg:col-span-1">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-medium text-muted-foreground">Pending Messages</p>
+                <div className="h-9 w-9 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <MessageSquare className="h-4 w-4 text-emerald-500" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold">{stats.pendingMessages}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats.pendingMessages === 0 ? 'All caught up' : 'Unread messages'}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Patients + Appointments */}
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+          <DashboardPatientList />
+          <DashboardAppointments />
+        </div>
+
+        {/* Activity Timeline */}
+        <PatientActivityTimeline />
       </div>
     </DoctorLayout>
   );

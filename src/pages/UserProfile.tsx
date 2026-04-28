@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   User,
   Mail,
@@ -8,6 +8,7 @@ import {
   Bell,
   ShieldCheck,
   FileText,
+  Camera,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -23,16 +24,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { changePassword } from "@/lib/firebase";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const UserProfile = () => {
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, refreshUserData } = useAuth();
   const { toast } = useToast();
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarBase64, setAvatarBase64] = useState<string>(userData?.avatarBase64 || "");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: userData?.name || "",
@@ -55,6 +61,47 @@ const UserProfile = () => {
   });
 
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Avatar upload — resizes to 200×200, compresses to JPEG, saves as avatarBase64
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Invalid file", description: "Please select an image.", variant: "destructive" });
+      return;
+    }
+    setIsUploadingAvatar(true);
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+    img.onload = async () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement("canvas");
+      const MAX = 200;
+      let { width, height } = img;
+      if (width > height) {
+        if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; }
+      } else {
+        if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; }
+      }
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL("image/jpeg", 0.8);
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), { avatarBase64: base64 });
+        setAvatarBase64(base64);
+        await refreshUserData();
+        toast({ title: "Photo updated", description: "Your profile photo has been saved." });
+      } catch {
+        toast({ title: "Error", description: "Failed to save photo.", variant: "destructive" });
+      } finally {
+        setIsUploadingAvatar(false);
+        e.target.value = "";
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); setIsUploadingAvatar(false); };
+    img.src = url;
+  };
 
   const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -202,26 +249,43 @@ const UserProfile = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <Avatar className="h-24 w-24">
-                      <AvatarFallback className="text-2xl">
-                        {profileData.name
-                          ? profileData.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                          : "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-2">
+                    <div className="relative group">
+                      <div className="h-24 w-24 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center border-2 border-border">
+                        {avatarBase64 ? (
+                          <img src={avatarBase64} alt="Profile" className="h-full w-full object-cover" />
+                        ) : (
+                          <User className="h-12 w-12 text-primary" />
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={isUploadingAvatar}
+                        onClick={() => avatarInputRef.current?.click()}
+                        className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                        title="Change photo"
+                      >
+                        {isUploadingAvatar
+                          ? <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          : <Camera className="h-4 w-4" />}
+                      </button>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
+                    </div>
+                    <div className="space-y-1">
                       <h3 className="text-lg font-medium">
                         {profileData.name || "Your Name"}
                       </h3>
                       <p className="text-sm text-muted-foreground">
                         {profileData.email || "email@example.com"}
                       </p>
-                      <Button size="sm" variant="outline">
-                        Change Avatar
-                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Click the camera icon to update your photo
+                      </p>
                     </div>
                   </div>
 

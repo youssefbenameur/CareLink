@@ -2,8 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
 import { useTranslation } from 'react-i18next';
+import { convertToDate } from '@/services/appointmentService';
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PatientActivityProps {
@@ -18,11 +18,8 @@ export const PatientActivity = ({ activities }: PatientActivityProps) => {
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   
-  const formatTimestamp = (timestamp: Date | Timestamp) => {
-    if (timestamp instanceof Timestamp) {
-      return format(timestamp.toDate(), 'PPp');
-    }
-    return format(timestamp, 'PPp');
+  const formatTimestamp = (timestamp: Date | any) => {
+    return format(convertToDate(timestamp), 'PPp');
   };
 
   return (

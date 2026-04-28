@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, User, Clock, Mail, UploadCloud, Search, RefreshCw } from 'lucide-react';
+import ImageLightbox from '@/components/ui/ImageLightbox';
 
 // Task 9.1 — updated interface
 interface DoctorRecord {
@@ -63,6 +64,9 @@ const DoctorApprovals = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorRecord | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Lightbox state
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -178,6 +182,7 @@ const DoctorApprovals = () => {
   const reviewed = filtered.filter(d => d.doctorVerificationStatus !== 'pending');
 
   return (
+    <>
     <AdminLayout>
       <div className="space-y-6">
         <div>
@@ -332,29 +337,42 @@ const DoctorApprovals = () => {
               {/* Task 9.4 — labeled document rows */}
               <div>
                 <p className="text-sm font-medium mb-3">Uploaded Documents</p>
-                <div className="space-y-4">
-                  {DOCUMENT_TYPES.map(({ key, label }) => {
-                    const url = selectedDoctor.credentialDocuments?.[key];
-                    return (
-                      <div key={key} className="space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-                        {url ? (
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="block">
-                            <img
-                              src={url}
-                              alt={label}
-                              className="w-full rounded-lg border object-contain max-h-96 bg-muted cursor-zoom-in hover:opacity-90 transition-opacity"
-                            />
-                          </a>
-                        ) : (
-                          <div className="w-full h-16 rounded-lg border border-dashed flex items-center justify-center text-sm text-muted-foreground bg-muted/30">
-                            Not provided
+                {(() => {
+                  const allImages = DOCUMENT_TYPES
+                    .map(({ key }) => selectedDoctor.credentialDocuments?.[key])
+                    .filter(Boolean) as string[];
+                  return (
+                    <div className="space-y-4">
+                      {DOCUMENT_TYPES.map(({ key, label }) => {
+                        const url = selectedDoctor.credentialDocuments?.[key];
+                        const imgIndex = allImages.indexOf(url!);
+                        return (
+                          <div key={key} className="space-y-2">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+                            {url ? (
+                              <button
+                                type="button"
+                                className="block w-full focus:outline-none focus:ring-2 focus:ring-primary rounded-lg"
+                                onClick={() => setLightbox({ images: allImages, index: imgIndex })}
+                              >
+                                <img
+                                  src={url}
+                                  alt={label}
+                                  className="w-full rounded-lg border object-contain max-h-64 bg-muted cursor-zoom-in hover:opacity-90 transition-opacity"
+                                />
+                                <p className="text-xs text-muted-foreground mt-1 text-center">Click to view full size</p>
+                              </button>
+                            ) : (
+                              <div className="w-full h-16 rounded-lg border border-dashed flex items-center justify-center text-sm text-muted-foreground bg-muted/30">
+                                Not provided
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}
@@ -518,6 +536,14 @@ const DoctorApprovals = () => {
         </DialogContent>
       </Dialog>
     </AdminLayout>
+    {lightbox && (
+      <ImageLightbox
+        images={lightbox.images}
+        startIndex={lightbox.index}
+        onClose={() => setLightbox(null)}
+      />
+    )}
+  </>
   );
 };
 

@@ -1,4 +1,3 @@
-
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
@@ -8,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
-import { useSearchParams } from 'react-router-dom';
+import { format, addDays, startOfDay, isWithinInterval } from 'date-fns';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BookAppointmentForm } from '@/components/appointments/BookAppointmentForm';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
@@ -17,9 +16,12 @@ import { AppointmentCalendar } from '@/components/appointments/AppointmentCalend
 import { useToast } from '@/components/ui/use-toast';
 import { useAppointmentQueryParams } from '@/components/appointments/AppointmentBooking';
 import { convertToDate } from '@/services/appointmentService';
-import { Video, MessageSquare, MapPin, Clock, CalendarDays } from 'lucide-react';
+import { MessageSquare, MapPin, Clock, CalendarDays, CalendarX, CalendarCheck, UserSearch, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Calendar } from '@/components/ui/calendar';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const Appointments = () => {
   const { t } = useTranslation(['appointments', 'common']);
@@ -33,10 +35,20 @@ const Appointments = () => {
   });
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  const [rescheduleTarget, setRescheduleTarget] = useState<any | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>(undefined);
+  const [rescheduleTime, setRescheduleTime] = useState<string>('');
+  const [rescheduling, setRescheduling] = useState(false);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const patientId = currentUser?.uid || '';
   const [searchParams, setSearchParams] = useSearchParams();
+  const { markReadByActionUrl } = useNotifications();
+
+  // Auto-clear appointment notifications when this page is opened
+  useEffect(() => {
+    markReadByActionUrl('/appointments');
+  }, []);
   
   // Use appointment query params hook
   useAppointmentQueryParams();
@@ -105,12 +117,49 @@ const Appointments = () => {
     }
   };
 
-  // Reschedule — cancel old and switch to Book tab with same doctor
-  const handleReschedule = async (appointment: any) => {
-    setSelectedDoctorId(appointment.doctorId);
-    setSelectedDoctorName(appointment.doctorName?.replace(/^Dr\.\s*/i, '') ?? appointment.doctorName);
-    setActiveTab('schedule');
+  // Reschedule — opens a dialog to pick a new date/time, then updates the
+  // existing appointment in Firestore (no duplicate created).
+  const handleReschedule = (appointment: any) => {
+    setRescheduleTarget(appointment);
+    setRescheduleDate(undefined);
+    setRescheduleTime('');
   };
+
+  const confirmReschedule = async () => {
+    if (!rescheduleTarget || !rescheduleDate || !rescheduleTime) return;
+    const [hours, minutes] = rescheduleTime.split(':').map(Number);
+    const newDate = new Date(rescheduleDate);
+    newDate.setHours(hours, minutes, 0, 0);
+    setRescheduling(true);
+    try {
+      await appointmentService.rescheduleAppointment(rescheduleTarget.id, newDate);
+      await refetch();
+      toast({
+        title: 'Appointment rescheduled',
+        description: `Rescheduled to ${format(newDate, 'PPp')} — awaiting doctor approval.`,
+      });
+      setRescheduleTarget(null);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to reschedule. Please try again.', variant: 'destructive' });
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
+  // Generate 30-min slots 9 AM–5 PM for the selected reschedule date
+  const rescheduleSlots: string[] = (() => {
+    if (!rescheduleDate) return [];
+    const slots: string[] = [];
+    const now = new Date();
+    for (let h = 9; h < 17; h++) {
+      for (const m of [0, 30]) {
+        const slot = new Date(rescheduleDate);
+        slot.setHours(h, m, 0, 0);
+        if (slot > now) slots.push(format(slot, 'HH:mm'));
+      }
+    }
+    return slots;
+  })();
 
   // Get the active tab from URL or use default
   const getDefaultTab = () => {
@@ -160,7 +209,19 @@ const Appointments = () => {
                     />
                   ))
               ) : (
-                <p>{t('noUpcoming')}</p>
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                    <CalendarX className="h-10 w-10 text-primary/60" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{t('noUpcoming')}</h3>
+                  <p className="text-muted-foreground text-sm mt-1 max-w-xs">
+                    You have no upcoming appointments. Book a session with one of your doctors to get started.
+                  </p>
+                  <Button className="mt-5" onClick={() => setActiveTab('schedule')}>
+                    <CalendarCheck className="h-4 w-4 mr-2" />
+                    Book Now
+                  </Button>
+                </div>
               )}
             </div>
           </TabsContent>
@@ -242,7 +303,19 @@ const Appointments = () => {
                     <AppointmentCard key={appointment.id} appointment={appointment} />
                   ))
               ) : (
-                <p>{t('noPast')}</p>
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
+                    <CalendarDays className="h-10 w-10 text-muted-foreground/50" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{t('noPast')}</h3>
+                  <p className="text-muted-foreground text-sm mt-1 max-w-xs">
+                    Your completed and cancelled appointments will appear here.
+                  </p>
+                  <Button variant="outline" className="mt-5" onClick={() => setActiveTab('schedule')}>
+                    <UserSearch className="h-4 w-4 mr-2" />
+                    Find a Doctor
+                  </Button>
+                </div>
               )}
             </div>
           </TabsContent>
@@ -269,25 +342,80 @@ const Appointments = () => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Reschedule dialog — updates the existing appointment, no duplicate created */}
+    <Dialog open={!!rescheduleTarget} onOpenChange={(open) => { if (!open) setRescheduleTarget(null); }}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Reschedule Appointment</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <p className="text-sm text-muted-foreground">
+            Rescheduling with <span className="font-medium">Dr. {rescheduleTarget?.doctorName}</span>.
+            Pick a new date and time — the appointment will be reset to pending for doctor approval.
+          </p>
+          <div>
+            <Label className="mb-2 block">New Date</Label>
+            <Calendar
+              mode="single"
+              selected={rescheduleDate}
+              onSelect={setRescheduleDate}
+              disabled={(date) => date < startOfDay(new Date())}
+              className="rounded-md border"
+            />
+          </div>
+          {rescheduleDate && (
+            <div>
+              <Label className="mb-2 block">New Time</Label>
+              {rescheduleSlots.length > 0 ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {rescheduleSlots.map((slot) => (
+                    <Button
+                      key={slot}
+                      size="sm"
+                      variant={rescheduleTime === slot ? 'default' : 'outline'}
+                      onClick={() => setRescheduleTime(slot)}
+                    >
+                      {slot}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No available slots for this date.</p>
+              )}
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setRescheduleTarget(null)}>Cancel</Button>
+          <Button
+            disabled={!rescheduleDate || !rescheduleTime || rescheduling}
+            onClick={confirmReschedule}
+          >
+            {rescheduling ? 'Rescheduling...' : 'Confirm Reschedule'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </>
   );
 };
 
 // Appointment type config
 const typeConfig = {
-  'Video Call': {
-    icon: Video,
-    accent: 'border-l-blue-500',
-    iconBg: 'bg-blue-500/10 text-blue-600',
-    badge: 'bg-blue-50 text-blue-700 border-blue-200',
-    label: 'Video Call',
-  },
   'Chat Session': {
     icon: MessageSquare,
     accent: 'border-l-violet-500',
     iconBg: 'bg-violet-500/10 text-violet-600',
     badge: 'bg-violet-50 text-violet-700 border-violet-200',
     label: 'Chat Session',
+  },
+  'Video Call': {
+    icon: Video,
+    accent: 'border-l-blue-500',
+    iconBg: 'bg-blue-500/10 text-blue-600',
+    badge: 'bg-blue-50 text-blue-700 border-blue-200',
+    label: 'Video Call',
   },
   'In-person': {
     icon: MapPin,
@@ -314,9 +442,10 @@ interface AppointmentCardProps {
 }
 
 const AppointmentCard = ({ appointment, showActions, onCancel, onReschedule, cancellingId }: AppointmentCardProps) => {
-  const config = typeConfig[appointment.type as keyof typeof typeConfig] ?? typeConfig['Video Call'];
+  const config = typeConfig[appointment.type as keyof typeof typeConfig] ?? typeConfig['In-person'];
   const Icon = config.icon;
   const d = convertToDate(appointment.date);
+  const navigate = useNavigate();
 
   return (
     <Card className={cn('overflow-hidden border-l-4', config.accent)}>
@@ -348,25 +477,38 @@ const AppointmentCard = ({ appointment, showActions, onCancel, onReschedule, can
               </div>
             </div>
           </div>
-          {showActions && appointment.status === 'scheduled' && (
-            <div className="flex gap-2 shrink-0">
+          <div className="flex flex-col gap-2 shrink-0">
+            {/* Join Video Call button — only for scheduled video call appointments */}
+            {appointment.type === 'Video Call' && appointment.status === 'scheduled' && (
               <Button
                 size="sm"
-                variant="outline"
-                onClick={() => onReschedule?.(appointment)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => navigate(`/chat/${appointment.doctorId}`)}
               >
-                Reschedule
+                <Video className="h-4 w-4 mr-1.5" />
+                Join Call
               </Button>
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={cancellingId === appointment.id}
-                onClick={() => onCancel?.(appointment.id)}
-              >
-                {cancellingId === appointment.id ? 'Cancelling...' : 'Cancel'}
-              </Button>
-            </div>
-          )}
+            )}
+            {showActions && appointment.status === 'scheduled' && (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onReschedule?.(appointment)}
+                >
+                  Reschedule
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  disabled={cancellingId === appointment.id}
+                  onClick={() => onCancel?.(appointment.id)}
+                >
+                  {cancellingId === appointment.id ? 'Cancelling...' : 'Cancel'}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>

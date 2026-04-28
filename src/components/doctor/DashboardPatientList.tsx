@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
@@ -54,6 +54,7 @@ export const DashboardPatientList = () => {
             <div key={patient.id} className="flex items-center justify-between space-x-4 p-3 border rounded-lg">
               <div className="flex items-center space-x-4">
                 <Avatar>
+                  <AvatarImage src={patient.avatarBase64} alt={patient.name} />
                   <AvatarFallback>
                     {patient.name?.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>

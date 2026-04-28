@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
+import { convertToDate } from '@/services/appointmentService';
 
 const MoodTracker = () => {
   const { currentUser } = useAuth();
@@ -61,19 +62,12 @@ const MoodTracker = () => {
     return moodEntries
       .slice()
       .sort((a, b) => {
-        // Sort by date
-        const dateA = a.createdAt instanceof Date 
-          ? a.createdAt 
-          : a.createdAt.toDate();
-        const dateB = b.createdAt instanceof Date 
-          ? b.createdAt 
-          : b.createdAt.toDate();
-        return dateA - dateB;
+        const dateA = convertToDate(a.createdAt);
+        const dateB = convertToDate(b.createdAt);
+        return dateA.getTime() - dateB.getTime();
       })
       .map(entry => {
-        const date = entry.createdAt instanceof Date 
-          ? entry.createdAt 
-          : entry.createdAt.toDate();
+        const date = convertToDate(entry.createdAt);
         
         return {
           date: format(date, 'MMM d'),

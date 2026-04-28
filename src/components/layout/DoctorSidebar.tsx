@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,8 +18,20 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Menu, Bell } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useNavBadges } from "@/hooks/useNavBadges";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 // Import icons directly to avoid circular dependency issues
 import {
@@ -29,45 +41,58 @@ import {
   Calendar,
   FileText,
   UserCircle,
-  Settings,
 } from "lucide-react";
 
 const DoctorSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
   const { t } = useTranslation(["navigation", "common"]);
   const isMobile = useIsMobile();
+  const badges = useNavBadges();
+  const { notifications, unreadCount: totalUnread, markAsRead, markAllAsRead } = useNotifications();
+
+  const handleNotifClick = async (notif: any) => {
+    await markAsRead(notif.id);
+    if (notif.actionUrl) navigate(notif.actionUrl);
+  };
 
   const navItems = [
     {
       name: t("navigation:dashboard"),
       href: "/doctor/dashboard",
       icon: <Home className="h-5 w-5" />,
+      badge: 0,
     },
     {
       name: t("navigation:patients"),
       href: "/doctor/patients",
       icon: <Users className="h-5 w-5" />,
+      badge: 0,
     },
     {
       name: t("navigation:chat"),
       href: "/doctor/chat",
       icon: <MessageSquare className="h-5 w-5" />,
+      badge: badges.unreadPatientMessages,
     },
     {
       name: t("navigation:appointments"),
       href: "/doctor/appointments",
       icon: <Calendar className="h-5 w-5" />,
+      badge: badges.pendingAppointmentRequests,
     },
     {
       name: t("navigation:medicalRecords"),
       href: "/doctor/medical-records",
       icon: <FileText className="h-5 w-5" />,
+      badge: 0,
     },
     {
       name: t("navigation:profile"),
       href: "/doctor/profile",
       icon: <UserCircle className="h-5 w-5" />,
+      badge: 0,
     },
   ];
 
@@ -76,6 +101,7 @@ const DoctorSidebar = () => {
       <div className="p-4">
         <div className="flex items-center mb-6">
           <Avatar className="h-8 w-8">
+            <AvatarImage src={userData?.avatarBase64} />
             <AvatarFallback className="bg-primary">
               {userData?.name?.charAt(0) ||
                 currentUser?.email?.charAt(0) ||
@@ -87,7 +113,7 @@ const DoctorSidebar = () => {
               {userData?.name || t("common:doctor")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {userData?.specialty || t("common:doctor")}
+              {userData?.specialty || userData?.specialization || t("common:doctor")}
             </p>
           </div>
         </div>
@@ -109,7 +135,15 @@ const DoctorSidebar = () => {
                 asChild
               >
                 <Link to={item.href}>
-                  {item.icon}
+                  {/* Icon with superscript badge - only shows when count > 0 */}
+                  <span className="relative shrink-0">
+                    {item.icon}
+                    {item.badge > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-sm">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
+                  </span>
                   <span className="ml-3">{item.name}</span>
                 </Link>
               </Button>
@@ -123,7 +157,61 @@ const DoctorSidebar = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <ThemeToggle />
-            <LanguageSwitcher />
+
+            {/* Notification Bell */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 relative">
+                  <Bell className="h-4 w-4" />
+                  {totalUnread > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-sm">
+                      {totalUnread > 99 ? "99+" : totalUnread}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 max-h-[480px] overflow-y-auto">
+                <div className="flex items-center justify-between px-3 py-2">
+                  <span className="text-sm font-semibold">Notifications</span>
+                  {notifications.length > 0 && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline focus:outline-none"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); markAllAsRead(); }}
+                    >
+                      Mark all as read
+                    </button>
+                  )}
+                </div>
+                <DropdownMenuSeparator />
+                {notifications.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    No new notifications
+                  </div>
+                ) : (
+                  notifications.slice(0, 8).map((notif) => (
+                    <DropdownMenuItem
+                      key={notif.id}
+                      className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                      onClick={() => handleNotifClick(notif)}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <span className={cn(
+                          "w-2.5 h-2.5 rounded-full shrink-0",
+                          notif.type === "success" && "bg-green-500",
+                          notif.type === "error" && "bg-red-500",
+                          notif.type === "warning" && "bg-yellow-500",
+                          notif.type === "info" && "bg-blue-500",
+                        )} />
+                        <span className="font-medium text-sm">{notif.title}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground pl-4 leading-snug">{notif.message}</p>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <LogoutButton />
         </div>
@@ -156,10 +244,9 @@ const DoctorSidebar = () => {
             {userData?.name || t("common:doctor")}
           </span>
           <Avatar className="h-8 w-8">
+            <AvatarImage src={userData?.avatarBase64} />
             <AvatarFallback className="bg-primary">
-              {userData?.name?.charAt(0) ||
-                currentUser?.email?.charAt(0) ||
-                "D"}
+              {userData?.name?.charAt(0) || currentUser?.email?.charAt(0) || "D"}
             </AvatarFallback>
           </Avatar>
         </div>

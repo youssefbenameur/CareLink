@@ -12,10 +12,13 @@ dist
 dist-ssr
 *.local
 
-# Environment variables — never commit secrets
+# Environment variable files — never commit secrets
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
+
+# Firebase service account key — contains private credentials, never commit
+firebase-import/serviceAccountKey.json
 
 # Editor directories and files
 .vscode/*

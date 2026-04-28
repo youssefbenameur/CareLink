@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,19 +22,27 @@ import {
   setMinutes,
   setHours,
   isBefore,
-  isAfter,
 } from "date-fns";
 import { appointmentService } from "@/services/appointmentService";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllDoctors } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+
+// Lazy-load RouteMap — it pulls in Leaflet which is heavy
+const RouteMap = lazy(() =>
+  import("@/components/map/RouteMap").then((m) => ({ default: m.RouteMap }))
+);
 
 interface Doctor {
   id: string;
   name: string;
   specialty?: string;
   experience?: string;
+  clinicLocation?: string;
+  clinicLat?: number;
+  clinicLng?: number;
   [key: string]: any;
 }
 
@@ -61,8 +69,10 @@ export const BookAppointmentForm = ({
   const [selectedDoctorName, setSelectedDoctorName] = useState<string>(
     propDoctorName || "",
   );
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [showRoute, setShowRoute] = useState(false);
 
   const [date, setDate] = useState<Date | undefined>(
     selectedDate || new Date(),
@@ -71,8 +81,8 @@ export const BookAppointmentForm = ({
     undefined,
   );
   const [appointmentType, setAppointmentType] = useState<
-    "Video Call" | "Chat Session" | "In-person"
-  >("Video Call");
+    "Chat Session" | "In-person" | "Video Call"
+  >("Chat Session");
   const [notes, setNotes] = useState("");
   const [reason, setReason] = useState("");
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
@@ -114,6 +124,8 @@ export const BookAppointmentForm = ({
     if (doctor) {
       setSelectedDoctorId(doctorId);
       setSelectedDoctorName(doctor.name || "");
+      setSelectedDoctor(doctor);
+      setShowRoute(false); // reset route when doctor changes
     }
   };
 
@@ -191,7 +203,7 @@ export const BookAppointmentForm = ({
 
       // Reset form
       setSelectedTime(undefined);
-      setAppointmentType("Video Call");
+      setAppointmentType("Chat Session");
       setNotes("");
       setReason("");
 
@@ -210,11 +222,11 @@ export const BookAppointmentForm = ({
     }
   };
 
-  // Map the appointment type values to their labels
+  // Appointment types
   const appointmentTypes = [
-    { value: "Video Call", label: "Initial Consultation" },
-    { value: "Chat Session", label: "Follow-up" },
-    { value: "In-person", label: "Therapy Session" },
+    { value: "Chat Session", label: "💬 Initial Consultation (Chat)" },
+    { value: "Video Call", label: "🎥 Video Call" },
+    { value: "In-person", label: "🏥 In-person Visit" },
   ];
 
   return (
@@ -256,13 +268,40 @@ export const BookAppointmentForm = ({
           )}
         </div>
 
+        {/* Route map — shown when selected doctor has a clinic location */}
+        {selectedDoctor && (selectedDoctor.clinicLocation || selectedDoctor.clinicLat) && (
+          <div className="space-y-2">
+            <Separator />
+            {!showRoute ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => setShowRoute(true)}
+              >
+                🗺️ Show route from my location
+              </Button>
+            ) : (
+              <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+                <RouteMap
+                  doctorName={selectedDoctor.name}
+                  doctorAddress={selectedDoctor.clinicLocation || ""}
+                  doctorLat={selectedDoctor.clinicLat}
+                  doctorLng={selectedDoctor.clinicLng}
+                />
+              </Suspense>
+            )}
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label>Appointment Type</Label>
           <Select
             value={appointmentType}
             onValueChange={(value) =>
               setAppointmentType(
-                value as "Video Call" | "Chat Session" | "In-person",
+                value as "Chat Session" | "In-person" | "Video Call",
               )
             }
           >

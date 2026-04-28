@@ -13,9 +13,46 @@ export interface Notification {
 }
 
 export const notificationService = {
-  // Create a new notification
+  // Create a notification — deduplicates by userId + title + actionUrl within the same day.
+  // If an unread notification with the same key already exists today, update it instead of
+  // creating a duplicate (prevents spam when the same action is triggered multiple times).
   async createNotification(notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) {
     try {
+      // Dedup: check for existing unread notification with same userId + title + actionUrl today.
+      // Use only single-field queries to avoid requiring a composite Firestore index.
+      const dupQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', notification.userId),
+        where('read', '==', false),
+      );
+
+      const dupSnap = await getDocs(dupQuery);
+
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const startOfDayMs = startOfDay.getTime();
+
+      // Filter client-side for title + actionUrl + same day
+      const existing = dupSnap.docs.find((d) => {
+        const data = d.data();
+        const createdMs = data.createdAt instanceof Timestamp
+          ? data.createdAt.toMillis()
+          : 0;
+        return (
+          data.title === notification.title &&
+          (data.actionUrl ?? '') === (notification.actionUrl ?? '') &&
+          createdMs >= startOfDayMs
+        );
+      });
+
+      if (existing) {
+        await updateDoc(doc(db, 'notifications', existing.id), {
+          message: notification.message,
+          createdAt: Timestamp.now(),
+        });
+        return existing.id;
+      }
+
       const docRef = await addDoc(collection(db, 'notifications'), {
         ...notification,
         read: false,

@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { patientNotesService, PatientNote } from '@/services/patientNotesService';
 import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
+import { convertToDate } from '@/services/appointmentService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Edit, Trash2 } from 'lucide-react';
@@ -127,24 +127,11 @@ export const PatientNotes = ({ patientId, doctorId, notes, onNotesUpdate }: Pati
     }
   };
 
-  // Function to safely format date from Timestamp or Date
-  const formatDate = (date: Date | Timestamp | string | undefined) => {
+  // Function to safely format date using the global convertToDate helper
+  const formatDate = (date: any) => {
     if (!date) return "Unknown date";
-    
     try {
-      // Handle Firestore Timestamp
-      if (typeof date === 'object' && date && 'toDate' in date) {
-        return format(date.toDate(), 'PPP p');
-      }
-      // Handle string date
-      else if (typeof date === 'string') {
-        return format(new Date(date), 'PPP p');
-      }
-      // Handle Date object
-      else if (date instanceof Date) {
-        return format(date, 'PPP p');
-      }
-      return "Invalid date format";
+      return format(convertToDate(date), 'PPP p');
     } catch (e) {
       console.error("Error formatting date:", e);
       return "Date format error";
@@ -182,18 +169,8 @@ export const PatientNotes = ({ patientId, doctorId, notes, onNotesUpdate }: Pati
             <div className="space-y-4">
               {notes
                 .sort((a, b) => {
-                  const dateA = a.createdAt instanceof Date ? 
-                    a.createdAt : 
-                    (typeof a.createdAt === 'object' && a.createdAt && 'toDate' in a.createdAt ? 
-                      a.createdAt.toDate() : 
-                      new Date(a.createdAt as any));
-                      
-                  const dateB = b.createdAt instanceof Date ? 
-                    b.createdAt : 
-                    (typeof b.createdAt === 'object' && b.createdAt && 'toDate' in b.createdAt ? 
-                      b.createdAt.toDate() : 
-                      new Date(b.createdAt as any));
-                      
+                  const dateA = convertToDate(a.createdAt);
+                  const dateB = convertToDate(b.createdAt);
                   return dateB.getTime() - dateA.getTime();
                 })
                 .map((note, index) => (

@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AnimatedSection } from '@/components/ui/animated-section';
 import { adminService, User } from '@/services/adminService';
 import { useTranslation } from 'react-i18next';
-import { Timestamp } from 'firebase/firestore';
+import { convertToDate } from '@/services/appointmentService';
 
 // Transform users from Firestore to expected format
 const transformUserData = (users: User[]) => {
@@ -27,20 +27,8 @@ const transformUserData = (users: User[]) => {
     role: user.role || 'patient',
     status: user.status || 'active',
     doctorVerificationStatus: (user as any).doctorVerificationStatus ?? undefined,
-    createdAt: user.createdAt ?
-      (typeof user.createdAt === 'string' ?
-        new Date(user.createdAt) :
-        'toDate' in user.createdAt ?
-          user.createdAt.toDate() :
-          user.createdAt) :
-      new Date(),
-    lastLogin: user.lastLogin ?
-      (typeof user.lastLogin === 'string' ?
-        new Date(user.lastLogin) :
-        'toDate' in user.lastLogin ?
-          user.lastLogin.toDate() :
-          user.lastLogin) :
-      new Date()
+    createdAt: convertToDate(user.createdAt ?? null),
+    lastLogin: convertToDate(user.lastLogin ?? null),
   }));
 };
 
@@ -467,18 +455,10 @@ const ManageUsers = () => {
                         </TableCell>
                         <TableCell>{getStatusBadge(user.status)}</TableCell>
                         <TableCell>
-                          {user.createdAt instanceof Date ? 
-                            user.createdAt.toLocaleDateString() : 
-                            (user.createdAt && 'toDate' in user.createdAt) ? 
-                              user.createdAt.toDate().toLocaleDateString() :
-                              new Date().toLocaleDateString()}
+                          {convertToDate(user.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          {user.lastLogin instanceof Date ? 
-                            user.lastLogin.toLocaleDateString() : 
-                            (user.lastLogin && 'toDate' in user.lastLogin) ? 
-                              user.lastLogin.toDate().toLocaleDateString() :
-                              new Date().toLocaleDateString()}
+                          {convertToDate(user.lastLogin).toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">

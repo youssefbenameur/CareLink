@@ -2,18 +2,17 @@ import { useState, useEffect } from 'react';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { appointmentService, Appointment, convertToDate } from '@/services/appointmentService';
-import { format, isToday, isThisWeek, isThisMonth, isBefore, startOfDay } from 'date-fns';
-import { Clock, Video, MessageSquare, MapPin, CalendarDays, CheckCircle2, XCircle, Calendar } from 'lucide-react';
+import { format, isBefore, startOfDay, addDays, isWithinInterval } from 'date-fns';
+import { Clock, MessageSquare, MapPin, Video, CalendarDays, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 import { DoctorAppointmentCalendar } from '@/components/doctor/DoctorAppointmentCalendar';
 import { cn } from '@/lib/utils';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 type UpcomingFilter = 'today' | 'week' | 'month';
 
@@ -24,19 +23,19 @@ const FILTERS: { value: UpcomingFilter; label: string }[] = [
 ];
 
 const typeConfig: Record<string, { icon: any; accent: string; iconBg: string; badge: string; label: string }> = {
-  'Video Call': {
-    icon: Video,
-    accent: 'border-l-blue-500',
-    iconBg: 'bg-blue-500/10 text-blue-600',
-    badge: 'bg-blue-50 text-blue-700 border-blue-200',
-    label: 'Video Call',
-  },
   'Chat Session': {
     icon: MessageSquare,
     accent: 'border-l-violet-500',
     iconBg: 'bg-violet-500/10 text-violet-600',
     badge: 'bg-violet-50 text-violet-700 border-violet-200',
     label: 'Chat Session',
+  },
+  'Video Call': {
+    icon: Video,
+    accent: 'border-l-blue-500',
+    iconBg: 'bg-blue-500/10 text-blue-600',
+    badge: 'bg-blue-50 text-blue-700 border-blue-200',
+    label: 'Video Call',
   },
   'In-person': {
     icon: MapPin,
@@ -65,12 +64,17 @@ const statusStyle = (status: string) => {
 const DoctorAppointments = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
+  const { markReadByActionUrl } = useNotifications();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [upcomingFilter, setUpcomingFilter] = useState<UpcomingFilter>('today');
+  const [upcomingFilter, setUpcomingFilter] = useState<UpcomingFilter>('week');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarFiltered, setCalendarFiltered] = useState<Appointment[] | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+
+  useEffect(() => {
+    markReadByActionUrl('/doctor/appointments');
+  }, []);
 
   useEffect(() => { fetchAppointments(); }, [currentUser]);
 
@@ -94,8 +98,12 @@ const DoctorAppointments = () => {
         return;
       }
       await appointmentService.updateAppointmentStatus(id, status);
-      setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-      const statusLabel = status === 'pending' ? 'pending' : status === 'scheduled' ? 'approved' : status;
+      if (status === 'scheduled') {
+        await fetchAppointments();
+      } else {
+        setAppointments(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+      }
+      const statusLabel = status === 'scheduled' ? 'approved' : status;
       toast({ title: 'Updated', description: `Appointment marked as ${statusLabel}.` });
     } catch {
       toast({ title: 'Error', description: 'Failed to update.', variant: 'destructive' });
@@ -105,28 +113,35 @@ const DoctorAppointments = () => {
   const confirmCancel = async () => {
     if (!confirmCancelId) return;
     try {
-      await appointmentService.deleteAppointment(confirmCancelId);
-      setAppointments(prev => prev.filter(a => a.id !== confirmCancelId));
-      toast({ title: 'Appointment deleted', description: 'The appointment has been removed.' });
+      await appointmentService.updateAppointmentStatus(confirmCancelId, 'cancelled');
+      setAppointments(prev => prev.map(a => a.id === confirmCancelId ? { ...a, status: 'cancelled' } : a));
+      toast({ title: 'Appointment cancelled', description: 'The appointment has been cancelled.' });
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete.', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to cancel.', variant: 'destructive' });
     } finally {
       setConfirmCancelId(null);
     }
   };
 
   const now = startOfDay(new Date());
+  const in7Days = addDays(now, 7);
+  const in30Days = addDays(now, 30);
+
+  const pending = appointments
+    .filter(a => a.status === 'pending' && !isBefore(convertToDate(a.date), now))
+    .sort((a, b) => convertToDate(a.date).getTime() - convertToDate(b.date).getTime());
 
   const upcoming = appointments.filter(a => {
+    if (a.status !== 'scheduled') return false;
     const d = convertToDate(a.date);
     if (isBefore(d, now)) return false;
-    if (upcomingFilter === 'today') return isToday(d);
-    if (upcomingFilter === 'week') return isThisWeek(d, { weekStartsOn: 1 });
-    return isThisMonth(d);
+    if (upcomingFilter === 'today') return format(d, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
+    if (upcomingFilter === 'week') return isWithinInterval(d, { start: now, end: in7Days });
+    return isWithinInterval(d, { start: now, end: in30Days });
   }).sort((a, b) => convertToDate(a.date).getTime() - convertToDate(b.date).getTime());
 
   const past = appointments
-    .filter(a => isBefore(convertToDate(a.date), now))
+    .filter(a => isBefore(convertToDate(a.date), now) || a.status === 'cancelled')
     .sort((a, b) => convertToDate(b.date).getTime() - convertToDate(a.date).getTime());
 
   const handleDateSelect = (date: Date) => {
@@ -141,7 +156,6 @@ const DoctorAppointments = () => {
     <>
     <DoctorLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
@@ -154,7 +168,6 @@ const DoctorAppointments = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Calendar */}
           <Card className="col-span-1 md:col-span-4">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base">
@@ -178,10 +191,17 @@ const DoctorAppointments = () => {
             </CardContent>
           </Card>
 
-          {/* Main content */}
           <div className="col-span-1 md:col-span-8">
-            <Tabs defaultValue="upcoming" className="space-y-4">
+            <Tabs defaultValue="pending" className="space-y-4">
               <TabsList className="w-full h-11 bg-muted/60">
+                <TabsTrigger value="pending" className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Pending
+                  {pending.length > 0 && (
+                    <span className="ml-2 bg-yellow-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {pending.length}
+                    </span>
+                  )}
+                </TabsTrigger>
                 <TabsTrigger value="upcoming" className="flex-1 data-[state=active]:bg-background data-[state=active]:shadow-sm">
                   Upcoming
                   <span className="ml-2 bg-primary/10 text-primary text-xs px-1.5 py-0.5 rounded-full">{upcoming.length}</span>
@@ -192,17 +212,28 @@ const DoctorAppointments = () => {
                 </TabsTrigger>
               </TabsList>
 
-              {/* Upcoming */}
+              <TabsContent value="pending" className="space-y-3 mt-0">
+                {loading ? <Skeletons /> : pending.length === 0 ? (
+                  <EmptyState message="No pending appointment requests." />
+                ) : (
+                  <div className="space-y-3">
+                    {pending.map(a => (
+                      <AppointmentCard key={a.id} appointment={a} onStatusUpdate={updateStatus} showDate />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
               <TabsContent value="upcoming" className="space-y-4 mt-0">
-                {/* Filter pills */}
                 <div className="flex gap-2">
                   {FILTERS.map(f => {
                     const count = appointments.filter(a => {
+                      if (a.status !== 'scheduled') return false;
                       const d = convertToDate(a.date);
                       if (isBefore(d, now)) return false;
-                      if (f.value === 'today') return isToday(d);
-                      if (f.value === 'week') return isThisWeek(d, { weekStartsOn: 1 });
-                      return isThisMonth(d);
+                      if (f.value === 'today') return format(d, 'yyyy-MM-dd') === format(now, 'yyyy-MM-dd');
+                      if (f.value === 'week') return isWithinInterval(d, { start: now, end: in7Days });
+                      return isWithinInterval(d, { start: now, end: in30Days });
                     }).length;
                     return (
                       <button
@@ -224,9 +255,8 @@ const DoctorAppointments = () => {
                     );
                   })}
                 </div>
-
                 {loading ? <Skeletons /> : upcoming.length === 0 ? (
-                  <EmptyState message={`No appointments ${upcomingFilter === 'today' ? 'today' : upcomingFilter === 'week' ? 'this week' : 'this month'}.`} />
+                  <EmptyState message={`No confirmed appointments ${upcomingFilter === 'today' ? 'today' : upcomingFilter === 'week' ? 'this week' : 'this month'}.`} />
                 ) : (
                   <div className="space-y-3">
                     {upcoming.map(a => (
@@ -236,7 +266,6 @@ const DoctorAppointments = () => {
                 )}
               </TabsContent>
 
-              {/* Past */}
               <TabsContent value="past" className="mt-0">
                 {loading ? <Skeletons /> : past.length === 0 ? (
                   <EmptyState message="No past appointments." />
@@ -299,7 +328,7 @@ interface AppointmentCardProps {
 
 const AppointmentCard = ({ appointment, onStatusUpdate, showDate, compact }: AppointmentCardProps) => {
   const d = convertToDate(appointment.date);
-  const config = typeConfig[appointment.type] ?? typeConfig['Video Call'];
+  const config = typeConfig[appointment.type] ?? typeConfig['In-person'];
   const Icon = config.icon;
 
   return (

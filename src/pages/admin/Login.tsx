@@ -28,8 +28,14 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      // Simple static password check for admin access
-      if (password === "admin123") {
+      // Password is read from the VITE_ADMIN_PASSWORD environment variable.
+      // Never hardcode credentials — set this in your .env file.
+      const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+      if (!adminPassword) {
+        throw new Error("Admin password is not configured. Set VITE_ADMIN_PASSWORD in your .env file.");
+      }
+
+      if (password === adminPassword) {
         // Store admin access in localStorage
         localStorage.setItem("adminAccess", "true");
 

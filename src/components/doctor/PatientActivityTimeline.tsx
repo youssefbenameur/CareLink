@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Activity } from '@/services/activityService';
 import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
+import { convertToDate } from '@/services/appointmentService';
 import { useQuery } from '@tanstack/react-query';
 import { activityService } from '@/services/activityService';
 import { userService } from '@/services/userService';
@@ -72,12 +72,7 @@ export const PatientActivityTimeline = () => {
                   <p className="text-sm font-medium">{activity.patientName}</p>
                   <p className="text-sm">{activity.description}</p>
                   <p className="text-xs text-muted-foreground">
-                    {format(
-                      activity.timestamp instanceof Timestamp 
-                        ? activity.timestamp.toDate() 
-                        : new Date(activity.timestamp),
-                      'PPp'
-                    )}
+                    {format(convertToDate(activity.timestamp), 'PPp')}
                   </p>
                 </div>
                 <Button variant="outline" size="sm" asChild>

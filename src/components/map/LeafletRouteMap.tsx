@@ -102,7 +102,7 @@ const LeafletRouteMap = ({ docLat, docLng, patientLat, patientLng, doctorName, d
     <MapContainer
       center={[docLat, docLng]}
       zoom={14}
-      style={{ height: '100%', width: '100%' }}
+      style={{ height: '300px', width: '100%' }}
       scrollWheelZoom={false}
     >
       <TileLayer

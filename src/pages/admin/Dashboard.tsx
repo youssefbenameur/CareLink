@@ -4,7 +4,6 @@ import {
   Activity, 
   Settings,
   MessageSquare,
-  UserPlus,
   UserCheck,
   HelpCircle,
   FileText,
@@ -19,7 +18,7 @@ import { AnimatedSection } from '@/components/ui/animated-section';
 import { SupportTicket } from '@/services/adminService';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
-import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit, where, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 const AdminDashboard = () => {
@@ -42,38 +41,43 @@ const AdminDashboard = () => {
       try {
         setLoading(true);
 
-        // Fetch real stats from Firestore
-        const usersSnap = await getDocs(collection(db, 'users'));
-        const allUsers = usersSnap.docs.map(d => d.data());
-        const totalUsers = allUsers.length;
-        const activeDoctors = allUsers.filter(u => u.role === 'doctor' && u.doctorVerificationStatus === 'approved').length;
-        const activePatients = allUsers.filter(u => u.role === 'patient').length;
-        const pendingDoctors = allUsers.filter(u => u.role === 'doctor' && u.doctorVerificationStatus === 'pending').length;
+        // Use getCountFromServer() for all stat counts — avoids downloading
+        // every user document just to count them (saves bandwidth and cost).
+        const [
+          activePatientsSnap,
+          approvedDoctorsSnap,
+          pendingDoctorsSnap,
+          pendingTicketsSnap,
+        ] = await Promise.all([
+          getCountFromServer(query(collection(db, 'users'), where('role', '==', 'patient'))),
+          getCountFromServer(query(collection(db, 'users'), where('role', '==', 'doctor'), where('doctorVerificationStatus', '==', 'approved'))),
+          getCountFromServer(query(collection(db, 'users'), where('role', '==', 'doctor'), where('doctorVerificationStatus', '==', 'pending'))),
+          getCountFromServer(query(collection(db, 'supportTickets'), where('status', '==', 'Open'))),
+        ]);
 
-        // Fetch pending support tickets count
-        const pendingTicketsSnap = await getDocs(
-          query(collection(db, 'supportTickets'), where('status', '==', 'Open'))
-        );
-        const pendingSupportTickets = pendingTicketsSnap.size;
+        const activePatients = activePatientsSnap.data().count;
+        const activeDoctors = approvedDoctorsSnap.data().count;
+        const pendingDoctors = pendingDoctorsSnap.data().count;
+        const pendingSupportTickets = pendingTicketsSnap.data().count;
 
         setStats({
-          totalUsers: totalUsers.toString(),
+          totalUsers: (activePatients + activeDoctors).toString(),
           activeDoctors: activeDoctors.toString(),
           activePatients: activePatients.toString(),
           pendingDoctors: pendingDoctors.toString(),
           pendingSupportTickets: pendingSupportTickets.toString(),
         });
 
-        // Recent registrations — last 5 users sorted by createdAt
-        const sorted = [...allUsers]
-          .filter(u => u.createdAt)
-          .sort((a, b) => {
-            const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-            const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-            return bDate.getTime() - aDate.getTime();
-          })
-          .slice(0, 5);
-        setRecentUsers(sorted);
+        // Pending doctor approvals preview — fetch only the fields we need
+        const pendingDoctorDocsSnap = await getDocs(
+          query(
+            collection(db, 'users'),
+            where('role', '==', 'doctor'),
+            where('doctorVerificationStatus', '==', 'pending'),
+            limit(5),
+          )
+        );
+        setRecentUsers(pendingDoctorDocsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
 
         // Fetch support tickets from real Firestore collection
         const ticketsSnap = await getDocs(
@@ -112,8 +116,8 @@ const AdminDashboard = () => {
 
   const statsArray = [
     {
-      title: 'Total Users',
-      value: stats.totalUsers,
+      title: 'Active Patients',
+      value: stats.activePatients,
       icon: Users,
     },
     {
@@ -246,19 +250,21 @@ const AdminDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Recent Registrations
+                  <HelpCircle className="h-4 w-4 text-yellow-500" />
+                  Pending Doctor Approvals
                 </CardTitle>
-                <CardDescription>Latest users who joined the platform</CardDescription>
+                <CardDescription>Doctors awaiting admin review</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentUsers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">No recent registrations.</p>
-                  ) : recentUsers.map((user: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between p-2 rounded-lg border">
+                  {recentUsers.filter(u => u.role === 'doctor' && u.doctorVerificationStatus === 'pending').length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No pending approvals.</p>
+                  ) : recentUsers
+                      .filter(u => u.role === 'doctor' && u.doctorVerificationStatus === 'pending')
+                      .map((user: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between p-2 rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950 dark:border-yellow-800">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                        <div className="h-8 w-8 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center text-xs font-bold text-yellow-700 dark:text-yellow-300">
                           {(user.name || user.email || '?')[0].toUpperCase()}
                         </div>
                         <div>
@@ -266,14 +272,18 @@ const AdminDashboard = () => {
                           <p className="text-xs text-muted-foreground">{user.email}</p>
                         </div>
                       </div>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize
-                        ${user.role === 'doctor' ? 'bg-blue-100 text-blue-700' :
-                          user.role === 'patient' ? 'bg-green-100 text-green-700' :
-                          'bg-gray-100 text-gray-600'}`}>
-                        {user.role}
-                      </span>
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to="/admin/doctor-approvals">Review</Link>
+                      </Button>
                     </div>
                   ))}
+                  {parseInt(stats.pendingDoctors) > recentUsers.filter(u => u.role === 'doctor' && u.doctorVerificationStatus === 'pending').length && (
+                    <Button variant="ghost" size="sm" className="w-full" asChild>
+                      <Link to="/admin/doctor-approvals">
+                        View all {stats.pendingDoctors} pending approvals →
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

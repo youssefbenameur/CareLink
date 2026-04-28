@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Calendar, BookOpen, Clock, Shield, Edit2, Save, MapPin, X } from 'lucide-react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { User, Mail, Phone, Calendar, BookOpen, Clock, Shield, Edit2, Save, MapPin, X, Camera } from 'lucide-react';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,16 +8,25 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AnimatedSection } from '@/components/ui/animated-section';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useTranslation } from 'react-i18next';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const LocationPicker = lazy(() =>
+  import('@/components/map/LocationPicker').then(m => ({ default: m.LocationPicker }))
+);
 
 const DoctorProfile = () => {
-  const { userData, currentUser } = useAuth();
+  const { userData, currentUser, refreshUserData } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarBase64, setAvatarBase64] = useState<string>(userData?.avatarBase64 || "");
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [profileData, setProfileData] = useState({
     firstName: '',
     lastName: '',
@@ -32,6 +41,9 @@ const DoctorProfile = () => {
     consultationFee: '',
     sessionDuration: '50',
     clinicLocation: '',
+    clinicLat: null as number | null,
+    clinicLng: null as number | null,
+    practiceType: '',
   });
   const [securityData, setSecurityData] = useState({
     currentPassword: '',
@@ -56,6 +68,7 @@ const DoctorProfile = () => {
         
         if (docSnap.exists()) {
           const data = docSnap.data();
+          setAvatarBase64(data.avatarBase64 || "");
           setProfileData({
             firstName: data.firstName || '',
             lastName: data.lastName || '',
@@ -70,6 +83,9 @@ const DoctorProfile = () => {
             consultationFee: data.consultationFee || '',
             sessionDuration: data.sessionDuration || '50',
             clinicLocation: data.clinicLocation || '',
+            clinicLat: data.clinicLat || null,
+            clinicLng: data.clinicLng || null,
+            practiceType: data.practiceType || '',
           });
           
           setSecurityData({
@@ -95,6 +111,42 @@ const DoctorProfile = () => {
 
     fetchUserData();
   }, [currentUser, toast]);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ title: "Invalid file", description: "Please select an image.", variant: "destructive" });
+      return;
+    }
+    setIsUploadingAvatar(true);
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+    img.onload = async () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      const MAX = 200;
+      let { width, height } = img;
+      if (width > height) { if (width > MAX) { height = Math.round(height * MAX / width); width = MAX; } }
+      else { if (height > MAX) { width = Math.round(width * MAX / height); height = MAX; } }
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
+      const base64 = canvas.toDataURL('image/jpeg', 0.8);
+      try {
+        await updateDoc(doc(db, 'users', currentUser.uid), { avatarBase64: base64 });
+        setAvatarBase64(base64);
+        await refreshUserData();
+        toast({ title: "Photo updated", description: "Your profile photo has been saved." });
+      } catch {
+        toast({ title: "Error", description: "Failed to save photo.", variant: "destructive" });
+      } finally {
+        setIsUploadingAvatar(false);
+        e.target.value = "";
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); setIsUploadingAvatar(false); };
+    img.src = url;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -131,6 +183,25 @@ const DoctorProfile = () => {
     
     try {
       setIsLoading(true);
+
+      // Geocode clinic location to get coordinates
+      let clinicLat: number | null = profileData.clinicLat;
+      let clinicLng: number | null = profileData.clinicLng;
+
+      if (profileData.clinicLocation && !clinicLat && !clinicLng) {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(profileData.clinicLocation)}&format=json&limit=1`,
+            { headers: { 'Accept-Language': 'en' } }
+          );
+          const data = await res.json();
+          if (data.length > 0) {
+            clinicLat = parseFloat(data[0].lat);
+            clinicLng = parseFloat(data[0].lon);
+          }
+        } catch {}
+      }
+
       await updateDoc(doc(db, "users", currentUser.uid), {
         firstName: profileData.firstName,
         lastName: profileData.lastName,
@@ -144,6 +215,8 @@ const DoctorProfile = () => {
         consultationFee: profileData.consultationFee,
         sessionDuration: profileData.sessionDuration,
         clinicLocation: profileData.clinicLocation,
+        practiceType: profileData.practiceType,
+        ...(clinicLat && clinicLng ? { clinicLat, clinicLng } : {}),
         updatedAt: new Date()
       });
       
@@ -267,16 +340,34 @@ const DoctorProfile = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex justify-center">
-                    <div className="relative">
-                      <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
-                        <User className="h-12 w-12 text-primary" />
+                    <div className="relative group">
+                      <div className="h-24 w-24 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center border-2 border-border">
+                        {avatarBase64 ? (
+                          <img src={avatarBase64} alt="Profile" className="h-full w-full object-cover" />
+                        ) : (
+                          <User className="h-12 w-12 text-primary" />
+                        )}
                       </div>
-                      
                       {isEditing && (
-                        <Button variant="outline" size="sm" className="absolute bottom-0 right-0 rounded-full w-8 h-8 p-0">
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
+                        <button
+                          type="button"
+                          disabled={isUploadingAvatar}
+                          onClick={() => avatarInputRef.current?.click()}
+                          className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors disabled:opacity-50"
+                          title="Change photo"
+                        >
+                          {isUploadingAvatar
+                            ? <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            : <Camera className="h-4 w-4" />}
+                        </button>
                       )}
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
                     </div>
                   </div>
                   
@@ -397,18 +488,44 @@ const DoctorProfile = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="practiceType">Practice Type</Label>
+                    <Select
+                      value={profileData.practiceType}
+                      onValueChange={(val) => setProfileData(prev => ({ ...prev, practiceType: val }))}
+                      disabled={!isEditing || isLoading}
+                    >
+                      <SelectTrigger id="practiceType">
+                        <SelectValue placeholder="Select practice type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hospital">🏥 Hospital</SelectItem>
+                        <SelectItem value="clinic">🏨 Clinic</SelectItem>
+                        <SelectItem value="private_cabinet">🚪 Private Cabinet</SelectItem>
+                        <SelectItem value="teleconsultation">💻 Teleconsultation Only</SelectItem>
+                        <SelectItem value="home_visits">🏠 Home Visits</SelectItem>
+                        <SelectItem value="other">📍 Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="clinicLocation">Clinic / Cabinet Location</Label>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="clinicLocation"
-                        name="clinicLocation"
-                        value={profileData.clinicLocation}
-                        onChange={handleInputChange}
+                    <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+                      <LocationPicker
+                        lat={profileData.clinicLat ?? undefined}
+                        lng={profileData.clinicLng ?? undefined}
+                        address={profileData.clinicLocation}
                         disabled={!isEditing || isLoading}
-                        placeholder="e.g., 12 Rue de la Santé, Tunis"
+                        onChange={(lat, lng, address) =>
+                          setProfileData(prev => ({
+                            ...prev,
+                            clinicLat: lat,
+                            clinicLng: lng,
+                            clinicLocation: address,
+                          }))
+                        }
                       />
-                    </div>
+                    </Suspense>
                   </div>
                   
                   <div className="grid gap-4 md:grid-cols-2">

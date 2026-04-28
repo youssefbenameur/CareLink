@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format } from 'date-fns';
-import { Timestamp } from 'firebase/firestore';
 import { MoodEntry } from '@/services/moodTracker';
 import { useTranslation } from 'react-i18next';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, Sector } from 'recharts';
+import { convertToDate } from '@/services/appointmentService';
 
 interface PatientMoodsProps {
   moods: MoodEntry[];
@@ -48,11 +48,8 @@ export const PatientMoods = ({ moods }: PatientMoodsProps) => {
   const isMobile = useIsMobile();
   const [activeIndex, setActiveIndex] = useState(0);
   
-  const formatDate = (timestamp: Date | Timestamp) => {
-    if (timestamp instanceof Timestamp) {
-      return format(timestamp.toDate(), 'MMM d');
-    }
-    return format(timestamp, 'MMM d');
+  const formatDate = (timestamp: any) => {
+    return format(convertToDate(timestamp), 'MMM d');
   };
 
   const chartData = moods.map(mood => ({

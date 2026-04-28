@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { userService, UserData } from '@/services/userService';
 import { useAuth } from '@/contexts/AuthContext';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, RefreshCcw, TicketCheck } from 'lucide-react';
@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { SupportTicketForm } from '@/components/support/SupportTicketForm';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 const DoctorChatPage = () => {
   const { patientId } = useParams<{ patientId: string }>();
@@ -22,6 +23,12 @@ const DoctorChatPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { markReadByActionUrl } = useNotifications();
+
+  // Auto-clear chat notifications when this page is opened
+  useEffect(() => {
+    markReadByActionUrl('/doctor/chat');
+  }, []);
   
   const fetchPatients = async () => {
     if (!currentUser) return;
@@ -106,6 +113,7 @@ const DoctorChatPage = () => {
                     onClick={() => navigate(`/doctor/chat/${patient.id}`)}
                   >
                     <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src={patient.avatarBase64} alt={patient.name} />
                       <AvatarFallback>
                         {patient.name?.split(' ').map((n: string) => n[0]).join('') || 'P'}
                       </AvatarFallback>

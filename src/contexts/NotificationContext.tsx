@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { collection, query, where, onSnapshot, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
-import { notificationService, Notification } from '@/services/notificationService';
+import { Notification } from '@/services/notificationService';
 
 interface NotificationContextType {
   notifications: Notification[];
   unreadCount: number;
-  refreshNotifications: () => Promise<void>;
+  refreshNotifications: () => void;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  markReadByActionUrl: (actionUrl: string) => Promise<void>;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -28,20 +31,41 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const { currentUser } = useAuth();
 
-  const refreshNotifications = async () => {
-    if (currentUser) {
-      try {
-        const userNotifications = await notificationService.getUserNotifications(currentUser.uid);
-        setNotifications(userNotifications);
-      } catch (error) {
-        console.error('Error fetching notifications:', error);
-      }
+  // Real-time listener — updates instantly when new notifications arrive
+  useEffect(() => {
+    if (!currentUser) {
+      setNotifications([]);
+      return;
     }
+
+    // Query only by userId — avoids needing a composite index.
+    // Filter read === false client-side.
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', currentUser.uid),
+    );
+
+    const unsub = onSnapshot(q, (snap) => {
+      const notifs: Notification[] = snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<Notification, 'id'>) }))
+        .filter((n) => n.read === false);
+      // Sort newest first
+      notifs.sort((a, b) => (b.createdAt?.toMillis() ?? 0) - (a.createdAt?.toMillis() ?? 0));
+      setNotifications(notifs);
+    }, (error) => {
+      console.error('Notification listener error:', error);
+    });
+
+    return () => unsub();
+  }, [currentUser]);
+
+  const refreshNotifications = () => {
+    // No-op — real-time listener keeps state up to date automatically
   };
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await notificationService.markAsRead(notificationId);
+      await updateDoc(doc(db, 'notifications', notificationId), { read: true });
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
     } catch (error) {
       console.error('Error marking notification as read:', error);
@@ -49,19 +73,35 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   };
 
   const markAllAsRead = async () => {
-    if (currentUser) {
-      try {
-        await notificationService.markAllAsRead(currentUser.uid);
-        setNotifications([]);
-      } catch (error) {
-        console.error('Error marking all notifications as read:', error);
-      }
+    if (!currentUser || notifications.length === 0) return;
+    try {
+      const batch = writeBatch(db);
+      notifications.forEach((n) => {
+        if (n.id) batch.update(doc(db, 'notifications', n.id), { read: true });
+      });
+      await batch.commit();
+      setNotifications([]);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
     }
   };
 
-  useEffect(() => {
-    refreshNotifications();
-  }, [currentUser]);
+  // Mark all unread notifications matching a specific actionUrl as read.
+  // Used to auto-clear notifications when the user navigates to the relevant page.
+  const markReadByActionUrl = async (actionUrl: string) => {
+    const matching = notifications.filter(n => n.actionUrl === actionUrl);
+    if (matching.length === 0) return;
+    try {
+      const batch = writeBatch(db);
+      matching.forEach((n) => {
+        if (n.id) batch.update(doc(db, 'notifications', n.id), { read: true });
+      });
+      await batch.commit();
+      setNotifications(prev => prev.filter(n => n.actionUrl !== actionUrl));
+    } catch (error) {
+      console.error('Error marking notifications as read by actionUrl:', error);
+    }
+  };
 
   const unreadCount = notifications.length;
 
@@ -73,6 +113,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         refreshNotifications,
         markAsRead,
         markAllAsRead,
+        markReadByActionUrl,
       }}
     >
       {children}

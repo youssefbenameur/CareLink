@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTranslation } from 'react-i18next';
 import { Appointment, convertToDate } from '@/services/appointmentService';
 import { format } from 'date-fns';
-import { Clock, Video, MessageSquare, MapPin } from 'lucide-react';
+import { Clock, MessageSquare, MapPin, Video } from 'lucide-react';
 
 interface AppointmentsListProps {
   appointments: Appointment[];
@@ -81,14 +81,14 @@ const AppointmentCard = ({ appointment, onStatusUpdate }: AppointmentCardProps) 
   
   const getAppointmentTypeIcon = (type: string) => {
     switch (type) {
-      case 'Video Call':
-        return <Video className="h-4 w-4" />;
       case 'Chat Session':
         return <MessageSquare className="h-4 w-4" />;
+      case 'Video Call':
+        return <Video className="h-4 w-4 text-blue-500" />;
       case 'In-person Visit':
-        return <MapPin className="h-4 w-4" />;
+      case 'In-person':
       default:
-        return <Video className="h-4 w-4" />;
+        return <MapPin className="h-4 w-4" />;
     }
   };
 
