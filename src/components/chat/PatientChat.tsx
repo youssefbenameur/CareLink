@@ -8,7 +8,6 @@ import { userService } from '@/services/userService';
 import { chatService, Message, convertTimestampToDate } from '@/services/chatService';
 import { format } from 'date-fns';
 import { Send, Image as ImageIcon, X, Video } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { VideoCall, IncomingCall, CalleeVideoCall } from '@/components/chat/VideoCall';
 import { CallDoc } from '@/services/videoCallService';
@@ -28,7 +27,6 @@ export const PatientChat = () => {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { t } = useTranslation(['chat', 'common']);
   const { toast } = useToast();
 
   // Video call state
@@ -146,8 +144,8 @@ export const PatientChat = () => {
     return (
       <div className="h-full flex items-center justify-center p-6 text-center">
         <div>
-          <h3 className="text-lg font-medium">{t('chat:noDoctorSelected')}</h3>
-          <p className="text-muted-foreground mt-1">{t('chat:selectDoctorToChat')}</p>
+          <h3 className="text-lg font-medium">No Doctor Selected</h3>
+          <p className="text-muted-foreground mt-1">Select a doctor to start chatting</p>
         </div>
       </div>
     );
@@ -168,13 +166,13 @@ export const PatientChat = () => {
           <Avatar className="h-10 w-10">
             <AvatarImage src={doctorData.avatarBase64} />
             <AvatarFallback>
-              {doctorData.name?.split(' ').map((n: string) => n[0]).join('') || t('chat:doctor')}
+              {doctorData.name?.split(' ').map((n: string) => n[0]).join('') || 'D'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <div className="font-medium">{doctorData.name || t('chat:doctor')}</div>
+            <div className="font-medium">{doctorData.name || 'Doctor'}</div>
             <div className="text-sm text-muted-foreground">
-              {doctorData.specialty || doctorData.specialization || t('chat:healthcareProvider')}
+              {doctorData.specialty || doctorData.specialization || 'Healthcare Provider'}
             </div>
           </div>
           <Button
@@ -256,8 +254,8 @@ export const PatientChat = () => {
             })
           ) : (
             <div className="text-center text-muted-foreground py-8">
-              <p>{t('chat:noMessagesYet')}</p>
-              <p className="text-sm">{t('chat:startConversation')}</p>
+              <p>No messages yet</p>
+              <p className="text-sm">Start the conversation</p>
             </div>
           )}
           <div ref={messagesEndRef} />
@@ -279,10 +277,10 @@ export const PatientChat = () => {
             <Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()}>
               <ImageIcon className="h-4 w-4" />
             </Button>
-            <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder={t('chat:typeMessage')} className="flex-1" />
+            <Input value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." className="flex-1" />
             <Button type="submit" disabled={!newMessage.trim() && !selectedImage}>
               <Send className="h-4 w-4 mr-2" />
-              {t('chat:send')}
+              Send
             </Button>
           </div>
         </form>

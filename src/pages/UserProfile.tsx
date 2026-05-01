@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   FileText,
   Camera,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -29,12 +31,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { changePassword } from "@/lib/firebase";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const UserProfile = () => {
-  const { currentUser, userData, refreshUserData } = useAuth();
+  const { currentUser, userData, refreshUserData, logout } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarBase64, setAvatarBase64] = useState<string>(userData?.avatarBase64 || "");
@@ -112,11 +128,33 @@ const UserProfile = () => {
     setNotifications((prev) => ({ ...prev, [key]: checked }));
   };
 
-  const handleSaveProfile = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile information has been saved successfully.",
-    });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const handleSaveProfile = async () => {
+    if (!currentUser) return;
+    setIsSavingProfile(true);
+    try {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        name: profileData.name,
+        phone: profileData.phone,
+        bio: profileData.bio,
+        updatedAt: new Date(),
+      });
+      await refreshUserData();
+      toast({
+        title: "Profile Updated",
+        description: "Your profile information has been saved successfully.",
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Save Failed",
+        description: "Could not save your profile. Please try again.",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleSaveNotifications = () => {
@@ -218,7 +256,34 @@ const UserProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!currentUser) return;
+    setIsDeletingAccount(true);
+    try {
+      // Delete Firestore user document
+      await deleteDoc(doc(db, "users", currentUser.uid));
+      // Delete Firebase Auth account
+      await currentUser.delete();
+      toast({ title: "Account deleted", description: "Your account has been permanently deleted." });
+      navigate("/");
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: error.code === "auth/requires-recent-login"
+          ? "Please log out and log back in, then try again."
+          : "Failed to delete account. Please try again.",
+      });
+    } finally {
+      setIsDeletingAccount(false);
+      setDeleteDialogOpen(false);
+      setDeleteConfirmText("");
+    }
+  };
+
   return (
+    <>
     <DashboardLayout>
       <div className="space-y-6">
         <AnimatedSection className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
@@ -231,11 +296,10 @@ const UserProfile = () => {
         </AnimatedSection>
 
         <Tabs defaultValue="general" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="data">Your Data</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
@@ -359,9 +423,18 @@ const UserProfile = () => {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={handleSaveProfile}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
+                  <Button onClick={handleSaveProfile} disabled={isSavingProfile}>
+                    {isSavingProfile ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Changes
+                      </>
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
@@ -540,6 +613,27 @@ const UserProfile = () => {
                       combination of letters, numbers, and special characters.
                     </p>
                   </div>
+
+                  <Separator />
+
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-0.5">
+                      <h3 className="text-base font-medium text-destructive">
+                        Delete Account
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Permanently delete your account and all associated
+                        data. This action cannot be undone.
+                      </p>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Account
+                    </Button>
+                  </div>
                 </CardContent>
                 <CardFooter>
                   <Button
@@ -562,73 +656,69 @@ const UserProfile = () => {
               </Card>
             </AnimatedSection>
           </TabsContent>
-
-          <TabsContent value="data" className="space-y-6">
-            <AnimatedSection delay={0.1}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Data</CardTitle>
-                  <CardDescription>
-                    Manage and export your personal data
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="space-y-0.5">
-                        <h3 className="text-base font-medium">
-                          Export Your Data
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Download a copy of your personal data, including
-                          profile information, mood tracking data, and chat
-                          history.
-                        </p>
-                      </div>
-                      <Button variant="outline">
-                        <FileText className="mr-2 h-4 w-4" />
-                        Export Data
-                      </Button>
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="space-y-0.5">
-                        <h3 className="text-base font-medium">Activity Log</h3>
-                        <p className="text-sm text-muted-foreground">
-                          View a log of your recent activity on the platform,
-                          including logins and account changes.
-                        </p>
-                      </div>
-                      <Button variant="outline">
-                        <Calendar className="mr-2 h-4 w-4" />
-                        View Activity
-                      </Button>
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div className="space-y-0.5">
-                        <h3 className="text-base font-medium text-destructive">
-                          Delete Account
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Permanently delete your account and all associated
-                          data. This action cannot be undone.
-                        </p>
-                      </div>
-                      <Button variant="destructive">Delete Account</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </AnimatedSection>
-          </TabsContent>
         </Tabs>
       </div>
     </DashboardLayout>
+
+    {/* Delete Account Confirmation Dialog */}
+    <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
+      setDeleteDialogOpen(open);
+      if (!open) setDeleteConfirmText("");
+    }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            Delete Account
+          </DialogTitle>
+          <DialogDescription className="space-y-2 pt-1">
+            <span className="block">
+              This will <strong>permanently delete</strong> your account, profile, mood history, and all associated data. This cannot be undone.
+            </span>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3 py-2">
+          <Label htmlFor="delete-confirm" className="text-sm font-medium">
+            Type <span className="font-bold text-destructive">delete profile</span> to confirm
+          </Label>
+          <Input
+            id="delete-confirm"
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            placeholder="delete profile"
+            className="border-destructive/50 focus-visible:ring-destructive"
+          />
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => { setDeleteDialogOpen(false); setDeleteConfirmText(""); }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="destructive"
+            disabled={deleteConfirmText !== "delete profile" || isDeletingAccount}
+            onClick={handleDeleteAccount}
+          >
+            {isDeletingAccount ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-b-transparent" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Permanently Delete
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

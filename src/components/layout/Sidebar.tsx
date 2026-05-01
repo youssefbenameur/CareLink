@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard,
   Calendar,
@@ -17,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { MoonIcon, SunIcon } from "lucide-react";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sheet,
@@ -31,7 +29,6 @@ import {
 const Sidebar = () => {
   const location = useLocation();
   const { logout, userData } = useAuth();
-  const { t } = useTranslation(["navigation", "common", "auth"]);
   const { theme, setTheme } = useTheme();
   const isMobile = useIsMobile();
 
@@ -43,32 +40,32 @@ const Sidebar = () => {
 
   const navigation = [
     {
-      name: t("navigation:dashboard"),
+      name: "Dashboard",
       href: "/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      name: t("navigation:findDoctor"),
+      name: "Find Doctor",
       href: "/find-doctor",
       icon: <UserSearch className="h-5 w-5" />,
     },
     {
-      name: t("navigation:appointments"),
+      name: "Appointments",
       href: "/appointments",
       icon: <Calendar className="h-5 w-5" />,
     },
     {
-      name: t("navigation:chat"),
+      name: "Chat",
       href: "/chat",
       icon: <MessageSquare className="h-5 w-5" />,
     },
     {
-      name: t("navigation:moodTracker"),
+      name: "Mood Tracker",
       href: "/mood-tracker",
       icon: <BarChart2 className="h-5 w-5" />,
     },
     {
-      name: t("navigation:settings"),
+      name: "Settings",
       href: "/settings",
       icon: <Settings className="h-5 w-5" />,
     },
@@ -92,10 +89,10 @@ const Sidebar = () => {
           </Avatar>
           <div className="ml-3">
             <p className="font-medium text-sm">
-              {userData?.name || t("common:patient")}
+              {userData?.name || "Patient"}
             </p>
             <p className="text-xs text-muted-foreground">
-              {t("common:patient")}
+              Patient
             </p>
           </div>
         </div>
@@ -131,8 +128,8 @@ const Sidebar = () => {
               className="h-8 w-8"
               aria-label={
                 theme === "dark"
-                  ? t("common:switchToLight")
-                  : t("common:switchToDark")
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
               }
             >
               {theme === "dark" ? (
@@ -141,7 +138,6 @@ const Sidebar = () => {
                 <MoonIcon className="h-4 w-4" />
               )}
             </Button>
-            <LanguageSwitcher />
           </div>
 
           <Button
@@ -151,7 +147,7 @@ const Sidebar = () => {
             size="icon"
           >
             <LogOut className="h-4 w-4" />
-            <span className="sr-only">{t("auth:signOut")}</span>
+            <span className="sr-only">Sign Out</span>
           </Button>
         </div>
       </div>
@@ -170,7 +166,7 @@ const Sidebar = () => {
           <SheetContent side="left" className="w-64 p-0">
             <SheetHeader className="px-4 py-2">
               <SheetTitle>CareLink</SheetTitle>
-              <SheetDescription>{t("common:patient")}</SheetDescription>
+              <SheetDescription>Patient</SheetDescription>
             </SheetHeader>
             {renderNavContent()}
           </SheetContent>
@@ -178,7 +174,7 @@ const Sidebar = () => {
 
         <div className="flex items-center gap-2">
           <span className="font-semibold">
-            {userData?.name || t("common:patient")}
+            {userData?.name || "Patient"}
           </span>
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary">

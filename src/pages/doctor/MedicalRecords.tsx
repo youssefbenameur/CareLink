@@ -1,6 +1,5 @@
 
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useCallback } from 'react';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { userService } from '@/services/userService';
 import { medicalRecordsService, type MedicalRecord } from '@/services/medicalRecordsService';
@@ -22,7 +21,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import ImageLightbox from '@/components/ui/ImageLightbox';
 
 const MedicalRecords = () => {
-  const { t } = useTranslation(['medicalRecords', 'common', 'errors']);
   const { currentUser, userData } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -112,8 +110,8 @@ const MedicalRecords = () => {
       } catch (error) {
         console.error('Error loading patients:', error);
         toast({
-          title: t('errors:generic'),
-          description: t('errors:dataNotFound'),
+          title: "Error",
+          description: "Failed to load data",
           variant: "destructive",
         });
       } finally {
@@ -122,11 +120,30 @@ const MedicalRecords = () => {
     };
     
     loadPatients();
-  }, [currentUser, t, toast]);
+  }, [currentUser, toast]);
+
+  const loadRecords = useCallback(async () => {
+    if (!currentUser?.uid) return;
+    try {
+      setLoading(true);
+      const records = await medicalRecordsService.getDoctorRecords(currentUser.uid);
+      setRecords(records);
+      setFilteredRecords(records);
+    } catch (error) {
+      console.error('Error loading records:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser?.uid, toast]);
   
   useEffect(() => {
     loadRecords();
-  }, [currentUser]);
+  }, [loadRecords]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -142,30 +159,11 @@ const MedicalRecords = () => {
     }
   }, [searchTerm, records]);
 
-  const loadRecords = async () => {
-    if (!currentUser?.uid) return;
-    try {
-      setLoading(true);
-      const records = await medicalRecordsService.getDoctorRecords(currentUser.uid);
-      setRecords(records);
-      setFilteredRecords(records); // Initialize filtered records with all records
-    } catch (error) {
-      console.error('Error loading records:', error);
-      toast({
-        title: t('errors:generic'),
-        description: t('errors:dataNotFound'),
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCreateRecord = async () => {
     if (!currentUser?.uid || !selectedPatient || !recordType || !recordTitle) {
       toast({
-        title: t('errors:validationError'),
-        description: t('errors:fillRequired'),
+        title: "Validation Error",
+        description: "Please fill all required fields",
         variant: "destructive",
       });
       return;
@@ -175,20 +173,20 @@ const MedicalRecords = () => {
       const selectedPatientData = patients.find(p => p.id === selectedPatient);
       const newRecord: Omit<MedicalRecord, 'id'> = {
         patientId: selectedPatient,
-        patientName: selectedPatientData?.name || t('common:unknown'),
+        patientName: selectedPatientData?.name || "Unknown",
         type: recordType,
         title: recordTitle,
         description: recordDescription,
         date: new Date(),
         doctorId: currentUser.uid,
-        doctorName: userData?.name || t('common:unknown'),
+        doctorName: userData?.name || "Unknown",
         attachments: attachments.map((a) => a.base64),
       };
 
       await medicalRecordsService.createRecord(newRecord);
       toast({ 
-        title: t('common:success'),
-        description: t('medicalRecords:addRecord') + ' ' + t('common:success').toLowerCase()
+        title: "Success",
+        description: "Record added successfully"
       });
       loadRecords();
       setRecordTitle('');
@@ -197,8 +195,8 @@ const MedicalRecords = () => {
     } catch (error) {
       console.error('Error creating record:', error);
       toast({
-        title: t('errors:generic'),
-        description: t('errors:tryAgain'),
+        title: "Error",
+        description: "Please try again later",
         variant: "destructive",
       });
     }
@@ -216,8 +214,8 @@ const MedicalRecords = () => {
       });
       
       toast({ 
-        title: t('common:success'),
-        description: t('medicalRecords:editRecord') + ' ' + t('common:success').toLowerCase()
+        title: "Success",
+        description: "Record updated successfully"
       });
       loadRecords();
       setIsDialogOpen(false);
@@ -227,8 +225,8 @@ const MedicalRecords = () => {
     } catch (error) {
       console.error('Error updating record:', error);
       toast({
-        title: t('errors:generic'),
-        description: t('errors:tryAgain'),
+        title: "Error",
+        description: "Please try again later",
         variant: "destructive",
       });
     }
@@ -240,8 +238,8 @@ const MedicalRecords = () => {
     try {
       await medicalRecordsService.deleteRecord(selectedRecord.id);
       toast({ 
-        title: t('common:success'),
-        description: t('medicalRecords:deleteRecord') + ' ' + t('common:success').toLowerCase()
+        title: "Success",
+        description: "Record deleted successfully"
       });
       loadRecords();
       setIsDeleteDialogOpen(false);
@@ -249,20 +247,20 @@ const MedicalRecords = () => {
     } catch (error) {
       console.error('Error deleting record:', error);
       toast({
-        title: t('errors:generic'),
-        description: t('errors:tryAgain'),
+        title: "Error",
+        description: "Please try again later",
         variant: "destructive",
       });
     }
   };
 
   const recordTypes = [
-    { value: 'diagnosis', label: t('medicalRecords:diagnosis') },
-    { value: 'treatment', label: t('medicalRecords:treatment') },
-    { value: 'prescription', label: t('medicalRecords:prescription') },
-    { value: 'labResults', label: t('medicalRecords:labResults') },
-    { value: 'allergies', label: t('medicalRecords:allergies') },
-    { value: 'medications', label: t('medicalRecords:medications') },
+    { value: 'diagnosis', label: "Diagnosis" },
+    { value: 'treatment', label: "Treatment" },
+    { value: 'prescription', label: "Prescription" },
+    { value: 'labResults', label: "Lab Results" },
+    { value: 'allergies', label: "Allergies" },
+    { value: 'medications', label: "Medications" },
   ];
 
   // Format date using the global convertToDate helper
@@ -275,9 +273,9 @@ const MedicalRecords = () => {
     <DoctorLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('medicalRecords:title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{"Medical Records"}</h1>
           <p className="text-muted-foreground">
-            {t('medicalRecords:patientRecords')}
+            {"Patient Records"}
           </p>
         </div>
         
@@ -285,11 +283,11 @@ const MedicalRecords = () => {
           <TabsList className="mb-4 w-full md:w-auto flex overflow-x-auto">
             <TabsTrigger value="records" className="whitespace-nowrap">
               <FileText className="h-4 w-4 mr-2" />
-              {t('medicalRecords:patientRecords')}
+              {"Patient Records"}
             </TabsTrigger>
             <TabsTrigger value="create" className="whitespace-nowrap">
               <Plus className="h-4 w-4 mr-2" />
-              {t('medicalRecords:addRecord')}
+              {"Add Record"}
             </TabsTrigger>
           </TabsList>
           
@@ -298,16 +296,16 @@ const MedicalRecords = () => {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <CardTitle>{t('medicalRecords:patientRecords')}</CardTitle>
+                    <CardTitle>{"Patient Records"}</CardTitle>
                     <CardDescription>
-                      {t('medicalRecords:patientRecords')}
+                      {"Patient Records"}
                     </CardDescription>
                   </div>
                   
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                     <Select value={selectedPatient} onValueChange={setSelectedPatient}>
                       <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder={t('medicalRecords:selectPatient')} />
+                        <SelectValue placeholder={"Select Patient"} />
                       </SelectTrigger>
                       <SelectContent>
                         {patients.map((patient) => (
@@ -321,7 +319,7 @@ const MedicalRecords = () => {
                     <div className="relative w-full sm:w-auto">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        placeholder={t('common:search')}
+                        placeholder={"Search"}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-8 w-full sm:w-[180px]"
@@ -373,7 +371,7 @@ const MedicalRecords = () => {
                               }}
                             >
                               <Edit className="h-4 w-4 mr-1" />
-                              {t('common:edit')}
+                              {"Edit"}
                             </Button>
                             <Button
                               variant="outline"
@@ -385,7 +383,7 @@ const MedicalRecords = () => {
                               className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
-                              {t('common:delete')}
+                              {"Delete"}
                             </Button>
                           </div>
                         </div>
@@ -412,7 +410,7 @@ const MedicalRecords = () => {
                   </div>
                 ) : (
                   <div className="text-center py-10 text-muted-foreground">
-                    {searchTerm ? t('common:noResults') : t('medicalRecords:noRecords')}
+                    {searchTerm ? "No results found" : "No records found"}
                   </div>
                 )}
               </CardContent>
@@ -422,18 +420,18 @@ const MedicalRecords = () => {
           <TabsContent value="create">
             <Card>
               <CardHeader>
-                <CardTitle>{t('medicalRecords:addRecord')}</CardTitle>
+                <CardTitle>{"Add Record"}</CardTitle>
                 <CardDescription>
-                  {t('medicalRecords:patientRecords')}
+                  {"Patient Records"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="patient">{t('medicalRecords:selectPatient')}</Label>
+                    <Label htmlFor="patient">{"Select Patient"}</Label>
                     <Select value={selectedPatient} onValueChange={setSelectedPatient}>
                       <SelectTrigger id="patient">
-                        <SelectValue placeholder={t('medicalRecords:selectPatient')} />
+                        <SelectValue placeholder={"Select Patient"} />
                       </SelectTrigger>
                       <SelectContent>
                         {patients.map((patient) => (
@@ -446,10 +444,10 @@ const MedicalRecords = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="recordType">{t('medicalRecords:recordType')}</Label>
+                    <Label htmlFor="recordType">{"Record Type"}</Label>
                     <Select value={recordType} onValueChange={setRecordType}>
                       <SelectTrigger id="recordType">
-                        <SelectValue placeholder={t('medicalRecords:recordType')} />
+                        <SelectValue placeholder={"Record Type"} />
                       </SelectTrigger>
                       <SelectContent>
                         {recordTypes.map((type) => (
@@ -462,22 +460,22 @@ const MedicalRecords = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="recordTitle">{t('medicalRecords:recordTitle')}</Label>
+                    <Label htmlFor="recordTitle">{"Record Title"}</Label>
                     <Input 
                       id="recordTitle" 
                       value={recordTitle}
                       onChange={(e) => setRecordTitle(e.target.value)}
-                      placeholder={t('medicalRecords:recordTitle')}
+                      placeholder={"Record Title"}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="recordDescription">{t('medicalRecords:recordDescription')}</Label>
+                    <Label htmlFor="recordDescription">{"Description"}</Label>
                     <Textarea 
                       id="recordDescription" 
                       value={recordDescription}
                       onChange={(e) => setRecordDescription(e.target.value)}
-                      placeholder={t('medicalRecords:recordDescription')}
+                      placeholder={"Description"}
                       rows={4}
                     />
                   </div>
@@ -496,7 +494,7 @@ const MedicalRecords = () => {
                             JPG, PNG up to 10MB
                           </p>
                           <span className="mt-4 inline-flex items-center px-3 py-1.5 rounded-md border text-sm font-medium bg-background hover:bg-muted transition-colors">
-                            {t('common:chooseFile')}
+                            {"Choose File"}
                           </span>
                         </div>
                       </label>
@@ -536,7 +534,7 @@ const MedicalRecords = () => {
               </CardContent>
               <CardFooter>
                 <Button onClick={handleCreateRecord}>
-                  {t('medicalRecords:saveRecord')}
+                  {"Save Record"}
                 </Button>
               </CardFooter>
             </Card>
@@ -548,11 +546,11 @@ const MedicalRecords = () => {
       <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setEditAttachments([]); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('medicalRecords:editRecord')}</DialogTitle>
+            <DialogTitle>{"Edit Record"}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="editRecordType">{t('medicalRecords:recordType')}</Label>
+              <Label htmlFor="editRecordType">{"Record Type"}</Label>
               <Select value={recordType} onValueChange={setRecordType}>
                 <SelectTrigger id="editRecordType">
                   <SelectValue />
@@ -568,7 +566,7 @@ const MedicalRecords = () => {
             </div>
             
             <div>
-              <Label htmlFor="editRecordTitle">{t('medicalRecords:recordTitle')}</Label>
+              <Label htmlFor="editRecordTitle">{"Record Title"}</Label>
               <Input 
                 id="editRecordTitle" 
                 value={recordTitle}
@@ -577,7 +575,7 @@ const MedicalRecords = () => {
             </div>
             
             <div>
-              <Label htmlFor="editRecordDescription">{t('medicalRecords:recordDescription')}</Label>
+              <Label htmlFor="editRecordDescription">{"Description"}</Label>
               <Textarea 
                 id="editRecordDescription" 
                 value={recordDescription}
@@ -631,10 +629,10 @@ const MedicalRecords = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              {t('common:cancel')}
+              {"Cancel"}
             </Button>
             <Button onClick={handleUpdateRecord}>
-              {t('medicalRecords:updateRecord')}
+              {"Update Record"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -644,15 +642,15 @@ const MedicalRecords = () => {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('medicalRecords:deleteRecord')}</AlertDialogTitle>
+            <AlertDialogTitle>{"Delete Record"}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('medicalRecords:confirmDelete')}
+              {"Are you sure you want to delete this record?"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
+            <AlertDialogCancel>{"Cancel"}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteRecord} className="bg-destructive text-destructive-foreground">
-              {t('common:delete')}
+              {"Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

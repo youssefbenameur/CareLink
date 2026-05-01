@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import DoctorLayout from '@/components/layout/DoctorLayout';
-import { appointmentService } from '@/services/appointmentService';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { DashboardPatientList } from '@/components/doctor/DashboardPatientList';
 import { DashboardAppointments } from '@/components/doctor/DashboardAppointments';
-import { PatientActivityTimeline } from '@/components/doctor/PatientActivityTimeline';
 import { Appointment, convertToDate } from '@/services/appointmentService';
-import { useTranslation } from 'react-i18next';
+import { appointmentService } from '@/services/appointmentService';
 import { Users, Calendar, MessageSquare, CalendarDays } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +17,6 @@ const DoctorDashboard = () => {
   const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation(['doctorDashboard']);
   const [stats, setStats] = useState({
     totalPatients: 0,
     newPatientsThisMonth: 0,
@@ -34,6 +31,10 @@ const DoctorDashboard = () => {
       try {
         setLoading(true);
         const doctorAppointments = await appointmentService.getDoctorAppointments(currentUser.uid);
+        
+        // Notify doctor about upcoming appointments today
+        await appointmentService.notifyDoctorsAboutUpcomingAppointments(currentUser.uid);
+        
         const uniquePatientIds = [...new Set(doctorAppointments.map(app => app.patientId))];
 
         const patientDetailsPromises = uniquePatientIds.map(async (patientId) => {
@@ -61,18 +62,12 @@ const DoctorDashboard = () => {
           return d >= firstDayOfMonth;
         }).length;
 
-        let pendingMessages = 0;
-        try {
-          const snap = await getDocs(query(collection(db, "messages"), where("receiverId", "==", currentUser.uid), where("read", "==", false)));
-          pendingMessages = snap.size;
-        } catch {}
-
         setStats({
           totalPatients: uniquePatientIds.length,
           newPatientsThisMonth,
           todayAppointments: todayApps.length,
           completedToday: todayApps.filter(a => a.status === 'completed').length,
-          pendingMessages,
+          pendingMessages: 0,
         });
       } catch (error) {
         console.error("Error fetching doctor data:", error);
@@ -82,6 +77,28 @@ const DoctorDashboard = () => {
     };
     fetchDoctorData();
   }, [currentUser]);
+
+  // Real-time listener for pending messages
+  useEffect(() => {
+    if (!currentUser?.uid) return;
+
+    const messagesQuery = query(
+      collection(db, 'messages'),
+      where('recipientId', '==', currentUser.uid),
+      where('read', '==', false)
+    );
+
+    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+      setStats(prevStats => ({
+        ...prevStats,
+        pendingMessages: snapshot.size,
+      }));
+    }, (error) => {
+      console.error('Error listening to messages:', error);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser?.uid]);
 
   if (loading) {
     return (
@@ -103,7 +120,7 @@ const DoctorDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              {t('doctorDashboard:title')}
+              Doctor Dashboard
             </h1>
             <p className="text-muted-foreground text-sm mt-0.5">
               {format(new Date(), 'EEEE, MMMM d, yyyy')}
@@ -174,9 +191,6 @@ const DoctorDashboard = () => {
           <DashboardPatientList />
           <DashboardAppointments />
         </div>
-
-        {/* Activity Timeline */}
-        <PatientActivityTimeline />
       </div>
     </DoctorLayout>
   );

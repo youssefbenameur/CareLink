@@ -30,9 +30,9 @@ interface AuthContextType {
     password: string,
     userData: any,
     doctorDocuments?: {
-      doctorLicense?: File;
-      diploma?: File;
-      certification?: File;
+      nationalId?: File;
+      medicalDiploma?: File;
+      cnomCard?: File;
     },
   ) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
@@ -41,9 +41,9 @@ interface AuthContextType {
   refreshUserData: () => Promise<DocumentData | void>;
   updateSettings: (settings: any) => Promise<boolean>;
   resubmitDocuments: (documents: {
-    doctorLicense?: File;
-    diploma?: File;
-    certification?: File;
+    nationalId?: File;
+    medicalDiploma?: File;
+    cnomCard?: File;
   }) => Promise<void>;
 }
 
@@ -142,9 +142,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     password: string,
     userData: any,
     doctorDocuments?: {
-      doctorLicense?: File;
-      diploma?: File;
-      certification?: File;
+      nationalId?: File;
+      medicalDiploma?: File;
+      cnomCard?: File;
     },
   ) => {
     setLoading(true);
@@ -153,6 +153,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         ...userData,
         role: userData.role || "patient",
       };
+
+      // Check system settings before allowing registration
+      try {
+        const { doc: fsDoc, getDoc: fsGetDoc } = await import("firebase/firestore");
+        const snap = await fsGetDoc(fsDoc(db, "systemConfig", "global"));
+        if (snap.exists()) {
+          const sysSettings = snap.data();
+          if (userDataWithRole.role === "doctor" && sysSettings.allowDoctorRegistration === false) {
+            throw new Error("Doctor registration is currently disabled. Please contact the administrator.");
+          }
+          if (userDataWithRole.role === "patient" && sysSettings.allowPatientRegistration === false) {
+            throw new Error("Patient registration is currently disabled. Please contact the administrator.");
+          }
+        }
+      } catch (settingsErr: any) {
+        if (settingsErr.message?.includes("disabled")) throw settingsErr;
+        // If we can't read settings, allow registration to proceed
+      }
 
       if (userDataWithRole.role === "doctor") {
         // Set flag BEFORE creating auth user so onAuthStateChanged is skipped
@@ -180,41 +198,49 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           let credentialDocuments: Record<string, string> = {};
           if (doctorDocuments) {
             const hasRequiredFiles =
-              doctorDocuments.doctorLicense && doctorDocuments.diploma;
+              doctorDocuments.nationalId && doctorDocuments.medicalDiploma && doctorDocuments.cnomCard;
             if (hasRequiredFiles) {
               try {
                 credentialDocuments = (await uploadDoctorDocuments(
                   user.uid,
                   doctorDocuments,
                 )) as Record<string, string>;
-                // Verify that required documents were uploaded successfully
                 if (
-                  !credentialDocuments.doctorLicense ||
-                  !credentialDocuments.diploma
+                  !credentialDocuments.nationalId ||
+                  !credentialDocuments.medicalDiploma ||
+                  !credentialDocuments.cnomCard
                 ) {
                   throw new Error(
-                    "Required documents (Medical License and Diploma) failed to upload. Please try again.",
+                    "Required documents failed to upload. Please try again.",
                   );
                 }
               } catch (uploadError) {
-                // Upload failed - clean up and throw error to block registration
                 console.error("Document upload failed:", uploadError);
                 throw new Error(
                   "Failed to upload required documents. Please check your internet connection and try again.",
                 );
               }
             } else {
-              // Required documents not provided - block registration
               throw new Error(
-                "Medical License and Diploma are required for doctor registration.",
+                "National ID, Medical Diploma, and Professional Card CNOM are required for doctor registration.",
               );
             }
           }
 
           // Step 3: write complete Firestore doc atomically
+          // Check if auto-approval is enabled
+          let initialStatus = "pending";
+          try {
+            const { doc: cfgDoc, getDoc: cfgGet } = await import("firebase/firestore");
+            const settingsSnap = await cfgGet(cfgDoc(db, "systemConfig", "global"));
+            if (settingsSnap.exists() && settingsSnap.data().requireDoctorApproval === false) {
+              initialStatus = "approved";
+            }
+          } catch (_) {}
+
           await setDoc(firestoreDoc(db, "users", user.uid), {
             ...userDataWithRole,
-            doctorVerificationStatus: "pending",
+            doctorVerificationStatus: initialStatus,
             status: "active",
             credentialDocuments,
             createdAt: Timestamp.now(),
@@ -309,15 +335,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           freshUserData?.role === "doctor" &&
           freshUserData?.doctorVerificationStatus === "resubmit"
         ) {
-          await logoutUser();
-          setCurrentUser(null);
-          setUserData(null);
-          toast({
-            variant: "destructive",
-            title: "Resubmit required",
-            description:
-              "Your documents need to be resubmitted. Please contact support@carelink.com for details.",
-          });
+          // Keep them logged in — they need to access the resubmit page
+          setCurrentUser(user);
+          setUserData(freshUserData);
+          navigate("/doctor/resubmit");
           return;
         }
 
@@ -392,11 +413,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const resubmitDocuments = async (documents: {
-    doctorLicense?: File;
-    diploma?: File;
-    certification?: File;
+    nationalId?: File;
+    medicalDiploma?: File;
+    cnomCard?: File;
   }) => {
-    if (!currentUser) return;
+    // Use auth.currentUser directly — more reliable than state during navigation
+    const user = auth.currentUser;
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Not logged in",
+        description: "Please log in again and try resubmitting.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const {
@@ -405,18 +436,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         Timestamp,
       } = await import("firebase/firestore");
 
+      // Convert files to base64 and store in Firestore
       const credentialDocuments = (await uploadDoctorDocuments(
-        currentUser.uid,
+        user.uid,
         documents,
       )) as Record<string, string>;
 
-      if (!credentialDocuments.doctorLicense || !credentialDocuments.diploma) {
-        throw new Error(
-          "Required documents (Medical License and Diploma) failed to upload. Please try again.",
-        );
+      if (!credentialDocuments.nationalId || !credentialDocuments.medicalDiploma || !credentialDocuments.cnomCard) {
+        throw new Error("All three documents are required. Please upload all files and try again.");
       }
 
-      await updateDoc(firestoreDoc(db, "users", currentUser.uid), {
+      await updateDoc(firestoreDoc(db, "users", user.uid), {
         credentialDocuments,
         doctorVerificationStatus: "pending",
         resubmitNote: null,
@@ -426,17 +456,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       await refreshUserData();
 
       toast({
-        title: "Documents resubmitted!",
-        description:
-          "Your application is back under review. You will be notified once a decision is made.",
+        title: "Documents submitted!",
+        description: "Your documents are now under review. You will be notified once a decision is made.",
       });
 
       navigate("/doctor/pending");
     } catch (error: any) {
+      console.error("Resubmission error:", error);
       toast({
         variant: "destructive",
         title: "Resubmission failed",
-        description: error.message,
+        description: error.message || "Something went wrong. Please try again.",
       });
     } finally {
       setLoading(false);

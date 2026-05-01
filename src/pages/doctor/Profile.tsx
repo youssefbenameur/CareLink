@@ -13,8 +13,7 @@ import { AnimatedSection } from '@/components/ui/animated-section';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useTranslation } from 'react-i18next';
+import { db, changePassword } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const LocationPicker = lazy(() =>
@@ -55,7 +54,6 @@ const DoctorProfile = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
-  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -240,42 +238,63 @@ const DoctorProfile = () => {
   
   const handleSaveSettings = async () => {
     if (!currentUser) return;
-    
+
+    // Handle password change if fields are filled
+    if (securityData.currentPassword || securityData.newPassword || securityData.confirmPassword) {
+      if (!securityData.currentPassword) {
+        toast({ variant: "destructive", title: "Validation Error", description: "Please enter your current password." });
+        return;
+      }
+      if (!securityData.newPassword) {
+        toast({ variant: "destructive", title: "Validation Error", description: "Please enter a new password." });
+        return;
+      }
+      if (securityData.newPassword.length < 6) {
+        toast({ variant: "destructive", title: "Validation Error", description: "New password must be at least 6 characters." });
+        return;
+      }
+      if (securityData.newPassword !== securityData.confirmPassword) {
+        toast({ variant: "destructive", title: "Validation Error", description: "Passwords do not match." });
+        return;
+      }
+      if (securityData.newPassword === securityData.currentPassword) {
+        toast({ variant: "destructive", title: "Validation Error", description: "New password must be different from current password." });
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        await changePassword(securityData.currentPassword, securityData.newPassword);
+        setSecurityData(prev => ({ ...prev, currentPassword: '', newPassword: '', confirmPassword: '' }));
+        toast({ title: "Password changed", description: "Your password has been updated successfully." });
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Password change failed",
+          description: error.code === "auth/wrong-password" || error.code === "auth/invalid-credential"
+            ? "Current password is incorrect."
+            : error.message || "Failed to change password. Please try again.",
+        });
+        setIsLoading(false);
+        return;
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    // Save notification preferences
     try {
       setIsLoading(true);
-      
-      // For security, we would typically verify the current password and update 
-      // the password using Firebase Auth in a real application
-      // Here we'll just save notification preferences
-      
       await updateDoc(doc(db, "users", currentUser.uid), {
         emailNotifications: securityData.emailNotifications,
-        smsNotifications: securityData.smsNotifications,
         profileVisibility: securityData.profileVisibility,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
-      toast({
-        title: "Settings updated successfully",
-        description: "Your preferences have been saved.",
-      });
-      
+      toast({ title: "Settings saved", description: "Your preferences have been saved." });
       setIsEditing(false);
-      // Clear password fields
-      setSecurityData(prev => ({
-        ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      }));
-      
     } catch (error) {
       console.error("Error updating settings:", error);
-      toast({
-        variant: "destructive",
-        title: "Update failed",
-        description: "Could not update your settings. Please try again.",
-      });
+      toast({ variant: "destructive", title: "Update failed", description: "Could not save settings. Please try again." });
     } finally {
       setIsLoading(false);
     }
@@ -296,9 +315,9 @@ const DoctorProfile = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('settings:profile.title')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Profile Settings</h1>
             <p className="text-muted-foreground">
-              {t('settings:profile.description')}
+              Update your personal information
             </p>
           </div>
           <Button onClick={() => setIsEditing(!isEditing)} disabled={isLoading} variant={isEditing ? "outline" : "default"}>
@@ -324,18 +343,18 @@ const DoctorProfile = () => {
             </div>
           )}
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-3">
-            <TabsTrigger value="personal">{t('settings:profile.title')}</TabsTrigger>
-            <TabsTrigger value="professional">{t('settings:doctor.professional.title')}</TabsTrigger>
-            <TabsTrigger value="settings">{t('settings:title')}</TabsTrigger>
+            <TabsTrigger value="personal">Profile Settings</TabsTrigger>
+            <TabsTrigger value="professional">Professional Information</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="personal">
             <AnimatedSection>
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('settings:profile.title')}</CardTitle>
+                  <CardTitle>Profile Settings</CardTitle>
                   <CardDescription>
-                    {t('settings:profile.description')}
+                    Update your personal information
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -373,7 +392,7 @@ const DoctorProfile = () => {
                   
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">{t('settings:profile.firstName')}</Label>
+                      <Label htmlFor="firstName">First Name</Label>
                       <Input 
                         id="firstName"
                         name="firstName"
@@ -384,7 +403,7 @@ const DoctorProfile = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">{t('settings:profile.lastName')}</Label>
+                      <Label htmlFor="lastName">Last Name</Label>
                       <Input 
                         id="lastName"
                         name="lastName"
@@ -395,7 +414,7 @@ const DoctorProfile = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="email">{t('settings:profile.email')}</Label>
+                      <Label htmlFor="email">Email Address</Label>
                       <div className="flex items-center space-x-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
                         <Input 
@@ -409,7 +428,7 @@ const DoctorProfile = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="phone">{t('settings:profile.phone')}</Label>
+                      <Label htmlFor="phone">Phone Number</Label>
                       <div className="flex items-center space-x-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
                         <Input 
@@ -424,7 +443,7 @@ const DoctorProfile = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="bio">{t('settings:profile.bio')}</Label>
+                    <Label htmlFor="bio">Professional Bio</Label>
                     <Textarea 
                       id="bio"
                       name="bio"
@@ -432,7 +451,7 @@ const DoctorProfile = () => {
                       onChange={handleInputChange}
                       disabled={!isEditing || isLoading}
                       rows={4}
-                      placeholder={t('settings:profile.bioPlaceholder')}
+                      placeholder="Tell us about yourself..."
                     />
                   </div>
                 </CardContent>
@@ -447,12 +466,12 @@ const DoctorProfile = () => {
                       {isLoading ? (
                         <div className="flex items-center">
                           <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                          {t('settings:profile.saving')}
+                          Saving...
                         </div>
                       ) : (
                         <>
                           <Save className="h-4 w-4 mr-2" />
-                          {t('settings:profile.saveChanges')}
+                          Save Changes
                         </>
                       )}
                     </Button>
@@ -466,14 +485,14 @@ const DoctorProfile = () => {
             <AnimatedSection>
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('settings:doctor.professional.title')}</CardTitle>
+                  <CardTitle>Professional Information</CardTitle>
                   <CardDescription>
-                    {t('settings:doctor.professional.description')}
+                    Your qualification and experience details
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="specialization">{t('settings:doctor.professional.specialization')}</Label>
+                    <Label htmlFor="specialization">Specialization</Label>
                     <div className="flex items-center space-x-2">
                       <BookOpen className="h-4 w-4 text-muted-foreground" />
                       <Input 
@@ -530,7 +549,7 @@ const DoctorProfile = () => {
                   
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="education">{t('settings:doctor.professional.education')}</Label>
+                      <Label htmlFor="education">Education & Certification</Label>
                       <Textarea 
                         id="education"
                         name="education"
@@ -538,12 +557,12 @@ const DoctorProfile = () => {
                         onChange={handleInputChange}
                         disabled={!isEditing || isLoading}
                         rows={3}
-                        placeholder={t('settings:doctor.professional.educationPlaceholder')}
+                        placeholder="List your degrees and certifications..."
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="experience">{t('settings:doctor.professional.experience')}</Label>
+                      <Label htmlFor="experience">Experience</Label>
                       <Textarea 
                         id="experience"
                         name="experience"
@@ -551,27 +570,27 @@ const DoctorProfile = () => {
                         onChange={handleInputChange}
                         disabled={!isEditing || isLoading}
                         rows={3}
-                        placeholder={t('settings:doctor.professional.experiencePlaceholder')}
+                        placeholder="Describe your professional experience..."
                       />
                     </div>
                   </div>
                   
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="languages">{t('settings:doctor.professional.languages')}</Label>
+                      <Label htmlFor="languages">Languages Spoken</Label>
                       <Input 
                         id="languages"
                         name="languages"
                         value={profileData.languages}
                         onChange={handleInputChange}
                         disabled={!isEditing || isLoading}
-                        placeholder={t('settings:doctor.professional.languagesPlaceholder')}
+                        placeholder="e.g., English, Spanish, French"
                       />
                     </div>
                     
                     <div className="space-y-2">
                       <Label htmlFor="sessionDuration">
-                        {t('settings:doctor.professional.sessionDuration')}
+                        Default Session Duration (minutes)
                       </Label>
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -588,7 +607,7 @@ const DoctorProfile = () => {
                     
                     <div className="space-y-2">
                       <Label htmlFor="consultationFee">
-                        {t('settings:doctor.professional.consultationFee')}
+                        Consultation Fee (TND)
                       </Label>
                       <Input 
                         id="consultationFee"
@@ -601,7 +620,7 @@ const DoctorProfile = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="available" className="block mb-2">{t('settings:doctor.professional.availability')}</Label>
+                      <Label htmlFor="available" className="block mb-2">Availability Status</Label>
                       <div className="flex items-center space-x-2">
                         <Switch 
                           id="available"
@@ -610,7 +629,7 @@ const DoctorProfile = () => {
                           disabled={!isEditing || isLoading}
                         />
                         <Label htmlFor="available" className="cursor-pointer">
-                          {profileData.available ? t('settings:doctor.professional.available') : t('settings:doctor.professional.notAvailable')}
+                          {profileData.available ? "Available for new patients" : "Not accepting new patients"}
                         </Label>
                       </div>
                     </div>
@@ -627,12 +646,12 @@ const DoctorProfile = () => {
                       {isLoading ? (
                         <div className="flex items-center">
                           <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                          {t('settings:doctor.professional.saving')}
+                          Saving...
                         </div>
                       ) : (
                         <>
                           <Save className="h-4 w-4 mr-2" />
-                          {t('settings:doctor.professional.saveChanges')}
+                          Save Changes
                         </>
                       )}
                     </Button>
@@ -646,17 +665,17 @@ const DoctorProfile = () => {
             <AnimatedSection>
               <Card>
                 <CardHeader>
-                  <CardTitle>{t('settings:title')}</CardTitle>
+                  <CardTitle>Settings</CardTitle>
                   <CardDescription>
-                    {t('settings:description')}
+                    Manage your account settings and preferences
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium">{t('settings:security.title')}</h3>
+                    <h3 className="text-lg font-medium">Security</h3>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="currentPassword">{t('settings:security.currentPassword')}</Label>
+                      <Label htmlFor="currentPassword">Current Password</Label>
                       <Input 
                         id="currentPassword"
                         name="currentPassword"
@@ -664,12 +683,12 @@ const DoctorProfile = () => {
                         value={securityData.currentPassword}
                         onChange={handleSecurityInputChange}
                         disabled={!isEditing || isLoading}
-                        placeholder={t('settings:security.currentPasswordPlaceholder')}
+                        placeholder="Enter your current password"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="newPassword">{t('settings:security.newPassword')}</Label>
+                      <Label htmlFor="newPassword">New Password</Label>
                       <Input 
                         id="newPassword"
                         name="newPassword"
@@ -677,12 +696,12 @@ const DoctorProfile = () => {
                         value={securityData.newPassword}
                         onChange={handleSecurityInputChange}
                         disabled={!isEditing || isLoading}
-                        placeholder={t('settings:security.newPasswordPlaceholder')}
+                        placeholder="Enter your new password"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">{t('settings:security.confirmPassword')}</Label>
+                      <Label htmlFor="confirmPassword">Confirm Password</Label>
                       <Input 
                         id="confirmPassword"
                         name="confirmPassword"
@@ -690,18 +709,18 @@ const DoctorProfile = () => {
                         value={securityData.confirmPassword}
                         onChange={handleSecurityInputChange}
                         disabled={!isEditing || isLoading}
-                        placeholder={t('settings:security.confirmPasswordPlaceholder')}
+                        placeholder="Confirm your new password"
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-lg font-medium">{t('settings:notifications.title')}</h3>
+                    <h3 className="text-lg font-medium">Notifications</h3>
                     
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="emailNotifications">{t('settings:notifications.email')}</Label>
-                        <p className="text-sm text-muted-foreground">{t('settings:notifications.emailDescription')}</p>
+                        <Label htmlFor="emailNotifications">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">Receive email notifications for appointments and updates</p>
                       </div>
                       <Switch 
                         id="emailNotifications" 
@@ -710,31 +729,18 @@ const DoctorProfile = () => {
                         disabled={!isEditing || isLoading} 
                       />
                     </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor="smsNotifications">{t('settings:notifications.sms')}</Label>
-                        <p className="text-sm text-muted-foreground">{t('settings:notifications.smsDescription')}</p>
-                      </div>
-                      <Switch 
-                        id="smsNotifications" 
-                        checked={securityData.smsNotifications}
-                        onCheckedChange={(checked) => handleSwitchChange('smsNotifications', checked)}
-                        disabled={!isEditing || isLoading} 
-                      />
-                    </div>
                   </div>
                   
                   <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium flex items-center">
                       <Shield className="h-5 w-5 mr-2 text-muted-foreground" />
-                      {t('settings:privacy.title')}
+                      Privacy
                     </h3>
                     
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <Label htmlFor="profileVisibility">{t('settings:privacy.profileVisibility')}</Label>
-                        <p className="text-sm text-muted-foreground">{t('settings:privacy.profileVisibilityDescription')}</p>
+                        <Label htmlFor="profileVisibility">Profile Visibility</Label>
+                        <p className="text-sm text-muted-foreground">Allow your profile to be visible to patients</p>
                       </div>
                       <Switch 
                         id="profileVisibility" 
@@ -754,12 +760,12 @@ const DoctorProfile = () => {
                       disabled={isLoading}
                       onClick={() => {
                         toast({
-                          title: t('settings:privacy.deleteAccountTitle'),
-                          description: t('settings:privacy.deleteAccountDescription'),
+                          title: "Delete Account",
+                          description: "Please contact support to delete your account.",
                         });
                       }}
                     >
-                      {t('settings:privacy.deleteAccount')}
+                      Delete Account
                     </Button>
                     <Button 
                       variant="default"
@@ -769,12 +775,12 @@ const DoctorProfile = () => {
                       {isLoading ? (
                         <div className="flex items-center">
                           <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                          {t('settings:privacy.saving')}
+                          Saving...
                         </div>
                       ) : (
                         <>
                           <Save className="h-4 w-4 mr-2" />
-                          {t('settings:privacy.saveSettings')}
+                          Save Settings
                         </>
                       )}
                     </Button>

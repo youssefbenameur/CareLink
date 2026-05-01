@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Task 3.1 — Typed document slot interface
 interface DoctorDocumentSlot {
-  key: 'doctorLicense' | 'diploma' | 'certification';
+  key: 'nationalId' | 'medicalDiploma' | 'cnomCard';
   label: string;
   required: boolean;
   file: File | null;
@@ -27,9 +27,9 @@ interface DoctorDocumentSlot {
 }
 
 const INITIAL_SLOTS: DoctorDocumentSlot[] = [
-  { key: 'doctorLicense', label: 'Medical License', required: true, file: null, error: null },
-  { key: 'diploma', label: 'Diploma / Degree', required: true, file: null, error: null },
-  { key: 'certification', label: 'Additional Certification', required: false, file: null, error: null },
+  { key: 'nationalId', label: 'National ID', required: true, file: null, error: null },
+  { key: 'medicalDiploma', label: 'Medical Diploma', required: true, file: null, error: null },
+  { key: 'cnomCard', label: 'Professional Card CNOM', required: true, file: null, error: null },
 ];
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -118,9 +118,9 @@ const RegisterForm = () => {
 
     // Task 3.6 — Build typed document map
     const doctorDocuments = formData.role === 'doctor' ? {
-      doctorLicense: documentSlots.find(s => s.key === 'doctorLicense')?.file ?? undefined,
-      diploma: documentSlots.find(s => s.key === 'diploma')?.file ?? undefined,
-      certification: documentSlots.find(s => s.key === 'certification')?.file ?? undefined,
+      nationalId: documentSlots.find(s => s.key === 'nationalId')?.file ?? undefined,
+      medicalDiploma: documentSlots.find(s => s.key === 'medicalDiploma')?.file ?? undefined,
+      cnomCard: documentSlots.find(s => s.key === 'cnomCard')?.file ?? undefined,
     } : undefined;
 
     await register(formData.email, formData.password, userData, doctorDocuments);

@@ -14,7 +14,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { AnimatedSection } from '@/components/ui/animated-section';
-import { useTranslation } from 'react-i18next';
 import { User, Lock, Palette, Globe, Mail, Shield, ChevronRight, Save } from 'lucide-react';
 
 const UserSettings = () => {
@@ -32,7 +31,6 @@ const UserSettings = () => {
   
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation(['settings', 'common']);
   
   useEffect(() => {
     const fetchUserSettings = async () => {
@@ -61,8 +59,8 @@ const UserSettings = () => {
         console.error('Error fetching user settings:', error);
         toast({
           variant: 'destructive',
-          title: t('common:error'),
-          description: t('common:tryAgain'),
+          title: "Error",
+          description: "Please try again",
         });
       } finally {
         setIsLoading(false);
@@ -72,7 +70,7 @@ const UserSettings = () => {
     if (!loading) {
       fetchUserSettings();
     }
-  }, [loading, currentUser, toast, t]);
+  }, [loading, currentUser, toast]);
   
   const handleSaveProfile = async () => {
     if (!currentUser) return;
@@ -86,15 +84,15 @@ const UserSettings = () => {
       });
       
       toast({
-        title: t('settings:success.profile.title'),
-        description: t('settings:success.profile.message'),
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated",
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
         variant: 'destructive',
-        title: t('settings:error.profile.title'),
-        description: t('settings:error.profile.message'),
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -115,15 +113,15 @@ const UserSettings = () => {
       });
       
       toast({
-        title: t('settings:success.notifications.title'),
-        description: t('settings:success.notifications.message'),
+        title: "Notifications Updated",
+        description: "Your notification settings have been updated",
       });
     } catch (error) {
       console.error('Error updating notification settings:', error);
       toast({
         variant: 'destructive',
-        title: t('settings:error.notifications.title'),
-        description: t('settings:error.notifications.message'),
+        title: "Update Failed",
+        description: "Failed to update notification settings. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -144,21 +142,16 @@ const UserSettings = () => {
         updatedAt: new Date()
       });
       
-      // Update the app language
-      if (i18n.language !== language) {
-        i18n.changeLanguage(language);
-      }
-      
       toast({
-        title: t('settings:success.preferences.title'),
-        description: t('settings:success.preferences.message'),
+        title: "Preferences Updated",
+        description: "Your preferences have been saved",
       });
     } catch (error) {
       console.error('Error updating preferences:', error);
       toast({
         variant: 'destructive',
-        title: t('settings:error.preferences.title'),
-        description: t('settings:error.preferences.message'),
+        title: "Update Failed",
+        description: "Failed to save preferences. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -172,15 +165,15 @@ const UserSettings = () => {
     try {
       await sendPasswordResetEmail(email);
       toast({
-        title: t('settings:success.resetPassword.title'),
-        description: t('settings:success.resetPassword.message'),
+        title: "Password Reset Email Sent",
+        description: "Check your inbox for password reset instructions",
       });
     } catch (error) {
       console.error('Error sending reset password email:', error);
       toast({
         variant: 'destructive',
-        title: t('settings:error.resetPassword.title'),
-        description: t('settings:error.resetPassword.message'),
+        title: "Reset Failed",
+        description: "Failed to send reset email. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -191,17 +184,17 @@ const UserSettings = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('settings:title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
           <p className="text-muted-foreground">
-            {t('settings:description')}
+            Manage your account settings and preferences
           </p>
         </div>
         
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">{t('settings:tabs.profile')}</TabsTrigger>
-            <TabsTrigger value="notifications">{t('settings:tabs.notifications')}</TabsTrigger>
-            <TabsTrigger value="preferences">{t('settings:tabs.preferences')}</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
           </TabsList>
           
           {/* Profile Tab */}
@@ -211,15 +204,15 @@ const UserSettings = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <User className="h-5 w-5 mr-2" />
-                    {t('settings:profile.title')}
+                    Profile Settings
                   </CardTitle>
                   <CardDescription>
-                    {t('settings:profile.description')}
+                    Update your personal information
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">{t('settings:profile.name')}</Label>
+                    <Label htmlFor="name">Full Name</Label>
                     <Input
                       id="name"
                       value={name}
@@ -228,7 +221,7 @@ const UserSettings = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">{t('settings:profile.email')}</Label>
+                    <Label htmlFor="email">Email Address</Label>
                     <Input
                       id="email"
                       value={email}
@@ -236,7 +229,7 @@ const UserSettings = () => {
                       className="bg-muted cursor-not-allowed"
                     />
                     <p className="text-xs text-muted-foreground">
-                      {t('settings:profile.emailDescription')}
+                      Your email address is used for notifications and login
                     </p>
                   </div>
                 </CardContent>
@@ -248,12 +241,12 @@ const UserSettings = () => {
                     {isLoading ? (
                       <div className="flex items-center">
                         <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                        {t('common:loading')}
+                        Loading...
                       </div>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        {t('settings:profile.save')}
+                        Save Changes
                       </>
                     )}
                   </Button>
@@ -266,23 +259,23 @@ const UserSettings = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Lock className="h-5 w-5 mr-2" />
-                    {t('settings:security.title')}
+                    Security
                   </CardTitle>
                   <CardDescription>
-                    {t('settings:security.description')}
+                    Manage your account security settings
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="rounded-md border p-4">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="font-medium">{t('settings:security.password.title')}</h3>
+                        <h3 className="font-medium">Password</h3>
                         <p className="text-sm text-muted-foreground">
-                          {t('settings:security.password.description')}
+                          Change your account password
                         </p>
                       </div>
                       <Button variant="outline" onClick={handleResetPassword} disabled={isLoading}>
-                        {t('settings:security.password.action')}
+                        Change Password
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
@@ -291,13 +284,13 @@ const UserSettings = () => {
                   <div className="rounded-md border p-4">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="font-medium">{t('settings:security.2fa.title')}</h3>
+                        <h3 className="font-medium">Two-Factor Authentication</h3>
                         <p className="text-sm text-muted-foreground">
-                          {t('settings:security.2fa.description')}
+                          Add an extra layer of security to your account
                         </p>
                       </div>
                       <Button variant="outline">
-                        {t('settings:security.2fa.action')}
+                        Setup 2FA
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
@@ -306,13 +299,13 @@ const UserSettings = () => {
                   <div className="rounded-md border p-4">
                     <div className="flex justify-between items-center">
                       <div>
-                        <h3 className="font-medium">{t('settings:security.sessions.title')}</h3>
+                        <h3 className="font-medium">Active Sessions</h3>
                         <p className="text-sm text-muted-foreground">
-                          {t('settings:security.sessions.description')}
+                          Manage your active login sessions
                         </p>
                       </div>
                       <Button variant="outline">
-                        {t('settings:security.sessions.action')}
+                        Manage Sessions
                         <ChevronRight className="ml-2 h-4 w-4" />
                       </Button>
                     </div>
@@ -329,18 +322,18 @@ const UserSettings = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Mail className="h-5 w-5 mr-2" />
-                    {t('settings:notifications.title')}
+                    Notification Settings
                   </CardTitle>
                   <CardDescription>
-                    {t('settings:notifications.description')}
+                    Manage how you receive notifications
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="emailNotifications">{t('settings:notifications.email')}</Label>
+                      <Label htmlFor="emailNotifications">Email Notifications</Label>
                       <p className="text-sm text-muted-foreground">
-                        {t('settings:notifications.emailDescription')}
+                        Receive updates and reminders via email
                       </p>
                     </div>
                     <Switch
@@ -355,9 +348,9 @@ const UserSettings = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <Label htmlFor="pushNotifications">{t('settings:notifications.push')}</Label>
+                      <Label htmlFor="pushNotifications">Push Notifications</Label>
                       <p className="text-sm text-muted-foreground">
-                        {t('settings:notifications.pushDescription')}
+                        Receive notifications on your device
                       </p>
                     </div>
                     <Switch
@@ -371,16 +364,16 @@ const UserSettings = () => {
                   <Separator />
                   
                   <div className="space-y-2">
-                    <Label htmlFor="reminderTime">{t('settings:notifications.reminderTime')}</Label>
+                    <Label htmlFor="reminderTime">Reminder Time</Label>
                     <Select value={reminderTime} onValueChange={setReminderTime} disabled={isLoading}>
                       <SelectTrigger id="reminderTime">
-                        <SelectValue placeholder={t('settings:notifications.reminderTime')} />
+                        <SelectValue placeholder="Reminder Time" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">{t('settings:notifications.reminder1h')}</SelectItem>
-                        <SelectItem value="3">{t('settings:notifications.reminder3h')}</SelectItem>
-                        <SelectItem value="24">{t('settings:notifications.reminder24h')}</SelectItem>
-                        <SelectItem value="48">{t('settings:notifications.reminder48h')}</SelectItem>
+                        <SelectItem value="1">1 hour before</SelectItem>
+                        <SelectItem value="3">3 hours before</SelectItem>
+                        <SelectItem value="24">24 hours before</SelectItem>
+                        <SelectItem value="48">48 hours before</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -393,12 +386,12 @@ const UserSettings = () => {
                     {isLoading ? (
                       <div className="flex items-center">
                         <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                        {t('common:loading')}
+                        Loading...
                       </div>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        {t('common:save')} {t('settings:tabs.notifications')}
+                        Save Notifications
                       </>
                     )}
                   </Button>
@@ -414,23 +407,23 @@ const UserSettings = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Palette className="h-5 w-5 mr-2" />
-                    {t('settings:preferences.title')}
+                    Preferences
                   </CardTitle>
                   <CardDescription>
-                    {t('settings:preferences.description')}
+                    Customize your experience
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="theme">{t('settings:preferences.theme.title')}</Label>
+                    <Label htmlFor="theme">Theme</Label>
                     <Select value={theme} onValueChange={setTheme} disabled={isLoading}>
                       <SelectTrigger id="theme">
-                        <SelectValue placeholder={t('settings:preferences.theme.title')} />
+                        <SelectValue placeholder="Theme" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="light">{t('settings:preferences.theme.light')}</SelectItem>
-                        <SelectItem value="dark">{t('settings:preferences.theme.dark')}</SelectItem>
-                        <SelectItem value="system">{t('settings:preferences.theme.system')}</SelectItem>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="system">System</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -438,16 +431,16 @@ const UserSettings = () => {
                   <Separator />
                   
                   <div className="space-y-2">
-                    <Label htmlFor="language">{t('settings:preferences.language.title')}</Label>
+                    <Label htmlFor="language">Language</Label>
                     <Select value={language} onValueChange={setLanguage} disabled={isLoading}>
                       <SelectTrigger id="language">
-                        <SelectValue placeholder={t('settings:preferences.language.title')} />
+                        <SelectValue placeholder="Language" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="en">{t('settings:preferences.language.english')}</SelectItem>
-                        <SelectItem value="fr">{t('settings:preferences.language.french')}</SelectItem>
-                        <SelectItem value="es">{t('settings:preferences.language.spanish')}</SelectItem>
-                        <SelectItem value="de">{t('settings:preferences.language.german')}</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -460,12 +453,12 @@ const UserSettings = () => {
                     {isLoading ? (
                       <div className="flex items-center">
                         <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                        {t('common:loading')}
+                        Loading...
                       </div>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        {t('common:save')} {t('settings:tabs.preferences')}
+                        Save Preferences
                       </>
                     )}
                   </Button>
@@ -478,40 +471,40 @@ const UserSettings = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Globe className="h-5 w-5 mr-2" />
-                    {t('settings:regionalSettings.title')}
+                    Regional Settings
                   </CardTitle>
                   <CardDescription>
-                    {t('settings:regionalSettings.description')}
+                    Customize your timezone and date format preferences
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="timeZone">{t('settings:regionalSettings.timezone.title')}</Label>
+                    <Label htmlFor="timeZone">Time Zone</Label>
                     <Select value={timeZone} onValueChange={setTimeZone} disabled={isLoading}>
                       <SelectTrigger id="timeZone">
-                        <SelectValue placeholder={t('settings:regionalSettings.timezone.title')} />
+                        <SelectValue placeholder="Time Zone" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="auto">{t('settings:regionalSettings.timezone.auto')}</SelectItem>
-                        <SelectItem value="et">{t('settings:regionalSettings.timezone.et')}</SelectItem>
-                        <SelectItem value="ct">{t('settings:regionalSettings.timezone.ct')}</SelectItem>
-                        <SelectItem value="mt">{t('settings:regionalSettings.timezone.mt')}</SelectItem>
-                        <SelectItem value="pt">{t('settings:regionalSettings.timezone.pt')}</SelectItem>
-                        <SelectItem value="utc">{t('settings:regionalSettings.timezone.utc')}</SelectItem>
+                        <SelectItem value="auto">Auto-detect timezone</SelectItem>
+                        <SelectItem value="et">Eastern Time (ET)</SelectItem>
+                        <SelectItem value="ct">Central Time (CT)</SelectItem>
+                        <SelectItem value="mt">Mountain Time (MT)</SelectItem>
+                        <SelectItem value="pt">Pacific Time (PT)</SelectItem>
+                        <SelectItem value="utc">UTC</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="dateFormat">{t('settings:regionalSettings.dateFormat.title')}</Label>
+                    <Label htmlFor="dateFormat">Date Format</Label>
                     <Select value={dateFormat} onValueChange={setDateFormat} disabled={isLoading}>
                       <SelectTrigger id="dateFormat">
-                        <SelectValue placeholder={t('settings:regionalSettings.dateFormat.title')} />
+                        <SelectValue placeholder="Date Format" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="mdy">{t('settings:regionalSettings.dateFormat.mdy')}</SelectItem>
-                        <SelectItem value="dmy">{t('settings:regionalSettings.dateFormat.dmy')}</SelectItem>
-                        <SelectItem value="ymd">{t('settings:regionalSettings.dateFormat.ymd')}</SelectItem>
+                        <SelectItem value="mdy">MM/DD/YYYY</SelectItem>
+                        <SelectItem value="dmy">DD/MM/YYYY</SelectItem>
+                        <SelectItem value="ymd">YYYY/MM/DD</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -524,12 +517,12 @@ const UserSettings = () => {
                     {isLoading ? (
                       <div className="flex items-center">
                         <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent border-white rounded-full"></div>
-                        {t('common:loading')}
+                        Loading...
                       </div>
                     ) : (
                       <>
                         <Save className="h-4 w-4 mr-2" />
-                        {t('common:save')} {t('settings:regionalSettings.title')}
+                        Save Regional Settings
                       </>
                     )}
                   </Button>

@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { format } from 'date-fns';
 import { MoodEntry } from '@/services/moodTracker';
-import { useTranslation } from 'react-i18next';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PieChart, Pie, Cell, Sector } from 'recharts';
@@ -44,7 +43,6 @@ const renderActiveShape = (props: any) => {
 };
 
 export const PatientMoods = ({ moods }: PatientMoodsProps) => {
-  const { t } = useTranslation(['moodTracker', 'common']);
   const isMobile = useIsMobile();
   const [activeIndex, setActiveIndex] = useState(0);
   
@@ -84,11 +82,11 @@ export const PatientMoods = ({ moods }: PatientMoodsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('moodTracker.history', 'Mood History')}</CardTitle>
+        <CardTitle>Mood History</CardTitle>
       </CardHeader>
       <CardContent>
         {moods.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">{t('moodTracker.noData', 'No mood data available')}</p>
+          <p className="text-muted-foreground text-center py-4">No mood data available</p>
         ) : (
           <>
             <Tabs defaultValue="trend" className="w-full">
@@ -130,7 +128,7 @@ export const PatientMoods = ({ moods }: PatientMoodsProps) => {
                         dataKey="mood" 
                         stroke="#8884d8" 
                         strokeWidth={2}
-                        name={t('moodTracker.mood', 'Mood')}
+                        name="Mood"
                         activeDot={{ r: 8 }}
                       />
                       <Line 
@@ -138,7 +136,7 @@ export const PatientMoods = ({ moods }: PatientMoodsProps) => {
                         dataKey="anxiety" 
                         stroke="#82ca9d" 
                         strokeWidth={2}
-                        name={t('moodTracker.moods.anxious', 'Anxiety')}
+                        name="Anxiety"
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -196,11 +194,11 @@ export const PatientMoods = ({ moods }: PatientMoodsProps) => {
                   <div className="flex justify-between items-start flex-wrap gap-2">
                     <div>
                       <p className="font-medium">
-                        {t('moodTracker.mood', 'Mood')}: {MOOD_NAMES[mood.mood - 1]} ({mood.mood}/5)
+                        Mood: {MOOD_NAMES[mood.mood - 1]} ({mood.mood}/5)
                       </p>
                       {mood.anxietyLevel && (
                         <p className="text-sm text-muted-foreground">
-                          {t('moodTracker.moods.anxious', 'Anxiety')}: {mood.anxietyLevel}/5
+                        Anxiety: {mood.anxietyLevel}/5
                         </p>
                       )}
                     </div>

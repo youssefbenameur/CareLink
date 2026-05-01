@@ -405,4 +405,69 @@ export const appointmentService = {
       throw error;
     }
   },
+
+  // Notify doctors about their upcoming appointments for today
+  // If doctorId is provided, notify only that doctor; otherwise notify all doctors
+  notifyDoctorsAboutUpcomingAppointments: async (doctorId?: string): Promise<void> => {
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      let doctorsSnap;
+      
+      if (doctorId) {
+        // Notify a single doctor
+        const doctorDoc = await getDoc(doc(db, 'users', doctorId));
+        if (!doctorDoc.exists()) return;
+        doctorsSnap = { docs: [{ id: doctorId, data: () => doctorDoc.data() }] } as any;
+      } else {
+        // Notify all doctors
+        doctorsSnap = await getDocs(
+          query(
+            collection(db, 'users'),
+            where('role', '==', 'doctor')
+          )
+        );
+      }
+
+      for (const doctorDoc of doctorsSnap.docs) {
+        const currentDoctorId = doctorDoc.id;
+
+        // Get all scheduled appointments for this doctor today
+        const appointmentsSnap = await getDocs(
+          query(
+            collection(db, 'appointments'),
+            where('doctorId', '==', currentDoctorId),
+            where('status', '==', 'scheduled')
+          )
+        );
+
+        const todayAppointments = appointmentsSnap.docs
+          .map(mapDoc)
+          .filter((appt) => {
+            const apptDate = convertToDate(appt.date as any);
+            return apptDate >= today && apptDate < tomorrow;
+          })
+          .sort(sortByDate);
+
+        if (todayAppointments.length > 0) {
+          const appointmentTimesList = todayAppointments
+            .map((appt) => format(convertToDate(appt.date as any), 'HH:mm'))
+            .join(', ');
+
+          await notificationService.createNotification({
+            userId: currentDoctorId,
+            title: 'Upcoming Appointments Today 📅',
+            message: `You have ${todayAppointments.length} appointment(s) scheduled for today at ${appointmentTimesList}.`,
+            type: 'info',
+            actionUrl: '/doctor/appointments',
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error notifying doctors about upcoming appointments:', error);
+    }
+  },
 };

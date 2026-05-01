@@ -8,7 +8,7 @@
 @layer base {
   :root {
     /* Calming light theme with soft blues and teals */
-    --background: 210 50% 98%;
+    --background: 210 30% 96%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -21,21 +21,21 @@
     --primary: 174 60% 40%;
     --primary-foreground: 210 40% 98%;
 
-    /* Secondary: very light blue */
-    --secondary: 210 40% 96.1%;
+    /* Secondary: light blue-gray */
+    --secondary: 210 30% 92%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 25% 93%;
+    --muted-foreground: 215.4 16.3% 40%;
 
-    --accent: 194 95% 92%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 174 50% 88%;
+    --accent-foreground: 174 60% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 214.3 25% 84%;
+    --input: 214.3 25% 88%;
     --ring: 174 60% 40%;
 
     --radius: 0.75rem;
@@ -98,6 +98,16 @@
 /* Custom utility classes */
 .bg-grid-pattern {
   background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Light mode card elevation */
+html:not(.dark) .bg-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+}
+
+/* Sidebar tint in light mode only */
+html:not(.dark) .border-r.bg-card {
+  background-color: hsl(210 35% 97%);
 }
 
 .glass-effect {

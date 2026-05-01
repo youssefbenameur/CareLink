@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { Settings, User, LogOut } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 interface HeaderProps {
   children?: React.ReactNode;
@@ -26,7 +25,6 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
   const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const { t } = useTranslation();
 
   const handleLogout = async () => {
     try {
@@ -125,27 +123,27 @@ const Header: React.FC<HeaderProps> = ({ children }) => {
                 <DropdownMenuGroup>
                   <DropdownMenuItem onClick={handleProfile}>
                     <User className="mr-2 h-4 w-4" />
-                    <span>{t("profile")}</span>
+                    <span>Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSettings}>
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>{t("settings")}</span>
+                    <span>Settings</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>{t("auth:signOut")}</span>
+                  <span>Sign Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex gap-2">
               <Button variant="ghost" onClick={() => navigate("/login")}>
-                {t("auth:login")}
+                Log In
               </Button>
               <Button onClick={() => navigate("/signup")}>
-                {t("auth:signUp")}
+                Sign Up
               </Button>
             </div>
           )}

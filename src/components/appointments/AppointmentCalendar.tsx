@@ -4,7 +4,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { useTranslation } from 'react-i18next';
 import { Appointment } from '@/services/appointmentService';
 import { Timestamp } from 'firebase/firestore';
 
@@ -14,7 +13,6 @@ interface AppointmentCalendarProps {
 }
 
 export const AppointmentCalendar = ({ appointments, onDateSelect }: AppointmentCalendarProps) => {
-  const { t } = useTranslation(['appointments', 'common']);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   // Helper function to convert Timestamp to Date if needed

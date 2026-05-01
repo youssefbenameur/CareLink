@@ -8,12 +8,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { userService } from '@/services/userService';
 import { ChevronRight } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { useTranslation } from 'react-i18next';
 
 export const DashboardPatientList = () => {
   const { currentUser } = useAuth();
-  const { t } = useTranslation(['doctorDashboard']);
   
   const { data: patients, isLoading } = useQuery({
     queryKey: ['doctorPatients', currentUser?.uid],
@@ -25,8 +22,8 @@ export const DashboardPatientList = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('doctorDashboard:patients.title')}</CardTitle>
-          <CardDescription>{t('doctorDashboard:patients.manage')}</CardDescription>
+          <CardTitle>Patients</CardTitle>
+          <CardDescription>Manage your patient list</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[250px] flex items-center justify-center">
@@ -41,11 +38,11 @@ export const DashboardPatientList = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle>{t('doctorDashboard:patients.title')}</CardTitle>
-          <CardDescription>{t('doctorDashboard:patients.manage')}</CardDescription>
+          <CardTitle>Patients</CardTitle>
+          <CardDescription>Manage your patient list</CardDescription>
         </div>
         <Button asChild>
-          <Link to="/doctor/patients">{t('doctorDashboard:patients.fullList')}</Link>
+          <Link to="/doctor/patients">View All</Link>
         </Button>
       </CardHeader>
       <CardContent>
@@ -76,7 +73,7 @@ export const DashboardPatientList = () => {
       <CardFooter>
         <Button variant="outline" className="w-full" asChild>
           <Link to="/doctor/patients">
-            {t('doctorDashboard:patients.viewAll')}
+            View All Patients
             <ChevronRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>

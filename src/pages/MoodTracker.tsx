@@ -1,22 +1,32 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Line } from 'recharts';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import MoodTrackerComponent from '@/components/tracker/MoodTracker';
 import { MoodDistributionChart } from '@/components/tracker/MoodDistributionChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { moodTrackerService } from '@/services/moodTracker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { format } from 'date-fns';
-import { useTranslation } from 'react-i18next';
-import { convertToDate } from '@/services/appointmentService';
+
+// Utility function to convert various date formats to Date object
+const convertToDate = (dateValue: any): Date => {
+  if (dateValue instanceof Date) {
+    return dateValue;
+  }
+  // Firebase Timestamp has toDate() method
+  if (dateValue && typeof dateValue.toDate === 'function') {
+    return dateValue.toDate();
+  }
+  // Try parsing as string or number
+  return new Date(dateValue);
+};
 
 const MoodTracker = () => {
   const { currentUser } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation(['moodTracker', 'common']);
   const [moodDistribution, setMoodDistribution] = useState<{ mood: number; count: number }[]>([]);
   const [moodEntries, setMoodEntries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,8 +56,8 @@ const MoodTracker = () => {
         console.error('Error fetching mood data:', error);
         toast({
           variant: "destructive",
-          title: t('common:error'),
-          description: t('common:failedToLoadTryAgain')
+          title: "Error",
+          description: "Failed to load data. Please try again."
         });
       } finally {
         setLoading(false);
@@ -81,15 +91,15 @@ const MoodTracker = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-          <p className="text-muted-foreground">{t('subtitle')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">Mood Tracker</h1>
+          <p className="text-muted-foreground">Monitor your emotional wellbeing and identify patterns over time</p>
         </div>
         
         <MoodTrackerComponent />
         
         <Card>
           <CardHeader>
-            <CardTitle>{t('moodAnalytics')}</CardTitle>
+            <CardTitle>Mood Analytics</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -99,35 +109,35 @@ const MoodTracker = () => {
             ) : (
               <Tabs defaultValue="distribution" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="distribution">{t('distribution')}</TabsTrigger>
-                  <TabsTrigger value="trend">{t('trendAnalysis')}</TabsTrigger>
+                  <TabsTrigger value="distribution">Distribution</TabsTrigger>
+                  <TabsTrigger value="trend">Trend Analysis</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="distribution" className="mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <MoodDistributionChart moodData={moodDistribution} />
                     <div className="flex flex-col justify-center">
-                      <h3 className="text-lg font-medium mb-2">{t('moodInsights')}</h3>
+                      <h3 className="text-lg font-medium mb-2">Mood Insights</h3>
                       {moodEntries.length > 0 ? (
                         <div className="space-y-4">
                           <p>
-                            {t('insights.based', { count: moodEntries.length })}
+                            Based on your {moodEntries.length} mood entries:
                           </p>
                           <ul className="list-disc list-inside space-y-2">
                             {moodDistribution.filter(m => m.count > 0).map((item) => (
                               <li key={item.mood}>
-                                {item.count} {t('days')} {t('with')} {t(`moods.${moodTrackerService.getMoodText(item.mood).toLowerCase()}`)} {t('mood')}
+                                {item.count} days with {moodTrackerService.getMoodText(item.mood)} mood
                                 ({Math.round((item.count / moodEntries.length) * 100)}%)
                               </li>
                             ))}
                           </ul>
                           <p className="text-sm text-muted-foreground mt-4">
-                            {t('insights.continueTracking')}
+                            Continue tracking your mood daily to see more accurate patterns over time.
                           </p>
                         </div>
                       ) : (
                         <p className="text-muted-foreground">
-                          {t('startTracking')}
+                          Start tracking your mood to see insights
                         </p>
                       )}
                     </div>
@@ -153,19 +163,19 @@ const MoodTracker = () => {
                             stroke="#8884d8" 
                             strokeWidth={2}
                             activeDot={{ r: 8 }}
-                            name={t('mood')}
+                            name="Mood"
                           />
                           <Line 
                             type="monotone" 
                             dataKey="anxiety" 
                             stroke="#82ca9d"
-                            name={t('moods.anxious')}
+                            name="Anxiety"
                           />
                         </LineChart>
                       </ResponsiveContainer>
                     ) : (
                       <div className="flex items-center justify-center h-full text-muted-foreground">
-                        {t('noTrendData')}
+                        No trend data available yet
                       </div>
                     )}
                   </div>

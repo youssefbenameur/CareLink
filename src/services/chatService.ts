@@ -10,7 +10,11 @@ import {
   onSnapshot,
   QuerySnapshot,
   DocumentData,
+  doc,
+  getDoc,
 } from "firebase/firestore";
+import { notificationService } from "./notificationService";
+import { userService } from "./userService";
 
 export interface MessageToSend {
   senderId: string;
@@ -83,6 +87,27 @@ export const chatService = {
       }
 
       const docRef = await addDoc(collection(db, "messages"), cleanData);
+
+      // Notify the doctor if the recipient is a doctor
+      try {
+        const recipientDoc = await getDoc(doc(db, 'users', messageData.recipientId));
+        if (recipientDoc.exists()) {
+          const recipientData = recipientDoc.data();
+          if (recipientData.role === 'doctor') {
+            await notificationService.createNotification({
+              userId: messageData.recipientId,
+              title: 'New Message 💬',
+              message: `${messageData.senderName || 'A patient'} sent you a message: "${messageData.content.substring(0, 50)}${messageData.content.length > 50 ? '...' : ''}"`,
+              type: 'info',
+              actionUrl: `/doctor/chat/${messageData.senderId}`,
+            });
+          }
+        }
+      } catch (notifError) {
+        console.error('Error creating message notification:', notifError);
+        // Don't throw - message was sent successfully even if notification failed
+      }
+
       return docRef.id;
     } catch (error) {
       console.error("Error sending message:", error);

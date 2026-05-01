@@ -1,6 +1,5 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, Sector } from 'recharts';
-import { useTranslation } from 'react-i18next';
 import { moodTrackerService } from '@/services/moodTracker';
 
 interface MoodDistributionProps {
@@ -40,11 +39,10 @@ const renderActiveShape = (props: any) => {
 
 export const MoodDistributionChart: React.FC<MoodDistributionProps> = ({ moodData }) => {
   const [activeIndex, setActiveIndex] = React.useState(0);
-  const { t } = useTranslation(['moodTracker']);
   
   // Transform data to include translated names
   const chartData = moodData.map(item => ({
-    name: t(`moods.${moodTrackerService.getMoodText(item.mood).toLowerCase()}`),
+    name: moodTrackerService.getMoodText(item.mood),
     value: item.count,
     mood: item.mood
   }));
@@ -55,7 +53,7 @@ export const MoodDistributionChart: React.FC<MoodDistributionProps> = ({ moodDat
   
   return (
     <div className="w-full h-[300px]">
-      <h3 className="text-base font-medium mb-2 ml-4">{t('moodDistribution')}</h3>
+      <h3 className="text-base font-medium mb-2 ml-4">Mood Distribution</h3>
       {chartData.length > 0 ? (
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -77,7 +75,7 @@ export const MoodDistributionChart: React.FC<MoodDistributionProps> = ({ moodDat
               ))}
             </Pie>
             <Tooltip 
-              formatter={(value) => [`${value} ${t('entries')}`, t('count')]}
+              formatter={(value) => [`${value} entries`, 'Count']}
               contentStyle={{ 
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 borderRadius: '8px',
@@ -95,7 +93,7 @@ export const MoodDistributionChart: React.FC<MoodDistributionProps> = ({ moodDat
         </ResponsiveContainer>
       ) : (
         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-          {t('noDataYet')}
+          No data yet
         </div>
       )}
     </div>

@@ -1,5 +1,4 @@
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { appointmentService } from '@/services/appointmentService';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { useNotifications } from '@/contexts/NotificationContext';
 
 const Appointments = () => {
-  const { t } = useTranslation(['appointments', 'common']);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [selectedDoctorName, setSelectedDoctorName] = useState<string | null>(null);
@@ -172,24 +170,24 @@ const Appointments = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
           <p className="text-muted-foreground">
-            {t('schedule')}
+            Schedule and manage your appointments
           </p>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="upcoming" data-value="upcoming">{t('upcoming')}</TabsTrigger>
-            <TabsTrigger value="schedule" data-value="schedule">{t('book')}</TabsTrigger>
-            <TabsTrigger value="past" data-value="past">{t('past')}</TabsTrigger>
+            <TabsTrigger value="upcoming" data-value="upcoming">Upcoming</TabsTrigger>
+            <TabsTrigger value="schedule" data-value="schedule">Book New</TabsTrigger>
+            <TabsTrigger value="past" data-value="past">Past</TabsTrigger>
           </TabsList>
           
           {/* Upcoming appointments */}
           <TabsContent value="upcoming">
             <div className="flex flex-col gap-4">
               {isLoading ? (
-                <p>{t('common:loading')}</p>
+                <p>Loading...</p>
               ) : appointments && appointments.filter(app =>
                   new Date(convertToDate(app.date)) > new Date() && app.status !== 'cancelled'
                 ).length > 0 ? (
@@ -213,7 +211,7 @@ const Appointments = () => {
                   <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                     <CalendarX className="h-10 w-10 text-primary/60" />
                   </div>
-                  <h3 className="text-lg font-semibold">{t('noUpcoming')}</h3>
+                  <h3 className="text-lg font-semibold">No upcoming appointments</h3>
                   <p className="text-muted-foreground text-sm mt-1 max-w-xs">
                     You have no upcoming appointments. Book a session with one of your doctors to get started.
                   </p>
@@ -232,19 +230,19 @@ const Appointments = () => {
               <div className="md:col-span-1 space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>{t('doctorAvailability')}</CardTitle>
+                    <CardTitle>Doctor Availability</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <Label>{t('selectDoctor')}</Label>
+                        <Label>Select Doctor</Label>
                         <Select 
                           value={selectedDoctorId || ''} 
                           onValueChange={handleDoctorChange}
                           disabled={loadingDoctors}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder={t('selectDoctor')} />
+                            <SelectValue placeholder="Select Doctor" />
                           </SelectTrigger>
                           <SelectContent>
                             {doctors?.map(doctor => (
@@ -278,7 +276,7 @@ const Appointments = () => {
                 ) : (
                   <Card className="h-full flex items-center justify-center">
                     <CardContent className="text-center p-6">
-                      <p>{t('selectDoctorFirst')}</p>
+                      <p>Please select a doctor to book an appointment</p>
                     </CardContent>
                   </Card>
                 )}
@@ -290,7 +288,7 @@ const Appointments = () => {
           <TabsContent value="past">
             <div className="flex flex-col gap-4">
               {isLoading ? (
-                <p>{t('common:loading')}</p>
+                <p>Loading...</p>
               ) : appointments && appointments.filter(app =>
                   new Date(convertToDate(app.date)) < new Date() || app.status === 'cancelled'
                 ).length > 0 ? (
@@ -307,7 +305,7 @@ const Appointments = () => {
                   <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mb-4">
                     <CalendarDays className="h-10 w-10 text-muted-foreground/50" />
                   </div>
-                  <h3 className="text-lg font-semibold">{t('noPast')}</h3>
+                  <h3 className="text-lg font-semibold">No past appointments</h3>
                   <p className="text-muted-foreground text-sm mt-1 max-w-xs">
                     Your completed and cancelled appointments will appear here.
                   </p>

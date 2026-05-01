@@ -10,16 +10,14 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login, loading } = useAuth();
-  const { t } = useTranslation();
   
   const formSchema = z.object({
-    email: z.string().email({ message: t('auth:validationErrors.invalidEmail') }),
-    password: z.string().min(6, { message: t('auth:validationErrors.passwordLength') }),
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   });
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,7 +41,7 @@ const LoginForm = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth:email')}</FormLabel>
+                <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input placeholder="your.email@example.com" {...field} />
                 </FormControl>
@@ -57,12 +55,12 @@ const LoginForm = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('auth:password')}</FormLabel>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type={showPassword ? 'text' : 'password'}
-                      placeholder={t('auth:enterPassword')}
+                      placeholder="Enter your password"
                       {...field}
                     />
                     <Button
@@ -83,12 +81,12 @@ const LoginForm = () => {
           
           <div className="flex items-center justify-between">
             <Link to="/forgot-password" className="text-sm text-primary hover:underline">
-              {t('auth:forgotPassword')}
+              Forgot password?
             </Link>
             <div className="text-sm">
-              {t('auth:noAccount')}{' '}
+              Don't have an account?{' '}
               <Link to="/signup" className="text-primary hover:underline">
-                {t('auth:signUp')}
+                Sign Up
               </Link>
             </div>
           </div>
@@ -97,10 +95,10 @@ const LoginForm = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t('common:loading')}
+                Loading...
               </>
             ) : (
-              t('auth:login')
+              "Log In"
             )}
           </Button>
         </form>

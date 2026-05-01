@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import DoctorLayout from '@/components/layout/DoctorLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +13,6 @@ import { Search, Plus, FileText, BarChart, Clock, FileUp, Users } from 'lucide-r
 import { useToast } from '@/hooks/use-toast';
 
 const Resources = () => {
-  const { t } = useTranslation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -95,20 +93,20 @@ const Resources = () => {
   ];
   
   const resourceTypes = [
-    { value: 'article', label: t('resources.categories.articles') },
-    { value: 'video', label: t('resources.categories.videos') },
-    { value: 'exercise', label: t('resources.categories.exercises') },
-    { value: 'tool', label: t('resources.categories.tools') },
-    { value: 'podcast', label: t('resources.categories.podcasts') }
+    { value: 'article', label: "Articles" },
+    { value: 'video', label: "Videos" },
+    { value: 'exercise', label: "Exercises" },
+    { value: 'tool', label: "Tools" },
+    { value: 'podcast', label: "Podcasts" }
   ];
   
   const resourceCategories = [
-    { value: 'anxiety', label: t('resources.categories.anxiety') },
-    { value: 'depression', label: t('resources.categories.depression') },
-    { value: 'stress', label: t('resources.categories.stress') },
-    { value: 'sleep', label: t('resources.categories.sleep') },
-    { value: 'mindfulness', label: t('resources.categories.mindfulness') },
-    { value: 'relationships', label: t('resources.categories.relationships') }
+    { value: 'anxiety', label: "Anxiety" },
+    { value: 'depression', label: "Depression" },
+    { value: 'stress', label: "Stress" },
+    { value: 'sleep', label: "Sleep" },
+    { value: 'mindfulness', label: "Mindfulness" },
+    { value: 'relationships', label: "Relationships" }
   ];
   
   const filteredResources = mockResources.filter((resource) => {
@@ -124,9 +122,9 @@ const Resources = () => {
     <DoctorLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('resources.title')}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Resources</h1>
           <p className="text-muted-foreground">
-            {t('resources.doctor.manageResources')}
+            Manage and share resources with your patients
           </p>
         </div>
         
@@ -134,19 +132,19 @@ const Resources = () => {
           <TabsList className="mb-4">
             <TabsTrigger value="all">
               <FileText className="h-4 w-4 mr-2" />
-              {t('resources.categories.all')}
+              All Resources
             </TabsTrigger>
             <TabsTrigger value="assigned">
               <Users className="h-4 w-4 mr-2" />
-              {t('resources.doctor.mostAssigned')}
+              Most Assigned
             </TabsTrigger>
             <TabsTrigger value="stats">
               <BarChart className="h-4 w-4 mr-2" />
-              {t('resources.doctor.resourceStatistics')}
+              Resource Statistics
             </TabsTrigger>
             <TabsTrigger value="add">
               <Plus className="h-4 w-4 mr-2" />
-              {t('resources.doctor.addResource')}
+              Add Resource
             </TabsTrigger>
           </TabsList>
           
@@ -155,9 +153,9 @@ const Resources = () => {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
-                    <CardTitle>{t('resources.categories.all')}</CardTitle>
+                    <CardTitle>All Resources</CardTitle>
                     <CardDescription>
-                      {t('resources.doctor.manageResources')}
+                      Manage and share resources with your patients
                     </CardDescription>
                   </div>
                   
@@ -165,7 +163,7 @@ const Resources = () => {
                     <div className="relative">
                       <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input 
-                        placeholder={t('resources.search')}
+                        placeholder="Search resources..."
                         className="pl-8 w-full"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -174,10 +172,10 @@ const Resources = () => {
                     
                     <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                       <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder={t('common.filter')} />
+                        <SelectValue placeholder="Filter" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">{t('resources.categories.all')}</SelectItem>
+                        <SelectItem value="all">All Resources</SelectItem>
                         {resourceCategories.map((category) => (
                           <SelectItem key={category.value} value={category.value}>
                             {category.label}
@@ -209,35 +207,35 @@ const Resources = () => {
                           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             <span className="flex items-center">
                               <Clock className="h-3 w-3 mr-1" />
-                              {resource.readingTime} {t('resources.minutes')}
+                              {resource.readingTime} min read
                             </span>
                             <span className="flex items-center">
                               <BarChart className="h-3 w-3 mr-1" />
-                              {resource.views} {t('resources.doctor.mostViewed').toLowerCase()}
+                              {resource.views} most viewed
                             </span>
                             <span className="flex items-center">
                               <Users className="h-3 w-3 mr-1" />
-                              {t('resources.doctor.assignToPatient')}: {resource.assigned}
+                              Assign to Patient: {resource.assigned}
                             </span>
                           </div>
                         </div>
                         
                         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-3 sm:mt-0 sm:ml-4">
                           <Button variant="outline" size="sm">
-                            {t('common.view')}
+                            View
                           </Button>
                           <Button variant="outline" size="sm">
-                            {t('resources.doctor.assignToPatient')}
+                            Assign to Patient
                           </Button>
                           <Button variant="outline" size="sm">
-                            {t('common.edit')}
+                            Edit
                           </Button>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="text-center py-10 text-muted-foreground">
-                      {t('resources.noResults')}
+                      No resources found
                     </div>
                   )}
                 </div>
@@ -248,15 +246,15 @@ const Resources = () => {
           <TabsContent value="add">
             <Card>
               <CardHeader>
-                <CardTitle>{t('resources.doctor.addResource')}</CardTitle>
+                <CardTitle>Add Resource</CardTitle>
                 <CardDescription>
-                  {t('resources.doctor.addResource')}
+                  Add Resource
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="resourceTitle">{t('common.title')}</Label>
+                    <Label htmlFor="resourceTitle">Title</Label>
                     <Input 
                       id="resourceTitle" 
                       value={newResourceTitle}
@@ -267,7 +265,7 @@ const Resources = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="resourceType">{t('resources.categories.title')}</Label>
+                      <Label htmlFor="resourceType">Resource Type</Label>
                       <Select value={newResourceType} onValueChange={setNewResourceType}>
                         <SelectTrigger id="resourceType">
                           <SelectValue placeholder="Select resource type" />
@@ -283,7 +281,7 @@ const Resources = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="resourceCategory">{t('common.category')}</Label>
+                      <Label htmlFor="resourceCategory">Category</Label>
                       <Select value={newResourceCategory} onValueChange={setNewResourceCategory}>
                         <SelectTrigger id="resourceCategory">
                           <SelectValue placeholder="Select category" />
@@ -300,7 +298,7 @@ const Resources = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="resourceDescription">{t('common.description')}</Label>
+                    <Label htmlFor="resourceDescription">Description</Label>
                     <Textarea 
                       id="resourceDescription" 
                       value={newResourceDescription}
@@ -311,7 +309,7 @@ const Resources = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="resourceContent">{t('common.content')}</Label>
+                    <Label htmlFor="resourceContent">Content</Label>
                     <Textarea 
                       id="resourceContent" 
                       value={newResourceContent}
@@ -323,12 +321,12 @@ const Resources = () => {
                   </div>
                   
                   <div>
-                    <Label>{t('medicalRecords.recordAttachments')}</Label>
+                    <Label>Attachments</Label>
                     <div className="mt-2">
                       <div className="flex items-center justify-center border-2 border-dashed rounded-md p-6">
                         <div className="text-center">
                           <FileUp className="h-10 w-10 text-muted-foreground mb-2 mx-auto" />
-                          <p className="text-sm font-medium">{t('medicalRecords.uploadFile')}</p>
+                          <p className="text-sm font-medium">Upload a file</p>
                           <p className="text-xs text-muted-foreground mt-1">
                             JPG, PNG, PDF, MP3, or MP4 up to 50MB
                           </p>
@@ -342,7 +340,7 @@ const Resources = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={handleCreateResource}>{t('resources.doctor.addResource')}</Button>
+                <Button onClick={handleCreateResource}>Add Resource</Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -350,9 +348,9 @@ const Resources = () => {
           <TabsContent value="assigned">
             <Card>
               <CardHeader>
-                <CardTitle>{t('resources.doctor.mostAssigned')}</CardTitle>
+                <CardTitle>Most Assigned</CardTitle>
                 <CardDescription>
-                  {t('resources.doctor.mostAssigned')}
+                  Most Assigned
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -384,7 +382,7 @@ const Resources = () => {
                         
                         <div className="flex gap-2 mt-3 sm:mt-0">
                           <Button variant="outline" size="sm">
-                            {t('common.view')}
+                            View
                           </Button>
                         </div>
                       </div>
@@ -397,16 +395,16 @@ const Resources = () => {
           <TabsContent value="stats">
             <Card>
               <CardHeader>
-                <CardTitle>{t('resources.doctor.resourceStatistics')}</CardTitle>
+                <CardTitle>Resource Statistics</CardTitle>
                 <CardDescription>
-                  {t('resources.doctor.resourceStatistics')}
+                  Resource Statistics
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">{t('resources.doctor.mostViewed')}</CardTitle>
+                      <CardTitle className="text-base">Most Viewed</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
@@ -428,7 +426,7 @@ const Resources = () => {
                   
                   <Card>
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base">{t('resources.doctor.mostAssigned')}</CardTitle>
+                      <CardTitle className="text-base">Most Assigned</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">

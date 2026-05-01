@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, RefreshCcw, TicketCheck } from 'lucide-react';
 import { DoctorPatientChat } from '@/components/chat/DoctorPatientChat';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { SupportTicketForm } from '@/components/support/SupportTicketForm';
 import { useNotifications } from '@/contexts/NotificationContext';
@@ -21,7 +20,6 @@ const DoctorChatPage = () => {
   const [patients, setPatients] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const { toast } = useToast();
   const { markReadByActionUrl } = useNotifications();
 
@@ -69,9 +67,9 @@ const DoctorChatPage = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('chat.title', 'Chat')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Chat</h1>
             <p className="text-muted-foreground">
-              {t('chat.withPatient', 'Chat with your patients')}
+              Chat with your patients
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={fetchPatients} disabled={loading}>
@@ -95,7 +93,7 @@ const DoctorChatPage = () => {
           <TabsContent value="patients" className="mt-0">
         <div className="grid gap-4 md:grid-cols-5">
           <div className="col-span-2 border rounded-md p-4 h-[calc(100vh-theme(spacing.32))] overflow-y-auto">
-            <h3 className="font-medium mb-4">{t('chat.yourPatients', 'Your Patients')}</h3>
+            <h3 className="font-medium mb-4">Your Patients</h3>
             
             {loading ? (
               <div className="space-y-4">
@@ -127,8 +125,8 @@ const DoctorChatPage = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                <p>{t('chat.noPatients', 'No patients found')}</p>
-                <p className="text-sm mt-1">{t('chat.checkPatientList', 'Check the patient list in the dashboard')}</p>
+                <p>No patients found</p>
+                <p className="text-sm mt-1">Check the patient list in the dashboard</p>
               </div>
             )}
           </div>
@@ -139,9 +137,9 @@ const DoctorChatPage = () => {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center p-4">
                 <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">{t('chat.selectPatient', 'Select a Patient')}</h3>
+                <h3 className="text-lg font-medium">Select a Patient</h3>
                 <p className="text-muted-foreground mt-1">
-                  {t('chat.selectPatientFromList', 'Select a patient from the list to start chatting')}
+                  Select a patient from the list to start chatting
                 </p>
               </div>
             )}

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 
 interface DocumentSlot {
-  key: 'doctorLicense' | 'diploma' | 'certification';
+  key: 'nationalId' | 'medicalDiploma' | 'cnomCard';
   label: string;
   required: boolean;
   file: File | null;
@@ -14,9 +14,9 @@ interface DocumentSlot {
 }
 
 const INITIAL_SLOTS: DocumentSlot[] = [
-  { key: 'doctorLicense', label: 'Medical License', required: true, file: null, error: null },
-  { key: 'diploma', label: 'Diploma / Degree', required: true, file: null, error: null },
-  { key: 'certification', label: 'Additional Certification', required: false, file: null, error: null },
+  { key: 'nationalId', label: 'National ID', required: true, file: null, error: null },
+  { key: 'medicalDiploma', label: 'Medical Diploma', required: true, file: null, error: null },
+  { key: 'cnomCard', label: 'Professional Card CNOM', required: true, file: null, error: null },
 ];
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -60,9 +60,9 @@ const ResubmitDocuments = () => {
     if (hasErrors) return;
 
     await resubmitDocuments({
-      doctorLicense: slots.find(s => s.key === 'doctorLicense')?.file ?? undefined,
-      diploma: slots.find(s => s.key === 'diploma')?.file ?? undefined,
-      certification: slots.find(s => s.key === 'certification')?.file ?? undefined,
+      nationalId: slots.find(s => s.key === 'nationalId')?.file ?? undefined,
+      medicalDiploma: slots.find(s => s.key === 'medicalDiploma')?.file ?? undefined,
+      cnomCard: slots.find(s => s.key === 'cnomCard')?.file ?? undefined,
     });
   };
 
@@ -96,9 +96,7 @@ const ResubmitDocuments = () => {
                 <div key={slot.key} className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Label className="text-sm font-medium">{slot.label}</Label>
-                    {slot.required
-                      ? <span className="text-xs text-destructive font-medium">* Required</span>
-                      : <span className="text-xs text-muted-foreground">Optional</span>}
+                    <span className="text-xs text-destructive font-medium">* Required</span>
                   </div>
 
                   {slot.file ? (

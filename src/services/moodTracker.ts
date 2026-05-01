@@ -1,6 +1,6 @@
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, orderBy, limit, Timestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 export interface MoodEntry {
   id?: string;
@@ -11,6 +11,7 @@ export interface MoodEntry {
   sleepHours?: number;
   anxietyLevel?: number;
   createdAt: Date | Timestamp;
+  updatedAt?: Date | Timestamp;
 }
 
 export const moodTrackerService = {
@@ -35,6 +36,31 @@ export const moodTrackerService = {
       return docRef.id;
     } catch (error) {
       console.error('Error adding mood entry:', error);
+      throw error;
+    }
+  },
+
+  // Update an existing mood entry
+  updateMoodEntry: async (entryId: string, updates: Partial<Omit<MoodEntry, 'id' | 'createdAt'>>): Promise<void> => {
+    try {
+      const entryRef = doc(db, "moodEntries", entryId);
+      await updateDoc(entryRef, {
+        ...updates,
+        updatedAt: Timestamp.now()
+      });
+    } catch (error) {
+      console.error('Error updating mood entry:', error);
+      throw error;
+    }
+  },
+
+  // Delete a mood entry
+  deleteMoodEntry: async (entryId: string): Promise<void> => {
+    try {
+      const entryRef = doc(db, "moodEntries", entryId);
+      await deleteDoc(entryRef);
+    } catch (error) {
+      console.error('Error deleting mood entry:', error);
       throw error;
     }
   },

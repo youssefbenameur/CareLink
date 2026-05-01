@@ -133,9 +133,9 @@ const fileToBase64 = (file: File): Promise<string> =>
 // Upload doctor credential documents - stores as compressed base64 images
 export const uploadDoctorDocuments = async (
   userId: string,
-  documents: { doctorLicense?: File; diploma?: File; certification?: File }
-): Promise<{ doctorLicense?: string; diploma?: string; certification?: string }> => {
-  const result: { doctorLicense?: string; diploma?: string; certification?: string } = {};
+  documents: { nationalId?: File; medicalDiploma?: File; cnomCard?: File }
+): Promise<{ nationalId?: string; medicalDiploma?: string; cnomCard?: string }> => {
+  const result: { nationalId?: string; medicalDiploma?: string; cnomCard?: string } = {};
 
   for (const [key, file] of Object.entries(documents)) {
     if (!file) continue;
@@ -340,7 +340,6 @@ export const sendApprovalEmail = async (
   doctorName: string,
   status: 'approved' | 'rejected'
 ): Promise<void> => {
-  const loginUrl = `${window.location.origin}/login`;
   const subject = status === 'approved'
     ? 'Your CareLink application has been approved'
     : 'Update on your CareLink application';
@@ -348,7 +347,7 @@ export const sendApprovalEmail = async (
   const html = status === 'approved'
     ? `<p>Hi ${doctorName},</p>
        <p>Congratulations! Your doctor account on <strong>CareLink</strong> has been <strong>approved</strong>.</p>
-       <p>You can now <a href="${loginUrl}">log in</a> and start providing care.</p>
+       <p>You can now log in to your CareLink account and start providing care.</p>
        <p>Welcome to the CareLink team!</p>`
     : `<p>Hi ${doctorName},</p>
        <p>Thank you for applying to CareLink. Unfortunately, your application was <strong>not approved</strong> at this time.</p>

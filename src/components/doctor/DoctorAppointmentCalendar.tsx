@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { isSameDay, format, isToday, isWithinInterval, startOfMonth, endOfMonth } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 import { appointmentService } from '@/services/appointmentService';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
@@ -17,7 +16,6 @@ export const DoctorAppointmentCalendar: React.FC<DoctorAppointmentCalendarProps>
   onDateSelect,
   selectedDate: externalSelectedDate,
 }) => {
-  const { t } = useTranslation(['appointments', 'common']);
   const { currentUser } = useAuth();
   const [date, setDate] = useState<Date>(externalSelectedDate || new Date());
   const [appointments, setAppointments] = useState<Appointment[]>([]);

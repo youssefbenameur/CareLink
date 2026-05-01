@@ -6,8 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTranslation } from "react-i18next";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Sheet,
@@ -47,7 +45,6 @@ const DoctorSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser, userData } = useAuth();
-  const { t } = useTranslation(["navigation", "common"]);
   const isMobile = useIsMobile();
   const badges = useNavBadges();
   const { notifications, unreadCount: totalUnread, markAsRead, markAllAsRead } = useNotifications();
@@ -59,37 +56,37 @@ const DoctorSidebar = () => {
 
   const navItems = [
     {
-      name: t("navigation:dashboard"),
+      name: "Dashboard",
       href: "/doctor/dashboard",
       icon: <Home className="h-5 w-5" />,
       badge: 0,
     },
     {
-      name: t("navigation:patients"),
+      name: "Patients",
       href: "/doctor/patients",
       icon: <Users className="h-5 w-5" />,
       badge: 0,
     },
     {
-      name: t("navigation:chat"),
+      name: "Chat",
       href: "/doctor/chat",
       icon: <MessageSquare className="h-5 w-5" />,
       badge: badges.unreadPatientMessages,
     },
     {
-      name: t("navigation:appointments"),
+      name: "Appointments",
       href: "/doctor/appointments",
       icon: <Calendar className="h-5 w-5" />,
       badge: badges.pendingAppointmentRequests,
     },
     {
-      name: t("navigation:medicalRecords"),
+      name: "Medical Records",
       href: "/doctor/medical-records",
       icon: <FileText className="h-5 w-5" />,
       badge: 0,
     },
     {
-      name: t("navigation:profile"),
+      name: "Profile Settings",
       href: "/doctor/profile",
       icon: <UserCircle className="h-5 w-5" />,
       badge: 0,
@@ -110,10 +107,10 @@ const DoctorSidebar = () => {
           </Avatar>
           <div className="ml-3">
             <p className="font-medium text-sm">
-              {userData?.name || t("common:doctor")}
+              {userData?.name || "Doctor"}
             </p>
             <p className="text-xs text-muted-foreground">
-              {userData?.specialty || userData?.specialization || t("common:doctor")}
+              {userData?.specialty || userData?.specialization || "Doctor"}
             </p>
           </div>
         </div>
@@ -232,7 +229,7 @@ const DoctorSidebar = () => {
             <SheetHeader className="px-4 py-2">
               <SheetTitle>CareLink</SheetTitle>
               <SheetDescription>
-                {t("navigation:doctorPortal")}
+                Doctor Portal
               </SheetDescription>
             </SheetHeader>
             {renderNavContent()}
@@ -241,7 +238,7 @@ const DoctorSidebar = () => {
 
         <div className="flex items-center gap-2">
           <span className="font-semibold">
-            {userData?.name || t("common:doctor")}
+            {userData?.name || "Doctor"}
           </span>
           <Avatar className="h-8 w-8">
             <AvatarImage src={userData?.avatarBase64} />
@@ -259,7 +256,7 @@ const DoctorSidebar = () => {
       <div className="p-4 border-b">
         <h2 className="text-xl font-bold">CareLink</h2>
         <p className="text-xs text-muted-foreground">
-          {t("navigation:doctorPortal")}
+          Doctor Portal
         </p>
       </div>
 

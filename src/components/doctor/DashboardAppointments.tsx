@@ -19,7 +19,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "firebase/firestore";
 import { useToast } from "@/components/ui/use-toast";
-import { useTranslation } from "react-i18next";
 
 export const DashboardAppointments = () => {
   const { currentUser } = useAuth();
@@ -27,7 +26,6 @@ export const DashboardAppointments = () => {
     new Date(),
   );
   const { toast } = useToast();
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: appointments, isLoading } = useQuery({
@@ -105,9 +103,9 @@ export const DashboardAppointments = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t("doctorDashboard:appointments.title")}</CardTitle>
+          <CardTitle>Appointments</CardTitle>
           <CardDescription>
-            {t("doctorDashboard:appointments.manage")}
+            Manage your appointment schedule
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -123,14 +121,14 @@ export const DashboardAppointments = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div>
-          <CardTitle>{t("doctorDashboard:appointments.title")}</CardTitle>
+          <CardTitle>Appointments</CardTitle>
           <CardDescription>
-            {t("doctorDashboard:appointments.manage")}
+            Manage your appointment schedule
           </CardDescription>
         </div>
         <Button asChild>
           <Link to="/doctor/appointments">
-            {t("doctorDashboard:appointments.manageLink")}
+            Manage
           </Link>
         </Button>
       </CardHeader>
@@ -147,7 +145,7 @@ export const DashboardAppointments = () => {
           {pendingAppointments.length > 0 && (
             <div className="space-y-2 p-3 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
               <h4 className="font-medium text-sm text-yellow-900 dark:text-yellow-100">
-                {t("appointments:pending")} ({pendingAppointments.length})
+                Pending ({pendingAppointments.length})
               </h4>
               <div className="space-y-2">
                 {pendingAppointments.map((appointment) => (
@@ -169,7 +167,7 @@ export const DashboardAppointments = () => {
                         variant="default"
                         onClick={() => handleApprove(appointment.id!)}
                       >
-                        {t("appointments:approve")}
+                        Approve
                       </Button>
                       <Button
                         size="sm"
@@ -177,7 +175,7 @@ export const DashboardAppointments = () => {
                         className="text-destructive border-destructive"
                         onClick={() => handleReject(appointment.id!)}
                       >
-                        {t("appointments:reject")}
+                        Reject
                       </Button>
                     </div>
                   </div>
@@ -190,12 +188,10 @@ export const DashboardAppointments = () => {
           <div className="space-y-2">
             <h4 className="font-medium text-sm">
               {scheduledAppointments && scheduledAppointments.length > 0
-                ? t("doctorDashboard:appointments.forDate", {
-                    date: selectedDate?.toLocaleDateString(),
-                  })
+                ? `Appointments for ${selectedDate?.toLocaleDateString()}`
                 : selectedDateAppointments &&
                     selectedDateAppointments.length === 0
-                  ? t("doctorDashboard:appointments.noAppointments")
+                  ? "No appointments for this date"
                   : null}
             </h4>
             <div className="space-y-2">
@@ -228,7 +224,7 @@ export const DashboardAppointments = () => {
       <CardFooter>
         <Button variant="outline" className="w-full" asChild>
           <Link to="/doctor/appointments">
-            {t("doctorDashboard:appointments.viewAll")}
+            View All Appointments
           </Link>
         </Button>
       </CardFooter>

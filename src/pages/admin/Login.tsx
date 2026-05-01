@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Shield } from "lucide-react";
-import { useTranslation } from "react-i18next";
 
 const AdminLogin = () => {
   const [password, setPassword] = useState("");
@@ -21,7 +20,6 @@ const AdminLogin = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation(["admin", "common"]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,8 +38,8 @@ const AdminLogin = () => {
         localStorage.setItem("adminAccess", "true");
 
         toast({
-          title: t("admin:login.success"),
-          description: t("admin:login.redirecting"),
+          title: "Admin access granted",
+          description: "Redirecting to admin dashboard.",
         });
 
         // Make sure we always redirect to admin dashboard regardless of previous location
@@ -49,16 +47,16 @@ const AdminLogin = () => {
       } else {
         toast({
           variant: "destructive",
-          title: t("admin:login.denied"),
-          description: t("admin:login.incorrect"),
+          title: "Access denied",
+          description: "Incorrect admin password",
         });
       }
     } catch (error) {
       console.error("Error in admin login:", error);
       toast({
         variant: "destructive",
-        title: t("admin:login.error"),
-        description: t("admin:login.unexpectedError"),
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -75,16 +73,16 @@ const AdminLogin = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold text-center">
-            {t("admin:login.title")}
+            Admin Access
           </CardTitle>
           <CardDescription className="text-center">
-            {t("admin:login.description")}
+            Enter the administrator password to continue
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password">{t("admin:login.password")}</Label>
+              <Label htmlFor="password">Admin Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -101,8 +99,8 @@ const AdminLogin = () => {
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading
-                ? t("admin:login.processing")
-                : t("admin:login.submit")}
+                ? "Processing..."
+                : "Access Admin Panel"}
             </Button>
           </CardFooter>
         </form>

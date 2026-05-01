@@ -17,7 +17,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   appointmentService,
   convertToDate,
-} from "@/services/appointmentService";import { moodTrackerService } from "@/services/moodTracker";
+} from "@/services/appointmentService";
+import { moodTrackerService } from "@/services/moodTracker";
 import { userService } from "@/services/userService";
 import { activityService } from "@/services/activityService";
 import { format } from "date-fns";
@@ -39,16 +40,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useTranslation } from "react-i18next";
 
 const Dashboard = () => {
-  const { t } = useTranslation([
-    "dashboard",
-    "common",
-    "appointments",
-    "resources",
-    "moodTracker",
-  ]);
   const { currentUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -102,14 +95,14 @@ const Dashboard = () => {
         console.error("Error fetching dashboard data:", error);
         toast({
           variant: "destructive",
-          title: t("common:error"),
-          description: t("common:errors.failedToLoad"),
+          title: "Error",
+          description: "Failed to load data",
         });
       }
     };
 
     fetchDashboardData();
-  }, [currentUser, toast, t]);
+  }, [currentUser, toast]);
 
   const formatAppointmentDate = (date) => {
     try {
@@ -149,12 +142,10 @@ const Dashboard = () => {
       <div className="flex flex-col space-y-4 md:space-y-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            {t("dashboard:title")}
+            Patient Dashboard
           </h1>
           <p className="text-muted-foreground">
-            {t("dashboard:welcome", {
-              name: currentUser?.displayName || t("common:patient"),
-            })}
+            Welcome, {currentUser?.displayName || "Patient"}
           </p>
         </div>
 
@@ -165,7 +156,7 @@ const Dashboard = () => {
               <Card className="col-span-1 sm:col-span-1">
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="flex text-sm md:text-base justify-between">
-                    <span>{t("dashboard:stats.moodTrend")}</span>
+                    <span>Mood Trend</span>
                     <TrendingUp className="h-4 w-4" />
                   </CardTitle>
                 </CardHeader>
@@ -198,7 +189,7 @@ const Dashboard = () => {
                     </>
                   ) : (
                     <div className="py-2 text-muted-foreground">
-                      {t("moodTracker.noData")}
+                      No mood data available
                     </div>
                   )}
                 </CardContent>
@@ -208,7 +199,7 @@ const Dashboard = () => {
               <Card className="col-span-1 sm:col-span-1">
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="flex text-sm md:text-base justify-between">
-                    <span>{t("dashboard:stats.nextSession")}</span>
+                    <span>Next Session</span>
                     <Calendar className="h-4 w-4" />
                   </CardTitle>
                 </CardHeader>
@@ -224,12 +215,12 @@ const Dashboard = () => {
                         {format(data.nextSession.date, "p")}
                       </p>
                       <div className="flex items-center justify-center mt-1 gap-1 text-xs text-muted-foreground">
-                        <span>{`${t("appointments.with")} ${data.nextSession.doctorName}`}</span>
+                        <span>{`with ${data.nextSession.doctorName}`}</span>
                       </div>
                     </>
                   ) : (
                     <div className="py-2 text-muted-foreground">
-                      {t("appointments.noUpcoming")}
+                      No upcoming appointments
                     </div>
                   )}
                 </CardContent>
@@ -239,7 +230,7 @@ const Dashboard = () => {
               <Card className="col-span-1 sm:col-span-1">
                 <CardHeader className="p-4 pb-2">
                   <CardTitle className="flex text-sm md:text-base justify-between">
-                    <span>{t("dashboard:stats.streak")}</span>
+                    <span>Check-in Streak</span>
                     <Star className="h-4 w-4" />
                   </CardTitle>
                 </CardHeader>
@@ -276,7 +267,7 @@ const Dashboard = () => {
               {/* Today's Mood Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("dashboard:cards.todayMood")}</CardTitle>
+                  <CardTitle>Today's Mood</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -306,17 +297,17 @@ const Dashboard = () => {
                           className="p-0 h-6"
                           onClick={() => navigate("/mood-tracker")}
                         >
-                          {t("moodTracker.history")}
+                          View History
                         </Button>
                       </div>
                     </div>
                   ) : (
                     <div className="text-center py-4">
                       <p className="text-muted-foreground mb-2">
-                        {t("moodTracker.today")}
+                        How are you feeling today?
                       </p>
                       <Button onClick={() => navigate("/mood-tracker")}>
-                        {t("moodTracker.track")}
+                        Track Mood
                       </Button>
                     </div>
                   )}
@@ -326,7 +317,7 @@ const Dashboard = () => {
               {/* Appointments Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("dashboard:cards.appointments")}</CardTitle>
+                  <CardTitle>Appointments</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -397,14 +388,14 @@ const Dashboard = () => {
                           navigate("/appointments");
                         }}
                       >
-                        {t("appointments.upcoming")}
+                        View All Appointments
                         <ArrowRight className="ml-1 h-4 w-4" />
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center py-4">
                       <p className="text-muted-foreground mb-2">
-                        {t("appointments.noUpcoming")}
+                        No upcoming appointments
                       </p>
                       <Button
                         onClick={() => {
@@ -412,7 +403,7 @@ const Dashboard = () => {
                           navigate("/appointments");
                         }}
                       >
-                        {t("appointments.schedule")}
+                        Schedule Appointment
                       </Button>
                     </div>
                   )}
@@ -422,7 +413,7 @@ const Dashboard = () => {
               {/* Care Team Card */}
               <Card>
                 <CardHeader>
-                  <CardTitle>{t("dashboard:cards.careTeam")}</CardTitle>
+                  <CardTitle>Your Care Team</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -469,7 +460,7 @@ const Dashboard = () => {
                             }}
                           >
                             <MessageSquare className="mr-1 h-3 w-3" />
-                            {t("chat.title")}
+                            Chat
                           </Button>
                         </div>
                       ))}
@@ -488,9 +479,9 @@ const Dashboard = () => {
             {/* Recent Activity Card */}
             <Card>
               <CardHeader className="p-4">
-                <CardTitle>{t("dashboard:activity.title")}</CardTitle>
+                <CardTitle>Recent Activity</CardTitle>
                 <CardDescription>
-                  {t("dashboard:activity.description")}
+                  Your latest actions and updates
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-4 pt-0">
@@ -537,7 +528,7 @@ const Dashboard = () => {
                   </div>
                 ) : (
                   <p className="text-center text-muted-foreground py-4">
-                    {t("dashboard:activity.empty")}
+                    No recent activity to show
                   </p>
                 )}
               </CardContent>
@@ -546,9 +537,9 @@ const Dashboard = () => {
             {/* AI Assistant Card */}
             <Card className="col-span-1">
               <CardHeader className="p-4">
-                <CardTitle>{t("dashboard:assistant.title")}</CardTitle>
+                <CardTitle>AI Assistant</CardTitle>
                 <CardDescription>
-                  {t("dashboard:assistant.description")}
+                  Get help with common questions and support
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
@@ -560,7 +551,7 @@ const Dashboard = () => {
               </CardContent>
               <CardFooter className="p-4 pt-2 flex justify-end">
                 <Button onClick={() => navigate("/chat")}>
-                  {t("dashboard:assistant.continue")}
+                  Continue conversation
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardFooter>

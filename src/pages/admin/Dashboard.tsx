@@ -17,7 +17,6 @@ import { Link } from 'react-router-dom';
 import { AnimatedSection } from '@/components/ui/animated-section';
 import { SupportTicket } from '@/services/adminService';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslation } from 'react-i18next';
 import { collection, getDocs, query, orderBy, limit, where, getCountFromServer } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -34,7 +33,6 @@ const AdminDashboard = () => {
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { t } = useTranslation(['admin', 'common']);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,8 +101,8 @@ const AdminDashboard = () => {
         console.error('Error fetching admin dashboard data:', error);
         toast({
           variant: 'destructive',
-          title: t('common:errors.generic'),
-          description: t('common:errors.dataFetch'),
+          title: "Error",
+          description: "Failed to fetch data",
         });
       } finally {
         setLoading(false);
@@ -112,7 +110,7 @@ const AdminDashboard = () => {
     };
     
     fetchData();
-  }, [toast, t]);
+  }, [toast]);
 
   const statsArray = [
     {
@@ -163,20 +161,20 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         <AnimatedSection className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('admin:dashboard.title')}</h1>
-            <p className="text-muted-foreground">{t('admin:dashboard.welcome')}</p>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back, Admin. Here's your platform overview.</p>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="outline" asChild>
               <Link to="/admin/settings">
                 <Settings className="mr-2 h-4 w-4" />
-                {t('admin:dashboard.settings')}
+                System Settings
               </Link>
             </Button>
             <Button asChild>
               <Link to="/admin/users">
                 <Users className="mr-2 h-4 w-4" />
-                {t('admin:dashboard.manageUsers')}
+                Manage Users
               </Link>
             </Button>
           </div>
@@ -204,8 +202,8 @@ const AdminDashboard = () => {
           <AnimatedSection delay={0.2}>
             <Card>
               <CardHeader>
-                <CardTitle>{t('admin:dashboard.cards.supportRequests')}</CardTitle>
-                <CardDescription>{t('admin:dashboard.cards.supportRequestsDesc')}</CardDescription>
+                <CardTitle>Support Requests</CardTitle>
+                <CardDescription>Recent user support tickets</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

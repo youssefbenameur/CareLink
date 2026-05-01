@@ -4,68 +4,63 @@ import { Shield, Brain, HeartPulse, Lightbulb, Users, Sparkles } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { useTranslation } from 'react-i18next';
-
 const About = () => {
-  const { t } = useTranslation(['about', 'common']);
-
   const features = [
     {
       icon: <Brain className="h-10 w-10 text-primary" />,
-      title: t('about:features.aiSupport.title'),
-      description: t('about:features.aiSupport.description')
+      title: "AI-Powered Support",
+      description: "24/7 AI assistant to help you navigate mental health resources"
     },
     {
       icon: <HeartPulse className="h-10 w-10 text-primary" />,
-      title: t('about:features.moodTracking.title'),
-      description: t('about:features.moodTracking.description')
+      title: "Mood Tracking",
+      description: "Monitor your emotional wellbeing and identify patterns over time"
     },
     {
       icon: <Users className="h-10 w-10 text-primary" />,
-      title: t('about:features.professionalCare.title'),
-      description: t('about:features.professionalCare.description')
+      title: "Professional Care",
+      description: "Connect with licensed therapists and mental health professionals"
     },
     {
       icon: <Lightbulb className="h-10 w-10 text-primary" />,
-      title: t('about:features.resources.title'),
-      description: t('about:features.resources.description')
+      title: "Curated Resources",
+      description: "Access a library of articles, exercises, and tools"
     },
     {
       icon: <Shield className="h-10 w-10 text-primary" />,
-      title: t('about:features.security.title'),
-      description: t('about:features.security.description')
+      title: "Privacy & Security",
+      description: "Your data is encrypted and protected at all times"
     },
     {
       icon: <Sparkles className="h-10 w-10 text-primary" />,
-      title: t('about:features.insights.title'),
-      description: t('about:features.insights.description')
+      title: "Personalized Insights",
+      description: "Get tailored recommendations based on your progress"
     }
   ];
 
   const team = [
     {
-      name: t('about:team.sarah.name'),
-      role: t('about:team.sarah.role'),
-      bio: t('about:team.sarah.bio')
+      name: "Dr. Sarah Johnson",
+      role: "Chief Medical Officer",
+      bio: "Licensed psychiatrist with 15 years of experience in mental health care."
     },
     {
-      name: t('about:team.michael.name'),
-      role: t('about:team.michael.role'),
-      bio: t('about:team.michael.bio')
+      name: "Michael Chen",
+      role: "CEO & Co-Founder",
+      bio: "Tech entrepreneur passionate about making mental healthcare accessible to everyone."
     },
     {
-      name: t('about:team.elena.name'),
-      role: t('about:team.elena.role'),
-      bio: t('about:team.elena.bio')
+      name: "Elena Rodriguez",
+      role: "Head of Patient Experience",
+      bio: "Dedicated to ensuring every user has a positive and supportive experience on CareLink."
     }
   ];
 
-  // Define philosophy values statically to avoid i18n type errors
   const philosophyValues = [
-    t('about:philosophy.values.1'),
-    t('about:philosophy.values.2'),
-    t('about:philosophy.values.3'),
-    t('about:philosophy.values.4')
+    "Accessibility: Mental health support should be available to everyone",
+    "Privacy: Your personal information is always protected",
+    "Evidence-based: All our approaches are grounded in clinical research",
+    "Compassion: We treat every user with empathy and respect"
   ];
 
   return (
@@ -77,20 +72,20 @@ const About = () => {
         <section className="py-20 bg-slate-50">
           <div className="container max-w-5xl">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold">{t('about:title')}</h1>
+              <h1 className="text-4xl font-bold">About CareLink</h1>
               <p className="text-xl text-muted-foreground mt-4 max-w-3xl mx-auto">
-                {t('about:subtitle')}
+                Our mission is to make mental health support accessible, affordable, and effective for everyone.
               </p>
             </div>
             
             <div className="bg-white rounded-lg shadow-sm p-8 md:p-12">
               <div className="prose prose-slate max-w-none">
-                <p className="lead">{t('about:intro')}</p>
-                <p>{t('about:story')}</p>
-                <p>{t('about:impact')}</p>
+                <p className="lead">CareLink was founded with a simple but powerful belief: everyone deserves access to quality mental health care.</p>
+                <p>Our platform connects patients with licensed therapists, provides mood tracking tools, and offers a library of mental health resources — all in one place.</p>
+                <p>Since our launch, we've helped thousands of people take meaningful steps toward better mental health.</p>
                 
-                <h2>{t('about:philosophy.title')}</h2>
-                <p>{t('about:philosophy.subtitle')}</p>
+                <h2>Our Philosophy</h2>
+                <p>Everything we do is guided by these core principles:</p>
                 
                 <ul>
                   {philosophyValues.map((value, index) => (
@@ -106,9 +101,9 @@ const About = () => {
         <section className="py-20">
           <div className="container">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold">{t('about:howItWorks.title')}</h2>
+              <h2 className="text-3xl font-bold">What We Offer</h2>
               <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                {t('about:howItWorks.subtitle')}
+                A comprehensive suite of tools and services designed to support your mental health journey.
               </p>
             </div>
             
@@ -130,9 +125,9 @@ const About = () => {
         <section className="py-20 bg-slate-50">
           <div className="container">
             <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold">{t('about:team.title')}</h2>
+              <h2 className="text-3xl font-bold">Meet Our Team</h2>
               <p className="text-lg text-muted-foreground mt-3 max-w-2xl mx-auto">
-                {t('about:team.subtitle')}
+                The dedicated professionals behind CareLink.
               </p>
             </div>
             
@@ -156,16 +151,16 @@ const About = () => {
         {/* CTA Section */}
         <section className="py-20 bg-primary text-white">
           <div className="container text-center max-w-3xl">
-            <h2 className="text-3xl font-bold">{t('about:cta.title')}</h2>
+            <h2 className="text-3xl font-bold">Ready to Start Your Journey?</h2>
             <p className="text-xl mt-4 opacity-90">
-              {t('about:cta.subtitle')}
+              Join thousands of people who have found support and growth through CareLink.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90">
-                <Link to="/register">{t('about:cta.createAccount')}</Link>
+                <Link to="/register">Create Free Account</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/20">
-                <Link to="/contact">{t('about:cta.contactUs')}</Link>
+                <Link to="/contact">Contact Us</Link>
               </Button>
             </div>
           </div>

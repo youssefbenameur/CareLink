@@ -8,6 +8,8 @@ import {
   onSnapshot,
   deleteDoc,
   serverTimestamp,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -85,14 +87,13 @@ export function listenForIncomingCall(
   onCall: (callId: string, call: CallDoc) => void
 ): () => void {
   // We poll the videoCalls collection for docs where calleeId == userId and status == "calling"
-  const { query, where, onSnapshot: snap } = require("firebase/firestore");
   const q = query(
     collection(db, "videoCalls"),
     where("calleeId", "==", userId),
     where("status", "==", "calling")
   );
-  return snap(q, (snapshot: any) => {
-    snapshot.docChanges().forEach((change: any) => {
+  return onSnapshot(q, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
       if (change.type === "added") {
         onCall(change.doc.id, change.doc.data() as CallDoc);
       }

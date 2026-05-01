@@ -150,5 +150,34 @@ export const medicalRecordsService = {
       console.error('Error getting doctor records:', error);
       throw error;
     }
+  },
+
+  // Get medical records for a patient that were added by a specific doctor
+  async getPatientRecordsByDoctor(patientId: string, doctorId: string) {
+    try {
+      console.log(`Getting records for patient ${patientId} added by doctor ${doctorId}`);
+      const q = query(
+        collection(db, 'medicalRecords'),
+        where('patientId', '==', patientId),
+        where('doctorId', '==', doctorId)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const records: MedicalRecord[] = [];
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        records.push({
+          id: doc.id,
+          ...data,
+          date: data.date instanceof Timestamp ? data.date.toDate() : data.date
+        } as MedicalRecord);
+      });
+      
+      console.log(`Found ${records.length} records for patient ${patientId} by doctor ${doctorId}`);
+      return records;
+    } catch (error) {
+      console.error('Error getting patient records by doctor:', error);
+      throw error;
+    }
   }
 };

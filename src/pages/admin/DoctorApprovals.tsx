@@ -14,43 +14,40 @@ import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, XCircle, User, Clock, Mail, UploadCloud, Search, RefreshCw } from 'lucide-react';
 import ImageLightbox from '@/components/ui/ImageLightbox';
 
-// Task 9.1 — updated interface
 interface DoctorRecord {
   id: string;
   name: string;
   email: string;
   doctorVerificationStatus: 'pending' | 'approved' | 'rejected' | 'resubmit';
   credentialDocuments?: {
-    doctorLicense?: string;
-    diploma?: string;
-    certification?: string;
+    nationalId?: string;
+    medicalDiploma?: string;
+    cnomCard?: string;
   };
   createdAt?: any;
 }
 
-// Task 9.4 — labeled document types
 const DOCUMENT_TYPES = [
-  { key: 'doctorLicense', label: 'Medical License' },
-  { key: 'diploma',       label: 'Diploma / Degree' },
-  { key: 'certification', label: 'Additional Certification' },
+  { key: 'nationalId',    label: 'National ID' },
+  { key: 'medicalDiploma', label: 'Medical Diploma' },
+  { key: 'cnomCard',      label: 'Professional Card CNOM' },
 ] as const;
 
 const buildEmailTemplate = (
   doctorName: string,
   status: 'approved' | 'rejected' | 'resubmit',
-  loginUrl: string,
   resubmitNote?: string
 ) => {
   if (status === 'approved') {
     return {
       subject: 'Your CareLink application has been approved',
-      body: `Hi ${doctorName},\n\nCongratulations! Your doctor account on CareLink has been approved.\n\nYou can now log in and start providing care:\n${loginUrl}\n\nWelcome to the CareLink team!`,
+      body: `Hi ${doctorName},\n\nCongratulations! Your doctor account on CareLink has been approved.\n\nYou can now log in to your CareLink account and start providing care.\n\nWelcome to the CareLink team!`,
     };
   }
   if (status === 'resubmit') {
     return {
       subject: 'Action required: Please re-upload your documents on CareLink',
-      body: `Hi ${doctorName},\n\nWe reviewed your application and need you to re-upload your credential documents.\n\n${resubmitNote ? `Note from the reviewer:\n${resubmitNote}\n\n` : ''}Please log in and follow the instructions to resubmit:\n${loginUrl}\n\nThank you for your patience.`,
+      body: `Hi ${doctorName},\n\nWe reviewed your application and need you to re-upload your credential documents.\n\n${resubmitNote ? `Note from the reviewer:\n${resubmitNote}\n\n` : ''}Please log in to your CareLink account and follow the instructions to resubmit your documents.\n\nThank you for your patience.`,
     };
   }
   return {
@@ -148,8 +145,7 @@ const DoctorApprovals = () => {
       // Open email compose dialog pre-filled for this doctor
       const doctor = doctors.find(d => d.id === doctorId);
       if (doctor) {
-        const loginUrl = `${window.location.origin}/login`;
-        const { subject, body } = buildEmailTemplate(doctor.name, status, loginUrl, resubmitNote);
+        const { subject, body } = buildEmailTemplate(doctor.name, status, resubmitNote);
         setEmailDialog({ open: true, to: doctor.email, subject, body });
       }
 

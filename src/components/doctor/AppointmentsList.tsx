@@ -4,7 +4,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
 import { Appointment, convertToDate } from '@/services/appointmentService';
 import { format } from 'date-fns';
 import { Clock, MessageSquare, MapPin, Video } from 'lucide-react';
@@ -24,8 +23,6 @@ export const AppointmentsList = ({
   onStatusUpdate,
   selectedDate
 }: AppointmentsListProps) => {
-  const { t } = useTranslation(['appointments', 'common']);
-  
   if (loading) {
     return <AppointmentSkeletons />;
   }
@@ -33,7 +30,7 @@ export const AppointmentsList = ({
   if (filteredAppointments.length === 0) {
     return (
       <div className="text-center py-10 text-muted-foreground">
-        {t('appointments:noAppointmentsForDate')}
+        No appointments for this date
       </div>
     );
   }
@@ -134,8 +131,6 @@ interface AppointmentActionsProps {
 }
 
 const AppointmentActions = ({ appointmentId, status, onStatusUpdate }: AppointmentActionsProps) => {
-  const { t } = useTranslation(['appointments', 'common']);
-  
   if (status === 'pending') {
     return (
       <div className="flex space-x-2">
@@ -144,7 +139,7 @@ const AppointmentActions = ({ appointmentId, status, onStatusUpdate }: Appointme
           size="sm"
           onClick={() => onStatusUpdate(appointmentId, 'scheduled')}
         >
-          {t('appointments:approve')}
+          Approve
         </Button>
         <Button 
           variant="outline" 
@@ -152,7 +147,7 @@ const AppointmentActions = ({ appointmentId, status, onStatusUpdate }: Appointme
           className="text-destructive border-destructive"
           onClick={() => onStatusUpdate(appointmentId, 'cancelled')}
         >
-          {t('appointments:reject')}
+          Reject
         </Button>
       </div>
     );
@@ -166,7 +161,7 @@ const AppointmentActions = ({ appointmentId, status, onStatusUpdate }: Appointme
           size="sm"
           onClick={() => onStatusUpdate(appointmentId, 'completed')}
         >
-          {t('appointments:complete')}
+          Complete
         </Button>
         <Button 
           variant="outline" 
@@ -174,7 +169,7 @@ const AppointmentActions = ({ appointmentId, status, onStatusUpdate }: Appointme
           className="text-destructive border-destructive"
           onClick={() => onStatusUpdate(appointmentId, 'cancelled')}
         >
-          {t('appointments:cancel')}
+          Cancel
         </Button>
       </div>
     );

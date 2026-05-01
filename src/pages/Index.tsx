@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,20 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Users, Brain, Heart, Shield, Leaf } from "lucide-react";
 
-// Define interfaces for our translation objects
-interface Testimonial {
-  text: string;
-  author: string;
-}
-
-interface PricingPlan {
-  title: string;
-  price: string;
-  features: string[];
-}
-
 const Index = () => {
-  const { t } = useTranslation(["landing", "auth"]);
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
@@ -31,34 +17,40 @@ const Index = () => {
   const features = [
     {
       icon: <Users className="h-10 w-10 text-primary" />,
-      title: t("landing:features.expertTherapists.title"),
-      description: t("landing:features.expertTherapists.description"),
+      title: "Expert Therapists",
+      description: "Connect with licensed professionals.",
     },
     {
       icon: <Brain className="h-10 w-10 text-primary" />,
-      title: t("landing:features.personalizedSupport.title"),
-      description: t("landing:features.personalizedSupport.description"),
+      title: "Personalized Support",
+      description: "Tailored resources for your needs.",
     },
     {
       icon: <Heart className="h-10 w-10 text-primary" />,
-      title: t("landing:features.moodTracking.title"),
-      description: t("landing:features.moodTracking.description"),
+      title: "Mood Tracking",
+      description: "Monitor your emotional well-being.",
     },
     {
       icon: <Shield className="h-10 w-10 text-primary" />,
-      title: t("landing:features.security.title"),
-      description: t("landing:features.security.description"),
+      title: "Safe & Secure",
+      description: "Your data is always protected.",
     },
   ];
 
-  const testimonials = t("landing:testimonials.items", {
-    returnObjects: true,
-  }) as Testimonial[];
-  const pricingPlans = t("landing:pricing.plans", { returnObjects: true }) as {
-    basic: PricingPlan;
-    standard: PricingPlan;
-    premium: PricingPlan;
-  };
+  const testimonials = [
+    {
+      text: "Booking appointments with my doctor has never been easier. I no longer have to wait on hold or travel across the city just for a consultation.",
+      author: "Fatma Ben Ali",
+    },
+    {
+      text: "The mood tracking feature helped me notice patterns I never saw before. My doctor uses it during our sessions and it makes a real difference.",
+      author: "Youssef Trabelsi",
+    },
+    {
+      text: "Being able to chat with my therapist between sessions gives me so much peace of mind. CareLink feels like having support available whenever I need it.",
+      author: "Mariem Chaabane",
+    },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -79,7 +71,7 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  {t("landing:heroTitle")}
+                  Mental Health Support Made Simple
                 </motion.h1>
 
                 <motion.p
@@ -88,7 +80,7 @@ const Index = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  {t("landing:heroSubtitle")}
+                  Connect with licensed therapists, track your mood, and access personalized resources all in one place.
                 </motion.p>
 
                 <motion.div
@@ -102,7 +94,7 @@ const Index = () => {
                     onClick={handleGetStarted}
                     className="text-lg"
                   >
-                    {t("landing:getStarted")}
+                    Get Started
                   </Button>
                   <Button
                     size="lg"
@@ -110,7 +102,7 @@ const Index = () => {
                     asChild
                     className="text-lg"
                   >
-                    <Link to="/login">{t("auth:login")}</Link>
+                    <Link to="/login">Log In</Link>
                   </Button>
                 </motion.div>
 
@@ -133,7 +125,7 @@ const Index = () => {
               >
                 <div className="absolute -inset-4 rounded-xl bg-gradient-to-r from-primary/20 to-secondary/20 blur-xl -z-10"></div>
                 <img
-                  src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1800&q=80"
+                  src="/landingpage.jpg"
                   alt="Mental health support"
                   className="rounded-xl shadow-2xl w-full object-cover h-[400px] md:h-[500px]"
                 />
@@ -189,8 +181,7 @@ const Index = () => {
               </Badge>
               <h2 className="text-3xl font-bold mb-4">How CareLink Works</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                A simple and effective approach to mental health care, designed
-                with you in mind.
+                Everything you need to manage your health in one place — from finding a doctor to tracking your wellbeing.
               </p>
             </div>
 
@@ -208,8 +199,7 @@ const Index = () => {
                   Create Your Account
                 </h3>
                 <p className="text-muted-foreground">
-                  Sign up in minutes and complete a brief assessment to help us
-                  understand your needs.
+                  Sign up in minutes as a patient or healthcare provider and get instant access to the platform.
                 </p>
               </motion.div>
 
@@ -223,11 +213,10 @@ const Index = () => {
                   2
                 </div>
                 <h3 className="text-xl font-semibold mb-2">
-                  Match With a Therapist
+                  Find & Book a Doctor
                 </h3>
                 <p className="text-muted-foreground">
-                  We'll connect you with a licensed therapist who specializes in
-                  your area of concern.
+                  Browse verified doctors by specialty, location, and availability. Book appointments in just a few clicks.
                 </p>
               </motion.div>
 
@@ -241,11 +230,10 @@ const Index = () => {
                   3
                 </div>
                 <h3 className="text-xl font-semibold mb-2">
-                  Start Your Journey
+                  Manage Your Health
                 </h3>
                 <p className="text-muted-foreground">
-                  Schedule sessions, track your progress, and access resources
-                  all in one place.
+                  Chat with your doctor, track your mood, view medical records, and manage all your appointments in one place.
                 </p>
               </motion.div>
             </div>
@@ -258,19 +246,16 @@ const Index = () => {
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="flex-1">
                 <img
-                  src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80"
-                  alt="Therapy session"
+                  src="/landingpage2.avif"
+                  alt="Doctor consultation"
                   className="rounded-lg shadow-xl w-full object-cover h-[400px] md:h-[500px]"
                 />
               </div>
 
               <div className="flex-1 space-y-6">
-                <Badge variant="outline" className="mb-2">
-                  {t("landing:testimonials.title")}
-                </Badge>
-                <h2 className="text-3xl font-bold">What Our Clients Say</h2>
+                <h2 className="text-3xl font-bold">What Our Users Say</h2>
                 <p className="text-muted-foreground">
-                  {t("landing:testimonials.subtitle")}
+                  Real stories from people who have found support and growth through our platform.
                 </p>
 
                 <div className="space-y-6">
@@ -316,7 +301,7 @@ const Index = () => {
                   onClick={handleGetStarted}
                   className="text-lg"
                 >
-                  {t("landing:getStarted")}
+                  Get Started
                 </Button>
                 <Button size="lg" variant="outline" asChild className="text-lg">
                   <Link to="/contact">Contact Us</Link>

@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from 'date-fns';
 import { MedicalRecord } from '@/services/medicalRecordsService';
 import { FileText } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useIsMobile } from "@/hooks/use-mobile";
 import ImageLightbox from '@/components/ui/ImageLightbox';
 import { convertToDate } from '@/services/appointmentService';
@@ -14,7 +13,6 @@ interface PatientMedicalRecordsProps {
 }
 
 export const PatientMedicalRecords = ({ records }: PatientMedicalRecordsProps) => {
-  const { t } = useTranslation(['medicalRecords', 'common']);
   const isMobile = useIsMobile();
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
@@ -26,11 +24,11 @@ export const PatientMedicalRecords = ({ records }: PatientMedicalRecordsProps) =
     <>
       <Card>
         <CardHeader>
-          <CardTitle>{t('medicalRecords:title')}</CardTitle>
+          <CardTitle>Medical Records</CardTitle>
         </CardHeader>
         <CardContent>
           {records.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">{t('medicalRecords:noRecords')}</p>
+            <p className="text-muted-foreground text-center py-4">No records found</p>
           ) : (
             <div className="space-y-4">
               {records.map((record, index) => (
@@ -48,7 +46,7 @@ export const PatientMedicalRecords = ({ records }: PatientMedicalRecordsProps) =
                   </div>
                   <p className="text-sm">{record.description}</p>
                   <div className="text-sm text-muted-foreground">
-                    {t('medicalRecords:addedBy', { doctor: `Dr. ${record.doctorName}` })}
+                    Added by Dr. {record.doctorName}
                   </div>
                   {record.attachments && record.attachments.length > 0 && (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 pt-1">

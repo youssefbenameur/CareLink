@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Moon, Activity, Plus, TrendingUp, X, Frown, Meh, Smile, SmilePlus } from 'lucide-react';
+import { Moon, Activity, Plus, TrendingUp, X, Frown, Meh, Smile, SmilePlus, Edit2, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { moodTrackerService, MoodEntry } from '@/services/moodTracker';
@@ -35,6 +35,7 @@ const MoodTracker = () => {
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [addingEntry, setAddingEntry] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [hasLoggedToday, setHasLoggedToday] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useAuth();
@@ -62,18 +63,49 @@ const MoodTracker = () => {
 
   const handleAddEntry = async () => {
     if (!currentUser) return;
-    if (hasLoggedToday) {
+    if (hasLoggedToday && !editingId) {
       toast({ variant: 'destructive', title: 'Already logged today', description: 'Come back tomorrow.' });
       return;
     }
     try {
-      await moodTrackerService.addMoodEntry({ userId: currentUser.uid, ...newEntry });
-      toast({ title: 'Mood logged', description: 'Your entry has been saved.' });
+      if (editingId) {
+        // Update existing entry
+        await moodTrackerService.updateMoodEntry(editingId, { ...newEntry });
+        toast({ title: 'Mood updated', description: 'Your entry has been saved.' });
+        setEditingId(null);
+      } else {
+        // Add new entry
+        await moodTrackerService.addMoodEntry({ userId: currentUser.uid, ...newEntry });
+        toast({ title: 'Mood logged', description: 'Your entry has been saved.' });
+      }
       setAddingEntry(false);
       setNewEntry({ mood: 3, notes: '', sleepHours: 7, anxietyLevel: 2, activities: [] });
       fetchMoodEntries();
     } catch (e: any) {
       toast({ variant: 'destructive', title: 'Failed to save', description: e.message });
+    }
+  };
+
+  const handleEditEntry = (entry: MoodEntry) => {
+    setNewEntry({
+      mood: entry.mood,
+      notes: entry.notes || '',
+      sleepHours: entry.sleepHours || 7,
+      anxietyLevel: entry.anxietyLevel || 2,
+      activities: entry.activities || [],
+    });
+    setEditingId(entry.id || null);
+    setAddingEntry(true);
+  };
+
+  const handleDeleteEntry = async (entryId: string) => {
+    if (!window.confirm('Are you sure you want to delete this entry?')) return;
+    try {
+      await moodTrackerService.deleteMoodEntry(entryId);
+      toast({ title: 'Deleted', description: 'Entry has been removed.' });
+      fetchMoodEntries();
+    } catch (e: any) {
+      toast({ variant: 'destructive', title: 'Failed to delete', description: e.message });
     }
   };
 
@@ -96,10 +128,10 @@ const MoodTracker = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>How are you feeling?</CardTitle>
-              <CardDescription>Log your emotional state for today</CardDescription>
+              <CardTitle>{editingId ? 'Edit mood entry' : 'How are you feeling?'}</CardTitle>
+              <CardDescription>{editingId ? 'Update your emotional state' : 'Log your emotional state for today'}</CardDescription>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setAddingEntry(false)}><X className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => { setAddingEntry(false); setEditingId(null); }}><X className="h-4 w-4" /></Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -201,8 +233,8 @@ const MoodTracker = () => {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <Button variant="outline" className="flex-1" onClick={() => setAddingEntry(false)}>Cancel</Button>
-            <Button className="flex-1" onClick={handleAddEntry}>Save entry</Button>
+            <Button variant="outline" className="flex-1" onClick={() => { setAddingEntry(false); setEditingId(null); }}>Cancel</Button>
+            <Button className="flex-1" onClick={handleAddEntry}>{editingId ? 'Save changes' : 'Save entry'}</Button>
           </div>
         </CardContent>
       </Card>
@@ -217,7 +249,7 @@ const MoodTracker = () => {
             <CardTitle>Mood Tracker</CardTitle>
             <CardDescription>Track your daily emotional wellbeing</CardDescription>
           </div>
-          <Button onClick={() => setAddingEntry(true)} disabled={hasLoggedToday} size="sm">
+          <Button onClick={() => setAddingEntry(true)} disabled={hasLoggedToday && !editingId} size="sm">
             <Plus className="h-4 w-4 mr-1.5" />
             {hasLoggedToday ? 'Logged today' : 'Log mood'}
           </Button>
@@ -290,16 +322,24 @@ const MoodTracker = () => {
                 const cfg = moodConfig(entry.mood);
                 const d = convertToDate(entry.createdAt);
                 return (
-                  <div key={entry.id ?? i} className="flex items-start gap-3 p-3 rounded-xl border">
+                  <div key={entry.id ?? i} className="flex items-start gap-3 p-3 rounded-xl border group hover:bg-muted/50 transition-colors">
                     <div className={cn('h-9 w-9 rounded-full flex items-center justify-center shrink-0 bg-muted', cfg.color.replace('bg-', 'bg-') + '/10')}>
                       <cfg.Icon className={cn('h-5 w-5', cfg.iconColor)} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <span className={cn('text-sm font-semibold', cfg.text)}>{cfg.label}</span>
-                        <span className="text-xs text-muted-foreground">{format(d, 'MMM d, yyyy')}</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground">{format(d, 'MMM d, yyyy')}</span>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEditEntry(entry)}>
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={() => handleDeleteEntry(entry.id!)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
                       </div>
-                      {entry.notes && <p className="text-xs text-muted-foreground mt-0.5 truncate">{entry.notes}</p>}
+                      {entry.notes && <p className="text-xs text-muted-foreground mt-0.5">{entry.notes}</p>}
                       <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                         {entry.sleepHours !== undefined && <span><Moon className="h-3 w-3 inline mr-0.5" />{entry.sleepHours}h sleep</span>}
                         {entry.anxietyLevel !== undefined && <span><Activity className="h-3 w-3 inline mr-0.5" />Anxiety {entry.anxietyLevel}/5</span>}

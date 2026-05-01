@@ -14,7 +14,6 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { useToast } from '@/hooks/use-toast';
 import { AnimatedSection } from '@/components/ui/animated-section';
 import { adminService, User } from '@/services/adminService';
-import { useTranslation } from 'react-i18next';
 import { convertToDate } from '@/services/appointmentService';
 
 // Transform users from Firestore to expected format
@@ -41,7 +40,6 @@ const ManageUsers = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { t } = useTranslation(['admin', 'common']);
   
   // Form refs for editing and creating users
   const editFormRef = useRef<HTMLFormElement>(null);
@@ -63,8 +61,8 @@ const ManageUsers = () => {
         console.error("Error fetching users:", error);
         toast({
           variant: "destructive",
-          title: t('common:error'),
-          description: t('common:errors.dataFetch'),
+          title: "Error",
+          description: "Failed to fetch data",
         });
       } finally {
         setLoading(false);
@@ -72,7 +70,7 @@ const ManageUsers = () => {
     };
 
     fetchUsers();
-  }, [toast, t]);
+  }, [toast]);
 
   useEffect(() => {
     let result = users;
@@ -118,15 +116,15 @@ const ManageUsers = () => {
       ));
       
       toast({
-        title: t('common:success'),
-        description: t('common:userUpdated', { name: `${updatedUser.firstName} ${updatedUser.lastName}` }),
+        title: "Success",
+        description: `User ${updatedUser.firstName} ${updatedUser.lastName} updated`,
       });
     } catch (error) {
       console.error("Error updating user:", error);
       toast({
         variant: "destructive",
-        title: t('common:error'),
-        description: t('common:errors.updateFailed'),
+        title: "Error",
+        description: "Update failed",
       });
     }
   };
@@ -139,15 +137,15 @@ const ManageUsers = () => {
       setUsers(users.filter(user => user.id !== userId));
       
       toast({
-        title: t('common:success'),
-        description: t('admin:manageUsers.deleteUserSuccess'),
+        title: "Success",
+        description: "User deleted successfully",
       });
     } catch (error) {
       console.error("Error deleting user:", error);
       toast({
         variant: "destructive",
-        title: t('common:error'),
-        description: t('common:errors.deleteFailed'),
+        title: "Error",
+        description: "Delete failed",
       });
     }
   };
@@ -182,8 +180,8 @@ const ManageUsers = () => {
       setUsers([...users, createdUser]);
       
       toast({
-        title: t('common:success'),
-        description: t('common:userCreated', { name: `${firstName} ${lastName}` }),
+        title: "Success",
+        description: `User ${firstName} ${lastName} created`,
       });
       
       // Close dialog
@@ -192,8 +190,8 @@ const ManageUsers = () => {
       console.error("Error creating user:", error);
       toast({
         variant: "destructive",
-        title: t('common:error'),
-        description: t('common:errors.createFailed'),
+        title: "Error",
+        description: "Create failed",
       });
     }
   };
@@ -236,11 +234,11 @@ const ManageUsers = () => {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return <Badge className="bg-purple-600">{t('admin:manageUsers.filters.admin')}</Badge>;
+        return <Badge className="bg-purple-600">Admin</Badge>;
       case 'doctor':
-        return <Badge className="bg-blue-600">{t('admin:manageUsers.filters.doctor')}</Badge>;
+        return <Badge className="bg-blue-600">Doctor</Badge>;
       case 'patient':
-        return <Badge className="bg-green-600">{t('admin:manageUsers.filters.patient')}</Badge>;
+        return <Badge className="bg-green-600">Patient</Badge>;
       default:
         return <Badge variant="outline">{role}</Badge>;
     }
@@ -256,16 +254,16 @@ const ManageUsers = () => {
         description: `${user.firstName} ${user.lastName} is now ${newStatus}.`,
       });
     } catch (error) {
-      toast({ variant: 'destructive', title: t('common:error'), description: t('common:errors.updateFailed') });
+      toast({ variant: 'destructive', title: "Error", description: "Update failed" });
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-green-600">{t('admin:manageUsers.filters.active')}</Badge>;
+        return <Badge className="bg-green-600">Active</Badge>;
       case 'suspended':
-        return <Badge variant="destructive">{t('admin:manageUsers.filters.suspended')}</Badge>;
+        return <Badge variant="destructive">Suspended</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -286,9 +284,9 @@ const ManageUsers = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t('admin:manageUsers.title')}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
             <p className="text-muted-foreground">
-              {t('admin:manageUsers.subtitle')}
+              Manage user accounts, roles and permissions
             </p>
           </div>
           
@@ -296,68 +294,68 @@ const ManageUsers = () => {
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
                 <UserIcon className="h-4 w-4" />
-                {t('admin:manageUsers.addUser')}
+                Add New User
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t('admin:manageUsers.addUser')}</DialogTitle>
+                <DialogTitle>Add New User</DialogTitle>
                 <DialogDescription>
-                  {t('admin:manageUsers.addUserDesc')}
+                  Create a new user account with appropriate role and permissions
                 </DialogDescription>
               </DialogHeader>
               
               <form ref={createFormRef} onSubmit={handleCreateUser} className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">{t('admin:manageUsers.firstName')}</Label>
-                    <Input id="firstName" name="firstName" required placeholder={t('admin:manageUsers.firstName')} />
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input id="firstName" name="firstName" required placeholder="First Name" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">{t('admin:manageUsers.lastName')}</Label>
-                    <Input id="lastName" name="lastName" required placeholder={t('admin:manageUsers.lastName')} />
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input id="lastName" name="lastName" required placeholder="Last Name" />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t('admin:manageUsers.email')}</Label>
-                  <Input id="email" name="email" type="email" required placeholder={t('admin:manageUsers.email')} />
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" type="email" required placeholder="Email" />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="role">{t('admin:manageUsers.role')}</Label>
+                  <Label htmlFor="role">Role</Label>
                   <Select name="role" defaultValue="patient">
                     <SelectTrigger>
-                      <SelectValue placeholder={t('admin:manageUsers.role')} />
+                      <SelectValue placeholder="Role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">{t('admin:manageUsers.filters.admin')}</SelectItem>
-                      <SelectItem value="doctor">{t('admin:manageUsers.filters.doctor')}</SelectItem>
-                      <SelectItem value="patient">{t('admin:manageUsers.filters.patient')}</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="doctor">Doctor</SelectItem>
+                      <SelectItem value="patient">Patient</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="status">{t('admin:manageUsers.status')}</Label>
+                  <Label htmlFor="status">Status</Label>
                   <Select name="status" defaultValue="active">
                     <SelectTrigger>
-                      <SelectValue placeholder={t('admin:manageUsers.status')} />
+                      <SelectValue placeholder="Status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="active">{t('admin:manageUsers.filters.active')}</SelectItem>
-                      <SelectItem value="suspended">{t('admin:manageUsers.filters.suspended')}</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password">{t('admin:manageUsers.password')}</Label>
-                  <Input id="password" name="password" type="password" placeholder={t('admin:manageUsers.password')} />
+                  <Label htmlFor="password">Initial Password</Label>
+                  <Input id="password" name="password" type="password" placeholder="Initial Password" />
                 </div>
                 
                 <DialogFooter>
-                  <Button type="submit">{t('admin:manageUsers.addUser')}</Button>
+                  <Button type="submit">Add New User</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -366,9 +364,9 @@ const ManageUsers = () => {
         
         <Card className="overflow-hidden">
           <CardHeader className="pb-0">
-            <CardTitle>{t('admin:manageUsers.userAccounts')}</CardTitle>
+            <CardTitle>User Accounts</CardTitle>
             <CardDescription>
-              {t('admin:manageUsers.userAccountsDesc')}
+              Manage all registered users in the system
             </CardDescription>
           </CardHeader>
           
@@ -376,7 +374,7 @@ const ManageUsers = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder={t('admin:manageUsers.search')}
+                placeholder="Search users..."
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -385,30 +383,30 @@ const ManageUsers = () => {
             
             <div className="flex flex-wrap gap-4">
               <div className="w-40">
-                <Label htmlFor="roleFilter" className="sr-only">{t('admin:manageUsers.filters.allRoles')}</Label>
+                <Label htmlFor="roleFilter" className="sr-only">All Roles</Label>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
                   <SelectTrigger id="roleFilter">
-                    <SelectValue placeholder={t('admin:manageUsers.filters.allRoles')} />
+                    <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('admin:manageUsers.filters.allRoles')}</SelectItem>
-                    <SelectItem value="admin">{t('admin:manageUsers.filters.admin')}</SelectItem>
-                    <SelectItem value="doctor">{t('admin:manageUsers.filters.doctor')}</SelectItem>
-                    <SelectItem value="patient">{t('admin:manageUsers.filters.patient')}</SelectItem>
+                    <SelectItem value="all">All Roles</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="doctor">Doctor</SelectItem>
+                    <SelectItem value="patient">Patient</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="w-40">
-                <Label htmlFor="statusFilter" className="sr-only">{t('admin:manageUsers.filters.allStatuses')}</Label>
+                <Label htmlFor="statusFilter" className="sr-only">All Statuses</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger id="statusFilter">
-                    <SelectValue placeholder={t('admin:manageUsers.filters.allStatuses')} />
+                    <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t('admin:manageUsers.filters.allStatuses')}</SelectItem>
-                    <SelectItem value="active">{t('admin:manageUsers.filters.active')}</SelectItem>
-                    <SelectItem value="suspended">{t('admin:manageUsers.filters.suspended')}</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -421,7 +419,7 @@ const ManageUsers = () => {
                   setRoleFilter('all');
                   setStatusFilter('all');
                 }}
-                title={t('common:reset')}
+                title="Reset"
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
@@ -434,13 +432,13 @@ const ManageUsers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t('admin:manageUsers.table.name')}</TableHead>
-                      <TableHead>{t('admin:manageUsers.table.email')}</TableHead>
-                      <TableHead>{t('admin:manageUsers.table.role')}</TableHead>
-                      <TableHead>{t('admin:manageUsers.table.status')}</TableHead>
-                      <TableHead>{t('admin:manageUsers.table.joined')}</TableHead>
-                      <TableHead>{t('admin:manageUsers.table.lastLogin')}</TableHead>
-                      <TableHead className="text-right">{t('admin:manageUsers.table.actions')}</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead>Last Login</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -480,9 +478,9 @@ const ManageUsers = () => {
                               </SheetTrigger>
                               <SheetContent>
                                 <SheetHeader>
-                                  <SheetTitle>{t('admin:manageUsers.editUser')}</SheetTitle>
+                                  <SheetTitle>Edit User</SheetTitle>
                                   <SheetDescription>
-                                    {t('admin:manageUsers.editUserDesc')}
+                                    Update user information and permissions
                                   </SheetDescription>
                                 </SheetHeader>
                                 
@@ -490,7 +488,7 @@ const ManageUsers = () => {
                                   <form ref={editFormRef} onSubmit={handleEditSubmit} className="py-6 space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                       <div className="space-y-2">
-                                        <Label htmlFor="firstName">{t('admin:manageUsers.firstName')}</Label>
+                                        <Label htmlFor="firstName">First Name</Label>
                                         <Input 
                                           id="firstName"
                                           name="firstName"
@@ -499,7 +497,7 @@ const ManageUsers = () => {
                                         />
                                       </div>
                                       <div className="space-y-2">
-                                        <Label htmlFor="lastName">{t('admin:manageUsers.lastName')}</Label>
+                                        <Label htmlFor="lastName">Last Name</Label>
                                         <Input 
                                           id="lastName"
                                           name="lastName"
@@ -510,7 +508,7 @@ const ManageUsers = () => {
                                     </div>
                                     
                                     <div className="space-y-2">
-                                      <Label htmlFor="email">{t('admin:manageUsers.email')}</Label>
+                                      <Label htmlFor="email">Email</Label>
                                       <Input 
                                         id="email"
                                         name="email" 
@@ -521,34 +519,34 @@ const ManageUsers = () => {
                                     </div>
                                     
                                     <div className="space-y-2">
-                                      <Label htmlFor="role">{t('admin:manageUsers.role')}</Label>
+                                      <Label htmlFor="role">Role</Label>
                                       <Select name="role" defaultValue={userToEdit.role}>
                                         <SelectTrigger id="role">
-                                          <SelectValue placeholder={t('admin:manageUsers.role')} />
+                                          <SelectValue placeholder="Role" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="admin">{t('admin:manageUsers.filters.admin')}</SelectItem>
-                                          <SelectItem value="doctor">{t('admin:manageUsers.filters.doctor')}</SelectItem>
-                                          <SelectItem value="patient">{t('admin:manageUsers.filters.patient')}</SelectItem>
+                                          <SelectItem value="admin">Admin</SelectItem>
+                                          <SelectItem value="doctor">Doctor</SelectItem>
+                                          <SelectItem value="patient">Patient</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
                                     
                                     <div className="space-y-2">
-                                      <Label htmlFor="status">{t('admin:manageUsers.status')}</Label>
+                                      <Label htmlFor="status">Status</Label>
                                       <Select name="status" defaultValue={userToEdit.status}>
                                         <SelectTrigger id="status">
-                                          <SelectValue placeholder={t('admin:manageUsers.status')} />
+                                          <SelectValue placeholder="Status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                          <SelectItem value="active">{t('admin:manageUsers.filters.active')}</SelectItem>
-                                          <SelectItem value="suspended">{t('admin:manageUsers.filters.suspended')}</SelectItem>
+                                          <SelectItem value="active">Active</SelectItem>
+                                          <SelectItem value="suspended">Suspended</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
                                     
                                     <SheetFooter>
-                                      <Button type="submit">{t('admin:manageUsers.saveChanges')}</Button>
+                                      <Button type="submit">Save Changes</Button>
                                     </SheetFooter>
                                   </form>
                                 )}
@@ -563,22 +561,22 @@ const ManageUsers = () => {
                               </DialogTrigger>
                               <DialogContent>
                                 <DialogHeader>
-                                  <DialogTitle>{t('admin:manageUsers.deleteUser')}</DialogTitle>
+                                  <DialogTitle>Confirm Deletion</DialogTitle>
                                   <DialogDescription>
-                                    {t('admin:manageUsers.deleteUserDesc')}
+                                    Are you sure you want to delete this user? This action cannot be undone.
                                   </DialogDescription>
                                 </DialogHeader>
                                 <div className="flex items-center gap-2 py-4 text-amber-600">
                                   <AlertCircle className="h-5 w-5" />
-                                  <p className="text-sm">{t('admin:manageUsers.deleteUserWarning')}</p>
+                                  <p className="text-sm">All data associated with this user will be permanently removed.</p>
                                 </div>
                                 <DialogFooter>
-                                  <Button variant="outline">{t('admin:manageUsers.cancel')}</Button>
+                                  <Button variant="outline">Cancel</Button>
                                   <Button 
                                     variant="destructive" 
                                     onClick={() => handleDeleteUser(user.id)}
                                   >
-                                    {t('admin:manageUsers.delete')}
+                                    Delete User
                                   </Button>
                                 </DialogFooter>
                               </DialogContent>
@@ -593,20 +591,20 @@ const ManageUsers = () => {
             ) : (
               <div className="text-center py-12">
                 <UserIcon className="h-12 w-12 mx-auto text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-medium">{t('admin:manageUsers.noUsers')}</h3>
-                <p className="text-muted-foreground mt-1">{t('admin:manageUsers.noUsersDesc')}</p>
+                <h3 className="mt-4 text-lg font-medium">No users found</h3>
+                <p className="text-muted-foreground mt-1">Try adjusting your search or filter criteria</p>
               </div>
             )}
           </CardContent>
           
           <CardFooter className="flex justify-between">
             <div className="text-sm text-muted-foreground">
-              {t('admin:manageUsers.showing', { filtered: filteredUsers.length, total: users.length })}
+              {`Showing ${filteredUsers.length} of ${users.length} users`}
             </div>
             
             <div className="flex gap-1">
-              <Button variant="outline" size="sm" disabled>{t('admin:manageUsers.previous')}</Button>
-              <Button variant="outline" size="sm" disabled>{t('admin:manageUsers.next')}</Button>
+              <Button variant="outline" size="sm" disabled>Previous</Button>
+              <Button variant="outline" size="sm" disabled>Next</Button>
             </div>
           </CardFooter>
         </Card>

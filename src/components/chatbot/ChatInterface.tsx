@@ -126,9 +126,9 @@ const ChatInterface = () => {
               </DialogHeader>
               <div className="space-y-4 mt-2">
                 {[
-                  { icon: Brain, title: "Emotional Support", desc: "Trained to recognize emotional patterns and provide compassionate responses." },
-                  { icon: Sparkles, title: "Evidence-Based", desc: "Suggestions based on CBT, mindfulness, and breathing techniques." },
-                  { icon: AlertCircle, title: "Not a Replacement", desc: "This AI does not replace professional mental health care." },
+                  { icon: Brain, title: "Helpful Information", desc: "Can answer questions and help you explore your thoughts and feelings." },
+                  { icon: Sparkles, title: "Supportive Suggestions", desc: "Offers general wellness tips and conversation to help you feel supported." },
+                  { icon: AlertCircle, title: "Not a Replacement", desc: "This is an AI assistant, not a substitute for professional mental health care." },
                 ].map((item, i) => (
                   <div key={i} className="flex gap-3">
                     <div className="h-8 w-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">

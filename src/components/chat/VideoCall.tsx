@@ -6,6 +6,7 @@ import {
   onSnapshot,
   query,
   where,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import {
@@ -350,7 +351,7 @@ export const CalleeVideoCall = ({
         };
 
         // 4. Get offer from Firestore
-        const callSnap = await (await import("firebase/firestore")).getDoc(doc(db, "videoCalls", callId));
+        const callSnap = await getDoc(doc(db, "videoCalls", callId));
         const callData = callSnap.data() as CallDoc;
         await pc.setRemoteDescription(new RTCSessionDescription(callData.offer!));
 
@@ -395,7 +396,7 @@ export const CalleeVideoCall = ({
       unsubCall?.();
       unsubCandidates?.();
     };
-  }, []);
+  }, [callId, cleanup]);
 
   const toggleMic = () => {
     localStreamRef.current?.getAudioTracks().forEach((t) => (t.enabled = !t.enabled));

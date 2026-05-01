@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 import { convertToDate } from '@/services/appointmentService';
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -15,7 +14,6 @@ interface PatientActivityProps {
 }
 
 export const PatientActivity = ({ activities }: PatientActivityProps) => {
-  const { t } = useTranslation();
   const isMobile = useIsMobile();
   
   const formatTimestamp = (timestamp: Date | any) => {
@@ -25,11 +23,11 @@ export const PatientActivity = ({ activities }: PatientActivityProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('patients.patientActivity')}</CardTitle>
+        <CardTitle>Patient Activity</CardTitle>
       </CardHeader>
       <CardContent>
         {activities.length === 0 ? (
-          <p className="text-muted-foreground text-center py-4">{t('patients.noActivity')}</p>
+          <p className="text-muted-foreground text-center py-4">No activity recorded for this patient</p>
         ) : (
           <div className="space-y-4">
             {activities.map((activity, index) => (

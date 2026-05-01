@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { getAllDoctors } from '@/lib/firebase';
-import { useTranslation } from 'react-i18next';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { RouteMap } from '@/components/map/RouteMap';
 
@@ -67,7 +66,6 @@ const FindDoctor = () => {
   const [locationDoctor, setLocationDoctor] = useState<Doctor | null>(null);
 
   const { toast } = useToast();
-  const { t } = useTranslation(['findDoctor', 'common']);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -175,8 +173,8 @@ const FindDoctor = () => {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-1">{t('findDoctor:title')}</h1>
-          <p className="text-muted-foreground">{t('findDoctor:description')}</p>
+          <h1 className="text-3xl font-bold mb-1">Find a Doctor</h1>
+          <p className="text-muted-foreground">Browse and connect with healthcare professionals</p>
         </div>
 
         {/* Search + Sort + Filter bar */}
@@ -184,7 +182,7 @@ const FindDoctor = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={t('findDoctor:searchPlaceholder')}
+              placeholder="Search by name or specialty..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -316,11 +314,11 @@ const FindDoctor = () => {
             <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mb-5">
               <UserSearch className="h-12 w-12 text-muted-foreground/50" />
             </div>
-            <h3 className="text-xl font-semibold">{t('findDoctor:noDoctors')}</h3>
+            <h3 className="text-xl font-semibold">No doctors found</h3>
             <p className="text-muted-foreground mt-2 mb-6 max-w-sm text-sm">
               {activeFilterCount > 0
                 ? "No doctors match your current filters. Try broadening your search."
-                : t('findDoctor:tryDifferent')}
+                : "Try a different search term or adjust your filters."}
             </p>
             <div className="flex gap-3 flex-wrap justify-center">
               {activeFilterCount > 0 && (
@@ -395,7 +393,7 @@ const FindDoctor = () => {
                     )}
                     <Button className="w-full" onClick={() => handleBookAppointment(doctor)}>
                       <Calendar className="h-4 w-4 mr-2" />
-                      {t('findDoctor:bookAppointment')}
+                      Book Appointment
                     </Button>
                   </div>
                 </CardContent>
