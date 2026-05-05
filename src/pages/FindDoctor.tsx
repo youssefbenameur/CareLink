@@ -130,9 +130,12 @@ const FindDoctor = () => {
   const filteredDoctors = useMemo(() => {
     let result = doctors.filter((d) => {
       // Search
-      const term = searchTerm.toLowerCase();
-      if (term && !d.name.toLowerCase().includes(term) && !d.specialty?.toLowerCase().includes(term)) {
-        return false;
+      const term = searchTerm.toLowerCase().trim();
+      if (term) {
+        const nameWords = d.name.toLowerCase().split(/\s+/);
+        const searchWords = term.split(/\s+/);
+        const matches = searchWords.every((sw) => nameWords.some((nw) => nw.startsWith(sw)));
+        if (!matches) return false;
       }
       // Specialty
       if (selectedSpecialty !== 'all' && d.specialty !== selectedSpecialty) return false;
@@ -182,7 +185,7 @@ const FindDoctor = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by name or specialty..."
+              placeholder="Search by name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
